@@ -5,8 +5,8 @@ services:
     image: postgres:latest
     container_name: marketplace_container
     environment:
-      POSTGRES_USER: marketplace_user
-      POSTGRES_PASSWORD: marketplace_password
-      POSTGRES_DB: marketplace_db
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     ports:
       - "5432:5432"
