@@ -23,7 +23,9 @@
 	</developers>
     <modules>
         <module>auth</module>
-    </modules>
+		<module>product</module>
+		<module>order</module>
+	</modules>
     <scm>
 		<connection/>
 		<developerConnection/>
