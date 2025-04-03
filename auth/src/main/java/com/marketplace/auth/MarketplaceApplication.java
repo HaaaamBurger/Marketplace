@@ -1,4 +1,4 @@
-package com.main.Marketplace;
+package com.marketplace.auth;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

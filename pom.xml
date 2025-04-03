@@ -11,7 +11,8 @@
 	<groupId>com.main</groupId>
 	<artifactId>Marketplace</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>Marketplace</name>
+    <packaging>pom</packaging>
+    <name>Marketplace</name>
 	<description>Marketplace project for Spring Boot</description>
 	<url/>
 	<licenses>
@@ -20,7 +21,12 @@
 	<developers>
 		<developer/>
 	</developers>
-	<scm>
+    <modules>
+        <module>auth</module>
+		<module>product</module>
+		<module>order</module>
+	</modules>
+    <scm>
 		<connection/>
 		<developerConnection/>
 		<tag/>
