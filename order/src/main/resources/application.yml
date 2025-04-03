@@ -9,5 +9,5 @@ spring:
 
 server:
   servlet:
-    context-path: /api/auth
-  port: 8080
+    context-path: /api/order
+  port: 8070
