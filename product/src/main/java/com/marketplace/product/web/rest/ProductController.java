@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @AllArgsConstructor
@@ -18,16 +19,10 @@ public class ProductController {
         return productService.getAllProducts();
     }
 
-    @GetMapping("/search")
-    public List<Product> searchProducts(@RequestParam String name) {
-        return productService.searchProductsByName(name);
-    }
-
     @GetMapping("/{id}")
-    public ResponseEntity<Product> getProductById(@PathVariable Long id) {
-        return productService.getProductById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<Product> getProductById(@PathVariable UUID id) {
+        Product product = productService.getProductById(id);
+        return ResponseEntity.ok(product);
     }
 
     @PostMapping("/create")
@@ -36,7 +31,7 @@ public class ProductController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Product> updateProduct(@PathVariable Long id, @RequestBody Product updatedProduct) {
+    public ResponseEntity<Product> updateProduct(@PathVariable UUID id, @RequestBody Product updatedProduct) {
         try {
             return ResponseEntity.ok(productService.updateProduct(id, updatedProduct));
         } catch (RuntimeException e) {
@@ -45,7 +40,7 @@ public class ProductController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteProduct(@PathVariable UUID id) {
         productService.deleteProduct(id);
         return ResponseEntity.noContent().build();
     }
