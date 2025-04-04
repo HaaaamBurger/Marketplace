@@ -2,15 +2,12 @@ package com.marketplace.product.web.rest;
 
 import com.marketplace.product.model.Product;
 import lombok.AllArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@Slf4j
 @RestController
-@RequestMapping("/api/product")
 @AllArgsConstructor
 public class ProductController {
 
@@ -18,7 +15,6 @@ public class ProductController {
 
     @GetMapping("/all")
     public List<Product> getAllProducts() {
-        log.info("Отримано запит на всі продукти");
         return productService.getAllProducts();
     }
 
@@ -34,7 +30,7 @@ public class ProductController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @PostMapping
+    @PostMapping("/create")
     public ResponseEntity<Product> createProduct(@RequestBody Product product) {
         return ResponseEntity.ok(productService.createProduct(product));
     }
