@@ -1,0 +1,9 @@
+package com.marketplace.auth.service;
+
+import com.marketplace.auth.web.rest.dto.AuthRequest;
+import com.marketplace.auth.web.rest.dto.AuthResponse;
+
+public interface AuthenticationService {
+    AuthResponse signIn(AuthRequest authRequest);
+    String signUp(AuthRequest authRequest);
+}
