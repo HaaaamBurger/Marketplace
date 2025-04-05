@@ -24,7 +24,7 @@ public class WebExceptionHandler extends ResponseEntityExceptionHandler {
         return ResponseEntity.badRequest().body(
                 ExceptionResponse.builder()
                         .status(HttpStatusCode.valueOf(400).value())
-                        .type(ExceptionType.APPLICATION)
+                        .type(ExceptionType.WEB)
                         .path(request.getRequestURI())
                         .message(constraintViolations)
                         .build()
