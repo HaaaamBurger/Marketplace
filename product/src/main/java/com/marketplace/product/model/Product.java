@@ -4,8 +4,9 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import java.time.LocalDateTime;
+
 import java.util.UUID;
 
 @Data
@@ -13,15 +14,12 @@ import java.util.UUID;
 @Table(name = "product")
 @NoArgsConstructor
 @AllArgsConstructor
-public class Product {
+@EntityListeners(AuditingEntityListener.class)
+public class Product extends AuditableEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
-
     private String name;
     private String description;
     private int price;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
-
 }
