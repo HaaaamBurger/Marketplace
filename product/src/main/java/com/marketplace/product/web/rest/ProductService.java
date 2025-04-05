@@ -4,6 +4,7 @@ import com.marketplace.product.model.Product;
 import com.marketplace.product.exception.EntityFetcher;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestBody;
 
 
 import java.util.List;

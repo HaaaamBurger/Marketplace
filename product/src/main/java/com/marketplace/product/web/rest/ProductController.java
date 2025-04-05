@@ -1,7 +1,8 @@
 package com.marketplace.product.web.rest;
 
 import com.marketplace.product.model.Product;
-import lombok.AllArgsConstructor;
+
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -9,14 +10,16 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@AllArgsConstructor
+@RequestMapping("/api/product")
+@RequiredArgsConstructor
 public class ProductController {
 
     private final ProductService productService;
 
     @GetMapping
-    public List<Product> getAllProducts() {
-        return productService.getAllProducts();
+    public ResponseEntity<List<Product>> getAllProducts() {
+        List<Product> products = productService.getAllProducts();
+        return ResponseEntity.ok(products);
     }
 
     @GetMapping("/{productid}")
@@ -25,7 +28,7 @@ public class ProductController {
         return ResponseEntity.ok(product);
     }
 
-    @PostMapping("/create")
+    @PostMapping
     public ResponseEntity<Product> createProduct(@RequestBody Product product) {
         return ResponseEntity.ok(productService.createProduct(product));
     }
