@@ -10,13 +10,13 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/product")
+@RequestMapping
 @RequiredArgsConstructor
 public class ProductController {
 
     private final ProductService productService;
 
-    @GetMapping
+    @GetMapping("/all")
     public ResponseEntity<List<Product>> getAllProducts() {
         List<Product> products = productService.getAllProducts();
         return ResponseEntity.ok(products);
@@ -28,7 +28,7 @@ public class ProductController {
         return ResponseEntity.ok(product);
     }
 
-    @PostMapping
+    @PostMapping("/create")
     public ResponseEntity<Product> createProduct(@RequestBody Product product) {
         return ResponseEntity.ok(productService.createProduct(product));
     }
