@@ -3,6 +3,7 @@ package com.marketplace.auth.web.model;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Pattern;
 import lombok.*;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -17,6 +18,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @Table(name = "users")
 @EqualsAndHashCode(callSuper = true)
+@EntityListeners(AuditingEntityListener.class)
 public class User extends AuditableEntity implements UserDetails {
 
     @Id
@@ -24,7 +26,7 @@ public class User extends AuditableEntity implements UserDetails {
     private UUID id;
 
     @Column(unique = true, nullable = false, length = 50)
-    @Pattern(regexp = "[\\w-.]+@([\\w-]+\\.)+[\\w-]{2,4}", message = "Must be a valid e-mail address")
+    @Pattern(regexp = "^[\\w.-]+@[a-zA-Z0-9-]+\\.[a-zA-Z]{2,}$", message = "Must be a valid e-mail address")
     private String email;
 
     @Column(nullable = false)
