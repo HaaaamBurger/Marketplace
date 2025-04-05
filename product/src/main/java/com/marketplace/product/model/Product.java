@@ -21,5 +21,5 @@ public class Product extends AuditableEntity {
     private UUID id;
     private String name;
     private String description;
-    private int price;
+    private Double price;
 }

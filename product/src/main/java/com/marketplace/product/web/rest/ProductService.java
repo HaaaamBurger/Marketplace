@@ -1,12 +1,13 @@
 package com.marketplace.product.web.rest;
 
 import com.marketplace.product.model.Product;
-import jakarta.persistence.EntityNotFoundException;
+import com.marketplace.product.exception.EntityFetcher;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -14,14 +15,14 @@ import java.util.UUID;
 public class ProductService {
 
     private final ProductRepository productRepository;
+    private final EntityFetcher entityFetcher;
 
     public List<Product> getAllProducts() {
         return productRepository.findAll();
     }
 
     public Product getProductById(UUID id) {
-        return productRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Product not found with ID: " + id));
+        return entityFetcher.fetchById(productRepository, id, "Product");
     }
 
     public Product createProduct(Product product) {
@@ -29,22 +30,17 @@ public class ProductService {
     }
 
     public Product updateProduct(UUID id, Product updatedProduct) {
-        Product existingProduct = productRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Product not found with ID: " + id));
+        Product existingProduct = entityFetcher.fetchById(productRepository, id, "Product");
 
-        existingProduct.setName(updatedProduct.getName());
-        existingProduct.setPrice(updatedProduct.getPrice());
-        existingProduct.setDescription(updatedProduct.getDescription());
+        Optional.ofNullable(updatedProduct.getName()).ifPresent(existingProduct::setName);
+        Optional.ofNullable(updatedProduct.getPrice()).ifPresent(existingProduct::setPrice);
+        Optional.ofNullable(updatedProduct.getDescription()).ifPresent(existingProduct::setDescription);
 
         return productRepository.save(existingProduct);
     }
 
     public void deleteProduct(UUID id) {
-        if (!productRepository.existsById(id)) {
-            throw new EntityNotFoundException("Product not found with ID: " + id);
-        }
-        productRepository.deleteById(id);
+        Product product = entityFetcher.fetchById(productRepository, id, "Product");
+        productRepository.delete(product);
     }
-
 }
-

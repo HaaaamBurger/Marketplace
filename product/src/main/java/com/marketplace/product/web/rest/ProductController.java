@@ -14,14 +14,14 @@ public class ProductController {
 
     private final ProductService productService;
 
-    @GetMapping("/all")
+    @GetMapping
     public List<Product> getAllProducts() {
         return productService.getAllProducts();
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<Product> getProductById(@PathVariable UUID id) {
-        Product product = productService.getProductById(id);
+    @GetMapping("/{productid}")
+    public ResponseEntity<Product> getProductById(@PathVariable UUID productid) {
+        Product product = productService.getProductById(productid);
         return ResponseEntity.ok(product);
     }
 
@@ -30,18 +30,13 @@ public class ProductController {
         return ResponseEntity.ok(productService.createProduct(product));
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<Product> updateProduct(@PathVariable UUID id, @RequestBody Product updatedProduct) {
-        try {
-            return ResponseEntity.ok(productService.updateProduct(id, updatedProduct));
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
-        }
+    @PutMapping("/{productid}")
+    public ResponseEntity<Product> updateProduct(@PathVariable UUID productid, @RequestBody Product updatedProduct) {
+        return ResponseEntity.ok(productService.updateProduct(productid, updatedProduct));
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteProduct(@PathVariable UUID id) {
-        productService.deleteProduct(id);
-        return ResponseEntity.noContent().build();
+    @DeleteMapping("/{productid}")
+    public void deleteProduct(@PathVariable UUID productid) {
+        productService.deleteProduct(productid);
     }
 }
