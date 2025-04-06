@@ -58,7 +58,13 @@ public class JwtService {
         return Keys.hmacShaKeyFor(jwtSecretKey.getBytes(StandardCharsets.UTF_8));
     }
 
-    public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
+    public boolean isTokenValid(String token, UserDetails userDetails) {
+        String subject = extractClaim(token, Claims::getSubject);
+
+        return (!isTokenExpired(token) && userDetails.getUsername().equals(subject));
+    }
+
+    private  <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
         Claims claims = extractAllClaims(token);
         return claimsResolver.apply(claims);
     }
@@ -70,4 +76,13 @@ public class JwtService {
                 .parseSignedClaims(token)
                 .getPayload();
     }
+
+    private boolean isTokenExpired(String token) {
+       return extractClaim(token, Claims::getExpiration).before(new Date());
+    }
+
+    public String extractSubject(String token) {
+        return extractClaim(token, Claims::getSubject);
+    }
+
 }
