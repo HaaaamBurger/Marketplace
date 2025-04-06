@@ -1,8 +1,7 @@
-package com.marketplace.auth.service.impl;
+package com.marketplace.auth.service;
 
 import com.marketplace.auth.repository.UserRepository;
 import com.marketplace.auth.security.JwtService;
-import com.marketplace.auth.service.AuthenticationService;
 import com.marketplace.auth.web.model.User;
 import com.marketplace.auth.web.model.UserRole;
 import com.marketplace.auth.web.rest.dto.AuthRefreshRequest;
