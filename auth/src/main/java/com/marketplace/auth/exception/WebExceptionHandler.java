@@ -2,6 +2,7 @@ package com.marketplace.auth.exception;
 
 import com.marketplace.auth.common.ExceptionType;
 import com.marketplace.auth.web.rest.dto.ExceptionResponse;
+import jakarta.persistence.EntityExistsException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
@@ -27,6 +28,19 @@ public class WebExceptionHandler extends ResponseEntityExceptionHandler {
                         .type(ExceptionType.WEB)
                         .path(request.getRequestURI())
                         .message(constraintViolations)
+                        .build()
+        );
+    }
+
+    @ExceptionHandler(EntityExistsException.class)
+    public ResponseEntity<ExceptionResponse> handleEntityExistsException(EntityExistsException exception, HttpServletRequest request) {
+
+        return ResponseEntity.badRequest().body(
+                ExceptionResponse.builder()
+                        .status(HttpStatusCode.valueOf(404).value())
+                        .type(ExceptionType.WEB)
+                        .path(request.getRequestURI())
+                        .message(exception.getMessage())
                         .build()
         );
     }
