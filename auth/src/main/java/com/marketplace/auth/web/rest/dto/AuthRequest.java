@@ -2,9 +2,11 @@ package com.marketplace.auth.web.rest.dto;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
+import lombok.Builder;
 import lombok.Data;
 
 @Data
+@Builder
 public class AuthRequest {
 
     @NotNull(message = "Email cannot be empty")

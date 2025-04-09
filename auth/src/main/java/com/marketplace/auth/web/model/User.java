@@ -1,6 +1,7 @@
 package com.marketplace.auth.web.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import lombok.*;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -34,7 +35,7 @@ public class User extends AuditableEntity implements UserDetails {
     private UserRole role;
 
     @Column(nullable = false)
-    @Pattern(regexp = "^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{8,}$", message = "Must be a valid password")
+    @NotBlank(message = "Password cannot be blank")
     private String password;
 
     @Override

@@ -50,7 +50,7 @@ public class UserTest {
     @Test
     public void testUserWithInvalidPassword() {
         User user = UserDataBuilder.buildUserWithAllFields()
-                .password("123")
+                .password("")
                 .build();
 
         Set<ConstraintViolation<User>> violations = validator.validate(user);
@@ -61,7 +61,7 @@ public class UserTest {
 
         assertThat(matchedViolation).isNotNull();
         assertThat(matchedViolation.getPropertyPath().toString()).isEqualTo("password");
-        assertThat(matchedViolation.getMessage()).isEqualTo("Must be a valid password");
+        assertThat(matchedViolation.getMessage()).isEqualTo("Password cannot be blank");
     }
 
     private ConstraintViolation<User> getMatchedViolationByField(Set<ConstraintViolation<User>> violations, String field) {

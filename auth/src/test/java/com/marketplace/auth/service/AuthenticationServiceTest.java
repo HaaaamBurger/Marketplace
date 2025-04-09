@@ -6,6 +6,7 @@ import com.marketplace.auth.web.model.User;
 import com.marketplace.auth.web.rest.dto.AuthRefreshRequest;
 import com.marketplace.auth.web.rest.dto.AuthRequest;
 import com.marketplace.auth.web.rest.dto.AuthResponse;
+import com.marketplace.auth.web.util.AuthRequestDataBuilder;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.Test;
@@ -42,9 +43,7 @@ public class AuthenticationServiceTest {
 
     @Test
     public void shouldReturnTokenOnSignIn() {
-        AuthRequest authRequest = new AuthRequest();
-        authRequest.setEmail("test@gmail.com");
-        authRequest.setPassword("testPassword1");
+        AuthRequest authRequest = AuthRequestDataBuilder.withAllFields().build();
 
         UserDetails mockUserDetails = mock(UserDetails.class);
         User mockUser = mock(User.class);
@@ -66,9 +65,7 @@ public class AuthenticationServiceTest {
 
     @Test
     public void shouldThrowExceptionOnSignInWhenUserNotFound() {
-        AuthRequest authRequest = new AuthRequest();
-        authRequest.setEmail("test@gmail.com");
-        authRequest.setPassword("testPassword1");
+        AuthRequest authRequest = AuthRequestDataBuilder.withAllFields().build();
 
         when(userDetailsService.loadUserByUsername(authRequest.getEmail())).thenThrow(EntityNotFoundException.class);
 
@@ -79,9 +76,7 @@ public class AuthenticationServiceTest {
 
     @Test
     public void shouldReturnMessageOnSignUp() {
-        AuthRequest authRequest = new AuthRequest();
-        authRequest.setEmail("test@gmail.com");
-        authRequest.setPassword("testPassword1");
+        AuthRequest authRequest = AuthRequestDataBuilder.withAllFields().build();
 
         ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
         User capturedUser = userCaptor.getValue();
@@ -100,10 +95,7 @@ public class AuthenticationServiceTest {
     @Test
     public void shouldThrowExceptionIfUserAlreadyExists() {
         User mockUser = mock(User.class);
-
-        AuthRequest authRequest = new AuthRequest();
-        authRequest.setEmail("test@gmail.com");
-        authRequest.setPassword("testPassword1");
+        AuthRequest authRequest = AuthRequestDataBuilder.withAllFields().build();
 
         when(userRepository.findByEmail(authRequest.getEmail())).thenReturn(Optional.of(mockUser));
 

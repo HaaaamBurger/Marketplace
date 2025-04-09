@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
+import javax.security.auth.login.CredentialException;
 import java.util.stream.Collectors;
 
 @RestControllerAdvice
@@ -39,6 +40,18 @@ public class WebExceptionHandler extends ResponseEntityExceptionHandler {
                 ExceptionResponse.builder()
                         .status(HttpStatusCode.valueOf(404).value())
                         .type(ExceptionType.WEB)
+                        .path(request.getRequestURI())
+                        .message(exception.getMessage())
+                        .build()
+        );
+    }
+
+    @ExceptionHandler(CredentialException.class)
+    public ResponseEntity<ExceptionResponse> handleCredentialsException(CredentialException exception, HttpServletRequest request) {
+        return ResponseEntity.badRequest().body(
+                ExceptionResponse.builder()
+                        .status(HttpStatusCode.valueOf(401).value())
+                        .type(ExceptionType.AUTHORIZATION)
                         .path(request.getRequestURI())
                         .message(exception.getMessage())
                         .build()

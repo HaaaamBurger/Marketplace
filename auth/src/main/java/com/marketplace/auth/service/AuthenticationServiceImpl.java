@@ -12,11 +12,14 @@ import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.security.SignatureException;
 import jakarta.persistence.EntityExistsException;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import javax.security.auth.login.CredentialException;
 import java.util.Optional;
 
 @Slf4j
@@ -27,11 +30,20 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final UserDetailsService userDetailsService;
     private final UserRepository userRepository;
     private final JwtService jwtService;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
+    @SneakyThrows
     public AuthResponse signIn(AuthRequest authRequest) {
 
         UserDetails userDetails = userDetailsService.loadUserByUsername(authRequest.getEmail());
+
+        boolean matches = passwordEncoder.matches(authRequest.getPassword(), userDetails.getPassword());
+
+        if(!matches) {
+            throw new CredentialException("Wrong credentials!!");
+        }
+
         String accessToken = jwtService.generateAccessToken(userDetails);
         String refreshToken = jwtService.generateRefreshToken(userDetails);
 
@@ -50,10 +62,12 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             throw new EntityExistsException("User already exists!");
         }
 
+        String encodedPassword = passwordEncoder.encode(authRequest.getPassword());
+
         userRepository.save(User.builder()
                 .role(UserRole.USER)
                 .email(authRequest.getEmail())
-                .password(authRequest.getPassword())
+                .password(encodedPassword)
                 .build());
 
         return "User successfully created!!";
@@ -68,7 +82,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         try {
             boolean isTokenValid = jwtService.isTokenValid(authRefreshRequest.getRefreshToken(), userDetails);
 
-            if(isTokenValid) {
+            if (isTokenValid) {
                 String accessToken = jwtService.generateAccessToken(userDetails);
                 String refreshToken = jwtService.generateRefreshToken(userDetails);
 
