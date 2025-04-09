@@ -1,7 +1,6 @@
 package com.marketplace.product.web.rest;
 
 import com.marketplace.product.model.Product;
-import com.marketplace.product.exception.EntityFetcher;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -14,14 +13,15 @@ import java.util.UUID;
 public class ProductService {
 
     private final ProductRepository productRepository;
-    private final EntityFetcher entityFetcher;
+
 
     public List<Product> getAllProducts() {
         return productRepository.findAll();
     }
 
     public Product getProductById(UUID id) {
-        return entityFetcher.fetchById(productRepository, id, "Product");
+        return productRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Product not found with id: " + id));
     }
 
     public Product createProduct(Product product) {
@@ -29,7 +29,8 @@ public class ProductService {
     }
 
     public Product updateProduct(UUID id, Product updatedProduct) {
-        Product existingProduct = entityFetcher.fetchById(productRepository, id, "Product");
+        Product existingProduct = productRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Product not found with id: " + id));
 
         Optional.ofNullable(updatedProduct.getName()).ifPresent(existingProduct::setName);
         Optional.ofNullable(updatedProduct.getPrice()).ifPresent(existingProduct::setPrice);
@@ -38,8 +39,10 @@ public class ProductService {
         return productRepository.save(existingProduct);
     }
 
+
     public void deleteProduct(UUID id) {
-        Product product = entityFetcher.fetchById(productRepository, id, "Product");
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Product not found with id: " + id));
         productRepository.delete(product);
     }
 }

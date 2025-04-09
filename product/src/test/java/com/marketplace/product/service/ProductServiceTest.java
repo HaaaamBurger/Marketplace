@@ -1,9 +1,9 @@
 package com.marketplace.product.service;
 
 import com.marketplace.product.model.Product;
+import com.marketplace.product.util.ProductDataBuilder;
 import com.marketplace.product.web.rest.ProductRepository;
 import com.marketplace.product.web.rest.ProductService;
-import com.marketplace.product.exception.EntityFetcher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
@@ -19,9 +19,6 @@ class ProductServiceTest {
     @Mock
     private ProductRepository productRepository;
 
-    @Mock
-    private EntityFetcher entityFetcher;
-
     @InjectMocks
     private ProductService productService;
 
@@ -30,19 +27,12 @@ class ProductServiceTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-
-        sampleProduct = new Product(
-                UUID.randomUUID(),
-                "Test Product",
-                "Test Description",
-                BigDecimal.valueOf(99.99)
-        );
+        sampleProduct = ProductDataBuilder.buildProductWithAllFields().build();
     }
 
     @Test
     void shouldReturnAllProducts() {
-        List<Product> products = List.of(sampleProduct);
-        when(productRepository.findAll()).thenReturn(products);
+        when(productRepository.findAll()).thenReturn(List.of(sampleProduct));
 
         List<Product> result = productService.getAllProducts();
 
@@ -53,11 +43,23 @@ class ProductServiceTest {
     @Test
     void shouldReturnProductById() {
         UUID id = sampleProduct.getId();
-        when(entityFetcher.fetchById(productRepository, id, "Product")).thenReturn(sampleProduct);
+        when(productRepository.findById(id)).thenReturn(Optional.of(sampleProduct));
 
         Product result = productService.getProductById(id);
 
         assertEquals(sampleProduct, result);
+    }
+
+    @Test
+    void shouldThrowExceptionIfProductNotFound() {
+        UUID id = UUID.randomUUID();
+        when(productRepository.findById(id)).thenReturn(Optional.empty());
+
+        Exception exception = assertThrows(RuntimeException.class, () -> {
+            productService.getProductById(id);
+        });
+
+        assertTrue(exception.getMessage().contains("not found"));
     }
 
     @Test
@@ -73,8 +75,14 @@ class ProductServiceTest {
     @Test
     void shouldUpdateProduct() {
         UUID id = sampleProduct.getId();
-        Product updated = new Product(id, "Updated Name", "Updated Description", BigDecimal.valueOf(199.99));
-        when(entityFetcher.fetchById(productRepository, id, "Product")).thenReturn(sampleProduct);
+        Product updated = ProductDataBuilder.buildProductWithAllFields()
+                .id(id)
+                .name("Updated Name")
+                .description("Updated Description")
+                .price(BigDecimal.valueOf(199.99))
+                .build();
+
+        when(productRepository.findById(id)).thenReturn(Optional.of(sampleProduct));
         when(productRepository.save(any(Product.class))).thenReturn(updated);
 
         Product result = productService.updateProduct(id, updated);
@@ -87,7 +95,7 @@ class ProductServiceTest {
     @Test
     void shouldDeleteProduct() {
         UUID id = sampleProduct.getId();
-        when(entityFetcher.fetchById(productRepository, id, "Product")).thenReturn(sampleProduct);
+        when(productRepository.findById(id)).thenReturn(Optional.of(sampleProduct));
 
         productService.deleteProduct(id);
 
