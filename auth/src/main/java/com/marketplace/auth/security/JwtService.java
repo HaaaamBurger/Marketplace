@@ -44,10 +44,6 @@ public class JwtService {
         return buildToken(userDetails, claims, jwtRefreshExpirationTime);
     }
 
-    public String generateAccessTokenWithExpiration(UserDetails userDetails, long expiration) {
-        return buildToken(userDetails, new HashMap<>(), expiration);
-    }
-
     public String generateRefreshTokenWithExpiration(UserDetails userDetails, long expiration) {
         return buildToken(userDetails, new HashMap<>(), expiration);
     }
@@ -72,6 +68,10 @@ public class JwtService {
         return (!isTokenExpired(token) && userDetails.getUsername().equals(subject));
     }
 
+    private boolean isTokenExpired(String token) {
+        return extractClaim(token, Claims::getExpiration).before(new Date());
+    }
+
     private  <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
         Claims claims = extractAllClaims(token);
         return claimsResolver.apply(claims);
@@ -85,12 +85,7 @@ public class JwtService {
                 .getPayload();
     }
 
-    private boolean isTokenExpired(String token) {
-       return extractClaim(token, Claims::getExpiration).before(new Date());
-    }
-
     public String extractSubject(String token) {
         return extractClaim(token, Claims::getSubject);
     }
-
 }

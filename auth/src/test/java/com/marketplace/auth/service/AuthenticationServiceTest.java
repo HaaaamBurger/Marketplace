@@ -100,7 +100,7 @@ public class AuthenticationServiceTest {
         assertThat(capturedUser.getEmail()).isEqualTo(authRequest.getEmail());
         assertThat(capturedUser.getPassword()).isEqualTo(encodedPassword);
         assertThat(responseString).isNotBlank();
-        assertThat(responseString).isEqualTo("User successfully created!!");
+        assertThat(responseString).isEqualTo("User successfully created!");
     }
 
     @Test

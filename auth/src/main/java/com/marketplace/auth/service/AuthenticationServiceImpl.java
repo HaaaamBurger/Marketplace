@@ -26,10 +26,10 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class AuthenticationServiceImpl implements AuthenticationService {
 
-    private final UserDetailsService userDetailsService;
-    private final UserRepository userRepository;
     private final JwtService jwtService;
+    private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final UserDetailsService userDetailsService;
 
     @Override
     @SneakyThrows
@@ -37,29 +37,15 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         UserDetails userDetails = userDetailsService.loadUserByUsername(authRequest.getEmail());
 
-        boolean matches = passwordEncoder.matches(authRequest.getPassword(), userDetails.getPassword());
+        throwExceptionIfPasswordsNotMatching(authRequest.getPassword(), userDetails.getPassword());
 
-        if(!matches) {
-            throw new CredentialException("Wrong credentials!!");
-        }
-
-        String accessToken = jwtService.generateAccessToken(userDetails);
-        String refreshToken = jwtService.generateRefreshToken(userDetails);
-
-        return AuthResponse.builder()
-                .accessToken(accessToken)
-                .refreshToken(refreshToken)
-                .build();
+        return generateTokenPair(userDetails);
     }
 
     @Override
     public String signUp(AuthRequest authRequest) {
 
-        Optional<User> byEmail = userRepository.findByEmail(authRequest.getEmail());
-
-        if (byEmail.isPresent()) {
-            throw new EntityExistsException("User already exists!");
-        }
+        throwExceptionIfUserExistsByEmail(authRequest.getEmail());
 
         String encodedPassword = passwordEncoder.encode(authRequest.getPassword());
 
@@ -69,7 +55,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .password(encodedPassword)
                 .build());
 
-        return "User successfully created!!";
+        return "User successfully created!";
     }
 
     @Override
@@ -77,26 +63,56 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         String authRefreshToken = authRefreshRequest.getRefreshToken();
 
         try {
-            String subject = jwtService.extractSubject(authRefreshToken);
-            UserDetails userDetails = userDetailsService.loadUserByUsername(subject);
+            UserDetails userDetails = getUserDetailsIfTokenValid(authRefreshToken);
 
-            boolean isTokenValid = jwtService.isTokenValid(authRefreshToken, userDetails);
-
-            if (isTokenValid) {
-                String accessToken = jwtService.generateAccessToken(userDetails);
-                String refreshToken = jwtService.generateRefreshToken(userDetails);
-
-                return AuthResponse.builder()
-                        .accessToken(accessToken)
-                        .refreshToken(refreshToken)
-                        .build();
+            if (userDetails != null) {
+                return generateTokenPair(userDetails);
             }
 
-            throw new TokenNotValidException("Refresh token not valid!!");
+            throw new TokenNotValidException("Token not valid!");
 
         } catch (JwtException exception) {
             log.error("[AUTHENTICATION_SERVICE]: {}", exception.getMessage());
-            throw new TokenNotValidException(exception.getMessage());
+            throw new TokenNotValidException("Token not valid!");
+        }
+    }
+
+    private void throwExceptionIfPasswordsNotMatching(String rawPassword, String encodedPassword) throws CredentialException {
+        boolean matches = passwordEncoder.matches(rawPassword, encodedPassword);
+
+        if (!matches) {
+            throw new CredentialException("Wrong credentials!");
+        }
+    }
+
+    private AuthResponse generateTokenPair(UserDetails userDetails) {
+        String accessToken = jwtService.generateAccessToken(userDetails);
+        String refreshToken = jwtService.generateRefreshToken(userDetails);
+
+        return AuthResponse.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .build();
+    }
+
+    private UserDetails getUserDetailsIfTokenValid(String token) {
+        String subject = jwtService.extractSubject(token);
+        UserDetails userDetails = userDetailsService.loadUserByUsername(subject);
+
+        boolean isTokenValid = jwtService.isTokenValid(token, userDetails);
+
+        if (isTokenValid) {
+            return userDetails;
+        }
+
+        return null;
+    }
+
+    private void throwExceptionIfUserExistsByEmail(String email) {
+        Optional<User> byEmail = userRepository.findByEmail(email);
+
+        if (byEmail.isPresent()) {
+            throw new EntityExistsException("User already exists!");
         }
     }
 }

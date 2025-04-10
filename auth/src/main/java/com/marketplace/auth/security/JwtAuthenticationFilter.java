@@ -1,8 +1,7 @@
 package com.marketplace.auth.security;
 
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.MalformedJwtException;
-import io.jsonwebtoken.security.SignatureException;
+import com.marketplace.auth.exception.TokenNotValidException;
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -33,28 +32,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         String token = getJwtFromRequest(request);
-        if (token != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
-            try {
-                String subject = jwtService.extractSubject(token);
-                UserDetails userDetails = userDetailsService.loadUserByUsername(subject);
-                boolean isTokenValid = jwtService.isTokenValid(token, userDetails);
+        if (token == null || SecurityContextHolder.getContext().getAuthentication() != null) {
+            filterChain.doFilter(request, response);
+            return;
+        }
 
-                if (isTokenValid) {
-                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                            userDetails,
-                            null,
-                            userDetails.getAuthorities());
-
-                    SecurityContextHolder.getContext().setAuthentication(authToken);
-                    log.info("[JWT_AUTHENTICATION_FILTER]: Token validated successfully");
-                } else {
-                    log.error("[JWT_AUTHENTICATION_FILTER]: Token validation failed");
-                }
-
-            } catch (SignatureException | MalformedJwtException | ExpiredJwtException exception) {
-                log.error("[JWT_AUTHENTICATION_FILTER]: {}", exception.getMessage());
-            }
+        try {
+            addAuthenticationToContext(token);
+        } catch (JwtException exception) {
+            log.error("[JWT_AUTHENTICATION_FILTER]: {}", exception.getMessage());
+            throw new TokenNotValidException("Token not valid!!");
         }
 
         filterChain.doFilter(request, response);
@@ -63,10 +51,40 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private String getJwtFromRequest(HttpServletRequest request) {
         String bearerToken = request.getHeader(AUTHORIZATION_HEADER);
 
-        if(bearerToken == null || !bearerToken.startsWith(BEARER_PREFIX)) {
+        if (bearerToken == null || !bearerToken.startsWith(BEARER_PREFIX)) {
             return null;
         }
 
         return bearerToken.substring(BEARER_PREFIX.length());
+    }
+
+    private void addAuthenticationToContext(String token) {
+        UserDetails userDetails = getUserDetailsIfTokenValid(token);
+
+        if (userDetails != null) {
+            UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                    userDetails,
+                    null,
+                    userDetails.getAuthorities());
+
+            SecurityContextHolder.getContext().setAuthentication(authToken);
+            log.info("[JWT_AUTHENTICATION_FILTER]: Token validated successfully");
+        } else {
+            log.error("[JWT_AUTHENTICATION_FILTER]: Token validation failed");
+            throw new TokenNotValidException("Token not valid!!");
+        }
+    }
+
+    private UserDetails getUserDetailsIfTokenValid(String token) {
+        String subject = jwtService.extractSubject(token);
+        UserDetails userDetails = userDetailsService.loadUserByUsername(subject);
+
+        boolean isTokenValid = jwtService.isTokenValid(token, userDetails);
+
+        if (isTokenValid) {
+            return userDetails;
+        }
+
+        return null;
     }
 }

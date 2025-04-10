@@ -1,6 +1,5 @@
-package com.marketplace.auth.web.rest.dto;
+package com.marketplace.auth.exception;
 
-import com.marketplace.auth.common.ExceptionType;
 import lombok.Builder;
 import lombok.Data;
 

@@ -1,8 +1,8 @@
 package com.marketplace.auth.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.marketplace.auth.common.ExceptionType;
-import com.marketplace.auth.web.rest.dto.ExceptionResponse;
+import com.marketplace.auth.exception.ExceptionType;
+import com.marketplace.auth.exception.ExceptionResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +28,7 @@ public class RestAuthenticationEntryPoint implements AuthenticationEntryPoint {
                 .status(HttpServletResponse.SC_UNAUTHORIZED)
                 .type(ExceptionType.AUTHORIZATION)
                 .path(request.getRequestURI())
-                .message("Authentication required, please log in")
+                .message("Authentication required, please sign in")
                 .build();
 
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);

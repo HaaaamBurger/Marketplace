@@ -1,7 +1,5 @@
 package com.marketplace.auth.exception;
 
-import com.marketplace.auth.common.ExceptionType;
-import com.marketplace.auth.web.rest.dto.ExceptionResponse;
 import jakarta.persistence.EntityExistsException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolation;
@@ -21,7 +19,9 @@ public class WebExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<ExceptionResponse> handleConstraintViolationException(ConstraintViolationException exception, HttpServletRequest request) {
 
-        String constraintViolations = exception.getConstraintViolations().stream().map(ConstraintViolation::getMessage).collect(Collectors.joining(","));
+        String constraintViolations = exception.getConstraintViolations().stream()
+                .map(ConstraintViolation::getMessage)
+                .collect(Collectors.joining(","));
 
         return ResponseEntity.badRequest().body(
                 ExceptionResponse.builder()
@@ -48,6 +48,7 @@ public class WebExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(CredentialException.class)
     public ResponseEntity<ExceptionResponse> handleCredentialsException(CredentialException exception, HttpServletRequest request) {
+
         return ResponseEntity.badRequest().body(
                 ExceptionResponse.builder()
                         .status(HttpStatusCode.valueOf(401).value())
@@ -60,6 +61,7 @@ public class WebExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(TokenNotValidException.class)
     public ResponseEntity<ExceptionResponse> handleTokenNotValidException(TokenNotValidException exception, HttpServletRequest request) {
+
         return ResponseEntity.badRequest().body(
                 ExceptionResponse.builder()
                         .status(HttpStatusCode.valueOf(400).value())

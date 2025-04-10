@@ -1,14 +1,14 @@
 package com.marketplace.auth.web.rest;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.marketplace.auth.common.ExceptionType;
+import com.marketplace.auth.exception.ExceptionType;
 import com.marketplace.auth.repository.UserRepository;
 import com.marketplace.auth.security.JwtService;
 import com.marketplace.auth.web.model.User;
 import com.marketplace.auth.web.rest.dto.AuthRefreshRequest;
 import com.marketplace.auth.web.rest.dto.AuthRequest;
 import com.marketplace.auth.web.rest.dto.AuthResponse;
-import com.marketplace.auth.web.rest.dto.ExceptionResponse;
+import com.marketplace.auth.exception.ExceptionResponse;
 import com.marketplace.auth.web.util.AuthRequestDataBuilder;
 import com.marketplace.auth.web.util.UserDataBuilder;
 import jakarta.persistence.EntityExistsException;
@@ -80,7 +80,7 @@ class AuthenticationControllerIntegrationTest {
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
 
-        assertThat(contentAsString).isEqualTo("User successfully created!!");
+        assertThat(contentAsString).isEqualTo("User successfully created!");
 
         Optional<User> optionalUser = userRepository.findByEmail(authRequest.getEmail());
 
@@ -137,13 +137,12 @@ class AuthenticationControllerIntegrationTest {
                 .andExpect(status().isUnauthorized())
                 .andReturn().getResponse().getContentAsString();
 
-
         ExceptionResponse exceptionResponse = objectMapper.readValue(contentAsString, ExceptionResponse.class);
 
         assertThat(exceptionResponse).isNotNull();
         assertThat(exceptionResponse.getStatus()).isEqualTo(HttpStatus.UNAUTHORIZED.value());
         assertThat(exceptionResponse.getType()).isEqualTo(ExceptionType.AUTHORIZATION);
-        assertThat(exceptionResponse.getMessage()).isEqualTo("Authentication required, please log in");
+        assertThat(exceptionResponse.getMessage()).isEqualTo("Authentication required, please sign in");
     }
 
     @Test
