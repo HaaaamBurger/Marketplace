@@ -1,5 +1,6 @@
 package com.marketplace.auth.service;
 
+import com.marketplace.auth.exception.TokenNotValidException;
 import com.marketplace.auth.repository.UserRepository;
 import com.marketplace.auth.security.JwtService;
 import com.marketplace.auth.web.model.User;
@@ -7,9 +8,7 @@ import com.marketplace.auth.web.model.UserRole;
 import com.marketplace.auth.web.rest.dto.AuthRefreshRequest;
 import com.marketplace.auth.web.rest.dto.AuthRequest;
 import com.marketplace.auth.web.rest.dto.AuthResponse;
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.MalformedJwtException;
-import io.jsonwebtoken.security.SignatureException;
+import io.jsonwebtoken.JwtException;
 import jakarta.persistence.EntityExistsException;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -76,11 +75,12 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Override
     public AuthResponse refreshToken(AuthRefreshRequest authRefreshRequest) {
         String authRefreshToken = authRefreshRequest.getRefreshToken();
-        String subject = jwtService.extractSubject(authRefreshToken);
-        UserDetails userDetails = userDetailsService.loadUserByUsername(subject);
 
         try {
-            boolean isTokenValid = jwtService.isTokenValid(authRefreshRequest.getRefreshToken(), userDetails);
+            String subject = jwtService.extractSubject(authRefreshToken);
+            UserDetails userDetails = userDetailsService.loadUserByUsername(subject);
+
+            boolean isTokenValid = jwtService.isTokenValid(authRefreshToken, userDetails);
 
             if (isTokenValid) {
                 String accessToken = jwtService.generateAccessToken(userDetails);
@@ -91,10 +91,12 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                         .refreshToken(refreshToken)
                         .build();
             }
-        } catch (SignatureException | MalformedJwtException | ExpiredJwtException exception) {
-            log.error("[AUTHENTICATION_SERVICE]: {}", exception.getMessage());
-        }
 
-        return null;
+            throw new TokenNotValidException("Refresh token not valid!!");
+
+        } catch (JwtException exception) {
+            log.error("[AUTHENTICATION_SERVICE]: {}", exception.getMessage());
+            throw new TokenNotValidException(exception.getMessage());
+        }
     }
 }

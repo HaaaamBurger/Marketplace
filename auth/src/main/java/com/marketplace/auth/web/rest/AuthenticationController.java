@@ -18,7 +18,7 @@ public class AuthenticationController {
     private final AuthenticationService authenticationService;
 
     @PostMapping("/sign-in")
-    public ResponseEntity<AuthResponse> signIn(@Valid @RequestBody AuthRequest authRequest) {
+    public ResponseEntity<AuthResponse> signIn(@RequestBody @Valid AuthRequest authRequest) {
         AuthResponse authResponse = authenticationService.signIn(authRequest);
         return ResponseEntity.ok(authResponse);
     }

@@ -17,6 +17,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Optional;
 
@@ -36,7 +37,11 @@ public class AuthenticationServiceTest {
     private UserRepository userRepository;
 
     @Mock
+    private PasswordEncoder passwordEncoder;
+
+    @Mock
     private JwtService jwtService;
+
 
     @InjectMocks
     private AuthenticationServiceImpl authenticationService;
@@ -46,15 +51,19 @@ public class AuthenticationServiceTest {
         AuthRequest authRequest = AuthRequestDataBuilder.withAllFields().build();
 
         UserDetails mockUserDetails = mock(UserDetails.class);
-        User mockUser = mock(User.class);
 
         String mockAccessToken = "mockAccessToken";
         String mockRefreshToken = "mockRefreshToken";
 
+        String encodedPassword = "mockEncodedPassword";
+        when(mockUserDetails.getPassword()).thenReturn(encodedPassword);
 
         when(userDetailsService.loadUserByUsername(authRequest.getEmail())).thenReturn(mockUserDetails);
-        when(jwtService.generateAccessToken(mockUser)).thenReturn(mockAccessToken);
-        when(jwtService.generateRefreshToken(mockUser)).thenReturn(mockRefreshToken);
+
+        when(passwordEncoder.matches(authRequest.getPassword(), encodedPassword)).thenReturn(true);
+
+        when(jwtService.generateAccessToken(mockUserDetails)).thenReturn(mockAccessToken);
+        when(jwtService.generateRefreshToken(mockUserDetails)).thenReturn(mockRefreshToken);
 
         AuthResponse authResponse = authenticationService.signIn(authRequest);
 
@@ -75,19 +84,21 @@ public class AuthenticationServiceTest {
     }
 
     @Test
-    public void shouldReturnMessageOnSignUp() {
+    public void shouldReturnMessageSignUp() {
         AuthRequest authRequest = AuthRequestDataBuilder.withAllFields().build();
-
         ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
-        User capturedUser = userCaptor.getValue();
+        String encodedPassword = "encodedPassword";
 
         when(userRepository.findByEmail(authRequest.getEmail())).thenReturn(Optional.empty());
+        when(passwordEncoder.encode(authRequest.getPassword())).thenReturn(encodedPassword);
         String responseString = authenticationService.signUp(authRequest);
 
         verify(userRepository).save(userCaptor.capture());
 
+        User capturedUser = userCaptor.getValue();
+
         assertThat(capturedUser.getEmail()).isEqualTo(authRequest.getEmail());
-        assertThat(capturedUser.getPassword()).isEqualTo(authRequest.getPassword());
+        assertThat(capturedUser.getPassword()).isEqualTo(encodedPassword);
         assertThat(responseString).isNotBlank();
         assertThat(responseString).isEqualTo("User successfully created!!");
     }
@@ -111,8 +122,7 @@ public class AuthenticationServiceTest {
 
         UserDetails mockUserDetails = mock(UserDetails.class);
 
-        AuthRefreshRequest authRefreshRequest = new AuthRefreshRequest();
-        authRefreshRequest.setRefreshToken(validRefreshToken);
+        AuthRefreshRequest authRefreshRequest = AuthRefreshRequest.builder().refreshToken(validRefreshToken).build();
 
         when(userDetailsService.loadUserByUsername(mockSubject)).thenReturn(mockUserDetails);
         when(jwtService.extractSubject(validRefreshToken)).thenReturn(mockSubject);

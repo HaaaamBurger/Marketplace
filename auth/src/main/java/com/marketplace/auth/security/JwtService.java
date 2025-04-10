@@ -44,6 +44,14 @@ public class JwtService {
         return buildToken(userDetails, claims, jwtRefreshExpirationTime);
     }
 
+    public String generateAccessTokenWithExpiration(UserDetails userDetails, long expiration) {
+        return buildToken(userDetails, new HashMap<>(), expiration);
+    }
+
+    public String generateRefreshTokenWithExpiration(UserDetails userDetails, long expiration) {
+        return buildToken(userDetails, new HashMap<>(), expiration);
+    }
+
     private String buildToken(UserDetails userDetails, Map<String, Object> claims, long expiration) {
         return Jwts.builder()
                 .claims(claims)

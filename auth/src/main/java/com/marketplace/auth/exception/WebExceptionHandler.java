@@ -57,4 +57,16 @@ public class WebExceptionHandler extends ResponseEntityExceptionHandler {
                         .build()
         );
     }
+
+    @ExceptionHandler(TokenNotValidException.class)
+    public ResponseEntity<ExceptionResponse> handleTokenNotValidException(TokenNotValidException exception, HttpServletRequest request) {
+        return ResponseEntity.badRequest().body(
+                ExceptionResponse.builder()
+                        .status(HttpStatusCode.valueOf(400).value())
+                        .type(ExceptionType.AUTHORIZATION)
+                        .path(request.getRequestURI())
+                        .message("Token not valid exception!!")
+                        .build()
+        );
+    }
 }
