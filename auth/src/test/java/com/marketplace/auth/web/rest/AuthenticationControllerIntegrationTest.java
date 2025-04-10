@@ -96,13 +96,17 @@ class AuthenticationControllerIntegrationTest {
         AuthRequest authRequest = AuthRequestDataBuilder.withAllFields().build();
         userRepository.save(UserDataBuilder.buildUserWithAllFields().build());
 
-        Exception resolvedException = mockMvc.perform(post("/sign-up")
+        String contentAsString = mockMvc.perform(post("/sign-up")
                         .content(objectMapper.writeValueAsString(authRequest))
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest()).andReturn().getResolvedException();
+                .andExpect(status().isBadRequest())
+                .andReturn().getResponse().getContentAsString();
 
-        assertThat(resolvedException).isNotNull();
-        assertThat(resolvedException).isInstanceOf(EntityExistsException.class);
+        ExceptionResponse exceptionResponse = objectMapper.readValue(contentAsString, ExceptionResponse.class);
+        assertThat(exceptionResponse).isNotNull();
+        assertThat(exceptionResponse.getStatus()).isEqualTo(HttpStatus.NOT_FOUND.value());
+        assertThat(exceptionResponse.getType()).isEqualTo(ExceptionType.WEB);
+        assertThat(exceptionResponse.getMessage()).isEqualTo("User already exists!");
     }
 
     @Test
@@ -154,14 +158,18 @@ class AuthenticationControllerIntegrationTest {
 
         authRequest.setPassword("testPassword2");
 
-        Exception resolvedException = mockMvc.perform(post("/sign-in")
+        String contentAsString = mockMvc.perform(post("/sign-in")
                         .content(objectMapper.writeValueAsString(authRequest))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
-                .andReturn().getResolvedException();
+                .andReturn().getResponse().getContentAsString();
 
-        assertThat(resolvedException).isNotNull();
-        assertThat(resolvedException).isInstanceOf(CredentialException.class);
+        ExceptionResponse exceptionResponse = objectMapper.readValue(contentAsString, ExceptionResponse.class);
+
+        assertThat(exceptionResponse).isNotNull();
+        assertThat(exceptionResponse.getStatus()).isEqualTo(HttpStatus.UNAUTHORIZED.value());
+        assertThat(exceptionResponse.getType()).isEqualTo(ExceptionType.AUTHORIZATION);
+        assertThat(exceptionResponse.getMessage()).isEqualTo("Wrong credentials!");
     }
 
     @Test
@@ -207,6 +215,6 @@ class AuthenticationControllerIntegrationTest {
         assertThat(exceptionResponse).isNotNull();
         assertThat(exceptionResponse.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
         assertThat(exceptionResponse.getType()).isEqualTo(ExceptionType.AUTHORIZATION);
-        assertThat(exceptionResponse.getMessage()).isEqualTo("Token not valid exception!!");
+        assertThat(exceptionResponse.getMessage()).isEqualTo("Token not valid!");
     }
 }

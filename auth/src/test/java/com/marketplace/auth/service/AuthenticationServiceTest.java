@@ -42,26 +42,20 @@ public class AuthenticationServiceTest {
     @Mock
     private JwtService jwtService;
 
-
     @InjectMocks
     private AuthenticationServiceImpl authenticationService;
 
     @Test
     public void shouldReturnTokenOnSignIn() {
         AuthRequest authRequest = AuthRequestDataBuilder.withAllFields().build();
-
         UserDetails mockUserDetails = mock(UserDetails.class);
-
         String mockAccessToken = "mockAccessToken";
         String mockRefreshToken = "mockRefreshToken";
-
         String encodedPassword = "mockEncodedPassword";
+
         when(mockUserDetails.getPassword()).thenReturn(encodedPassword);
-
         when(userDetailsService.loadUserByUsername(authRequest.getEmail())).thenReturn(mockUserDetails);
-
         when(passwordEncoder.matches(authRequest.getPassword(), encodedPassword)).thenReturn(true);
-
         when(jwtService.generateAccessToken(mockUserDetails)).thenReturn(mockAccessToken);
         when(jwtService.generateRefreshToken(mockUserDetails)).thenReturn(mockRefreshToken);
 
@@ -78,9 +72,7 @@ public class AuthenticationServiceTest {
 
         when(userDetailsService.loadUserByUsername(authRequest.getEmail())).thenThrow(EntityNotFoundException.class);
 
-        assertThrows(EntityNotFoundException.class, () -> {
-            authenticationService.signIn(authRequest);
-        });
+        assertThrows(EntityNotFoundException.class, () -> authenticationService.signIn(authRequest));
     }
 
     @Test
@@ -88,14 +80,13 @@ public class AuthenticationServiceTest {
         AuthRequest authRequest = AuthRequestDataBuilder.withAllFields().build();
         ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
         String encodedPassword = "encodedPassword";
+        User capturedUser = userCaptor.getValue();
 
         when(userRepository.findByEmail(authRequest.getEmail())).thenReturn(Optional.empty());
         when(passwordEncoder.encode(authRequest.getPassword())).thenReturn(encodedPassword);
         String responseString = authenticationService.signUp(authRequest);
 
         verify(userRepository).save(userCaptor.capture());
-
-        User capturedUser = userCaptor.getValue();
 
         assertThat(capturedUser.getEmail()).isEqualTo(authRequest.getEmail());
         assertThat(capturedUser.getPassword()).isEqualTo(encodedPassword);
@@ -119,7 +110,8 @@ public class AuthenticationServiceTest {
     public void shouldReturnNewPairOfTokensWhenOnRefreshToken() {
         String validRefreshToken = "validRefreshToken";
         String mockSubject = "mockSubject";
-
+        String accessToken = "newAccessToken";
+        String refreshToken = "newRefreshToken";
         UserDetails mockUserDetails = mock(UserDetails.class);
 
         AuthRefreshRequest authRefreshRequest = AuthRefreshRequest.builder().refreshToken(validRefreshToken).build();
@@ -127,13 +119,13 @@ public class AuthenticationServiceTest {
         when(userDetailsService.loadUserByUsername(mockSubject)).thenReturn(mockUserDetails);
         when(jwtService.extractSubject(validRefreshToken)).thenReturn(mockSubject);
         when(jwtService.isTokenValid(validRefreshToken, mockUserDetails)).thenReturn(true);
-        when(jwtService.generateAccessToken(mockUserDetails)).thenReturn("newAccessToken");
-        when(jwtService.generateRefreshToken(mockUserDetails)).thenReturn("newRefreshToken");
+        when(jwtService.generateAccessToken(mockUserDetails)).thenReturn(accessToken);
+        when(jwtService.generateRefreshToken(mockUserDetails)).thenReturn(refreshToken);
 
         AuthResponse authResponse = authenticationService.refreshToken(authRefreshRequest);
 
         assertNotNull(authResponse);
-        assertThat(authResponse.getAccessToken()).isEqualTo("newAccessToken");
-        assertThat(authResponse.getRefreshToken()).isEqualTo("newRefreshToken");
+        assertThat(authResponse.getAccessToken()).isEqualTo(accessToken);
+        assertThat(authResponse.getRefreshToken()).isEqualTo(refreshToken);
     }
 }

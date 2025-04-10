@@ -67,7 +67,7 @@ public class WebExceptionHandler extends ResponseEntityExceptionHandler {
                         .status(HttpStatusCode.valueOf(400).value())
                         .type(ExceptionType.AUTHORIZATION)
                         .path(request.getRequestURI())
-                        .message("Token not valid exception!!")
+                        .message(exception.getMessage())
                         .build()
         );
     }

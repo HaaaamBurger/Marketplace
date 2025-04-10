@@ -54,7 +54,6 @@ public class UserTest {
                 .build();
 
         Set<ConstraintViolation<User>> violations = validator.validate(user);
-
         assertEquals(1, violations.size());
 
         ConstraintViolation<User> matchedViolation = getMatchedViolationByField(violations, "password");
