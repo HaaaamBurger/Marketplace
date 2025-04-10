@@ -1,13 +1,13 @@
-package com.marketplace.product;
+package com.marketplace.order;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class MarketplaceApplication {
+public class OrderApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(MarketplaceApplication.class, args);
+		SpringApplication.run(OrderApplication.class, args);
 	}
 
 }

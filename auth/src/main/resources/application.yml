@@ -6,8 +6,15 @@ spring:
     url: jdbc:postgresql://${DB_HOST}:${POSTGRES_DB_PORT}/${POSTGRES_DB_NAME}
     username: ${POSTGRES_USER}
     password: ${POSTGRES_PASSWORD}
-
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: create-drop
 server:
   servlet:
     context-path: /api/auth
-  port: 8080
+security:
+  jwt:
+    secret-key: ${JWT_SECRET_KEY}
+    access-expiration-time: ${JWT_ACCESS_EXPIRATION_TIME}
+    refresh-expiration-time: ${JWT_REFRESH_EXPIRATION_TIME}
