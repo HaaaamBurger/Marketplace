@@ -10,10 +10,10 @@ import java.util.Map;
 
 public abstract class BaseExceptionHandler {
 
-    protected ResponseEntity<Map<String, Object>> buildResponse(HttpStatus status, String message, HttpServletRequest request) {
-        Map<String, Object> body = new HashMap<>();
-        body.put("timestamp", LocalDateTime.now());
-        body.put("status", status.value());
+    protected ResponseEntity<Map<String, String>> buildResponse(HttpStatus status, String message, HttpServletRequest request) {
+        Map<String, String> body = new HashMap<>();
+        body.put("timestamp", LocalDateTime.now().toString());
+        body.put("status", String.valueOf(status.value()));
         body.put("error", status.getReasonPhrase());
         body.put("message", message);
         body.put("path", request.getRequestURI());

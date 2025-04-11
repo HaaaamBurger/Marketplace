@@ -1,6 +1,5 @@
 package com.marketplace.product.exception;
 
-
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
@@ -14,8 +13,7 @@ import java.util.Map;
 public class EntityExceptionHandler extends BaseExceptionHandler {
 
     @ExceptionHandler(EntityNotFoundException.class)
-    public ResponseEntity<Map<String, Object>> handleEntityNotFoundException(EntityNotFoundException ex, HttpServletRequest request) {
+    public ResponseEntity<Map<String, String>> handleEntityNotFoundException(EntityNotFoundException ex, HttpServletRequest request) {
         return buildResponse(HttpStatus.NOT_FOUND, ex.getMessage(), request);
     }
 }
-

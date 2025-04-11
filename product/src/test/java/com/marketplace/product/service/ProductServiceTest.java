@@ -22,17 +22,15 @@ class ProductServiceTest {
     @InjectMocks
     private ProductService productService;
 
-    private Product sampleProduct;
-
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        sampleProduct = ProductDataBuilder.buildProductWithAllFields().build();
     }
 
     @Test
     void shouldReturnAllProducts() {
-        when(productRepository.findAll()).thenReturn(List.of(sampleProduct));
+        Product product = ProductDataBuilder.buildProductWithAllFields().build();
+        when(productRepository.findAll()).thenReturn(List.of(product));
 
         List<Product> result = productService.getAllProducts();
 
@@ -42,12 +40,13 @@ class ProductServiceTest {
 
     @Test
     void shouldReturnProductById() {
-        UUID id = sampleProduct.getId();
-        when(productRepository.findById(id)).thenReturn(Optional.of(sampleProduct));
+        Product product = ProductDataBuilder.buildProductWithAllFields().build();
+        UUID id = product.getId();
+        when(productRepository.findById(id)).thenReturn(Optional.of(product));
 
         Product result = productService.getProductById(id);
 
-        assertEquals(sampleProduct, result);
+        assertEquals(product, result);
     }
 
     @Test
@@ -64,17 +63,19 @@ class ProductServiceTest {
 
     @Test
     void shouldCreateProduct() {
-        when(productRepository.save(sampleProduct)).thenReturn(sampleProduct);
+        Product product = ProductDataBuilder.buildProductWithAllFields().build();
+        when(productRepository.save(product)).thenReturn(product);
 
-        Product created = productService.createProduct(sampleProduct);
+        Product created = productService.createProduct(product);
 
-        assertEquals(sampleProduct, created);
-        verify(productRepository, times(1)).save(sampleProduct);
+        assertEquals(product, created);
+        verify(productRepository, times(1)).save(product);
     }
 
     @Test
     void shouldUpdateProduct() {
-        UUID id = sampleProduct.getId();
+        Product original = ProductDataBuilder.buildProductWithAllFields().build();
+        UUID id = original.getId();
         Product updated = ProductDataBuilder.buildProductWithAllFields()
                 .id(id)
                 .name("Updated Name")
@@ -82,7 +83,7 @@ class ProductServiceTest {
                 .price(BigDecimal.valueOf(199.99))
                 .build();
 
-        when(productRepository.findById(id)).thenReturn(Optional.of(sampleProduct));
+        when(productRepository.findById(id)).thenReturn(Optional.of(original));
         when(productRepository.save(any(Product.class))).thenReturn(updated);
 
         Product result = productService.updateProduct(id, updated);
@@ -94,11 +95,13 @@ class ProductServiceTest {
 
     @Test
     void shouldDeleteProduct() {
-        UUID id = sampleProduct.getId();
-        when(productRepository.findById(id)).thenReturn(Optional.of(sampleProduct));
+        Product product = ProductDataBuilder.buildProductWithAllFields().build();
+        UUID id = product.getId();
+        when(productRepository.findById(id)).thenReturn(Optional.of(product));
 
         productService.deleteProduct(id);
 
-        verify(productRepository, times(1)).delete(sampleProduct);
+        verify(productRepository, times(1)).delete(product);
     }
 }
+
