@@ -77,10 +77,9 @@ public class AuthenticationServiceTest {
 
     @Test
     public void shouldReturnMessageSignUp() {
+        String encodedPassword = "encodedPassword";
         AuthRequest authRequest = AuthRequestDataBuilder.withAllFields().build();
         ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
-        String encodedPassword = "encodedPassword";
-        User capturedUser = userCaptor.getValue();
 
         when(userRepository.findByEmail(authRequest.getEmail())).thenReturn(Optional.empty());
         when(passwordEncoder.encode(authRequest.getPassword())).thenReturn(encodedPassword);
@@ -88,8 +87,8 @@ public class AuthenticationServiceTest {
 
         verify(userRepository).save(userCaptor.capture());
 
-        assertThat(capturedUser.getEmail()).isEqualTo(authRequest.getEmail());
-        assertThat(capturedUser.getPassword()).isEqualTo(encodedPassword);
+        assertThat(userCaptor.getValue().getEmail()).isEqualTo(authRequest.getEmail());
+        assertThat(userCaptor.getValue().getPassword()).isEqualTo(encodedPassword);
         assertThat(responseString).isNotBlank();
         assertThat(responseString).isEqualTo("User successfully created!");
     }

@@ -1,8 +1,6 @@
 package com.marketplace.auth.security;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -68,8 +66,14 @@ public class JwtService {
         return (!isTokenExpired(token) && userDetails.getUsername().equals(subject));
     }
 
-    private boolean isTokenExpired(String token) {
-        return extractClaim(token, Claims::getExpiration).before(new Date());
+    protected boolean isTokenExpired(String token) {
+        try {
+            return extractClaim(token, Claims::getExpiration).before(new Date());
+        } catch (ExpiredJwtException exception) {
+            return true;
+        } catch (JwtException exception) {
+            return false;
+        }
     }
 
     private  <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
