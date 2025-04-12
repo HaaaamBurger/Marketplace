@@ -4,19 +4,22 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
-
 public abstract class BaseExceptionHandler {
 
-    protected ResponseEntity<Map<String, String>> buildResponse(HttpStatus status, String message, HttpServletRequest request) {
-        Map<String, String> body = new HashMap<>();
-        body.put("timestamp", LocalDateTime.now().toString());
-        body.put("status", String.valueOf(status.value()));
-        body.put("error", status.getReasonPhrase());
-        body.put("message", message);
-        body.put("path", request.getRequestURI());
-        return new ResponseEntity<>(body, status);
+    protected ResponseEntity<ExceptionResponse> buildResponse(
+            HttpStatus status,
+            String message,
+            ExceptionType type,
+            HttpServletRequest request
+    ) {
+        ExceptionResponse response = ExceptionResponse.builder()
+                .status(status.value())
+                .type(type)
+                .message(message)
+                .path(request.getRequestURI())
+                .build();
+
+        return new ResponseEntity<>(response, status);
     }
 }
+
