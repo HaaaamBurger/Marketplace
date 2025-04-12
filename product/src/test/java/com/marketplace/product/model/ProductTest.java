@@ -12,7 +12,7 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class ProductValidationTest {
+class ProductTest {
 
     private static Validator validator;
 

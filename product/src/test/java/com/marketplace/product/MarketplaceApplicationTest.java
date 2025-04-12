@@ -14,8 +14,9 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -35,25 +36,42 @@ class ProductControllerIntegrationTest {
     @BeforeEach
     void setUp() {
         productRepository.deleteAll();
-
-        product = ProductDataBuilder.buildProductWithAllFields()
-                .build();
-
-        product = productRepository.save(product);
     }
 
     @Test
     void getAllProducts_ShouldReturnList() throws Exception {
-        mockMvc.perform(get("/all"))
+
+        product = ProductDataBuilder.buildProductWithAllFields().build();
+        product = productRepository.save(product);
+
+        String response = mockMvc.perform(get("/all"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].name").value("Test Product"));
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        Product[] products = objectMapper.readValue(response, Product[].class);
+
+        assertEquals("Test Product", products[0].getName());
     }
 
     @Test
     void getProductById_ShouldReturnProduct() throws Exception {
-        mockMvc.perform(get("/" + product.getId()))
+
+        product = ProductDataBuilder.buildProductWithAllFields().build();
+        product = productRepository.save(product);
+
+        String response = mockMvc.perform(get("/" + product.getId()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name").value("Test Product"));
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        Product actual = objectMapper.readValue(response, Product.class);
+
+        assertEquals("Test Product", actual.getName());
+        assertEquals(product.getId(), actual.getId());
+        assertEquals(product.getPrice(), actual.getPrice());
     }
 
     @Test
@@ -64,27 +82,52 @@ class ProductControllerIntegrationTest {
                 .price(BigDecimal.valueOf(59.99))
                 .build();
 
-        mockMvc.perform(post("/create")
+        String response = mockMvc.perform(post("/create")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(newProduct)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name").value("New Product"));
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        Product actual = objectMapper.readValue(response, Product.class);
+
+        assertEquals("New Product", actual.getName());
+        assertEquals("New Desc", actual.getDescription());
+        assertEquals(BigDecimal.valueOf(59.99), actual.getPrice());
     }
 
     @Test
     void updateProduct_ShouldReturnUpdatedProduct() throws Exception {
+
+        product = ProductDataBuilder.buildProductWithAllFields().build();
+        product = productRepository.save(product);
+
         product.setName("Updated Name");
 
-        mockMvc.perform(put("/" + product.getId())
+        String response = mockMvc.perform(put("/" + product.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(product)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name").value("Updated Name"));
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        Product actual = objectMapper.readValue(response, Product.class);
+
+        assertEquals("Updated Name", actual.getName());
     }
 
     @Test
     void deleteProduct_ShouldRemoveProduct() throws Exception {
+
+        product = ProductDataBuilder.buildProductWithAllFields().build();
+        product = productRepository.save(product);
+
         mockMvc.perform(delete("/" + product.getId()))
                 .andExpect(status().isOk());
+
+        mockMvc.perform(get("/" + product.getId()))
+                .andExpect(status().isNotFound());
     }
 }
