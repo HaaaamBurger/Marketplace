@@ -11,7 +11,6 @@ import com.marketplace.auth.web.rest.dto.AuthResponse;
 import com.marketplace.auth.exception.ExceptionResponse;
 import com.marketplace.auth.web.util.AuthRequestDataBuilder;
 import com.marketplace.auth.web.util.UserDataBuilder;
-import jakarta.persistence.EntityExistsException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,7 +25,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
-import javax.security.auth.login.CredentialException;
 import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -216,5 +214,31 @@ class AuthenticationControllerIntegrationTest {
         assertThat(exceptionResponse.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
         assertThat(exceptionResponse.getType()).isEqualTo(ExceptionType.AUTHORIZATION);
         assertThat(exceptionResponse.getMessage()).isEqualTo("Token not valid!");
+    }
+
+    @Test
+    public void shouldSignUpUserAndReturnSuccessfulResponseWithAuditing() throws Exception {
+        AuthRequest authRequest = AuthRequestDataBuilder.withAllFields().build();
+
+        String contentAsString = mockMvc.perform(post("/sign-up")
+                        .content(objectMapper.writeValueAsString(authRequest))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        assertThat(contentAsString).isEqualTo("User successfully created!");
+
+        Optional<User> optionalUser = userRepository.findByEmail(authRequest.getEmail());
+
+        assertThat(optionalUser).isPresent();
+
+        User user = optionalUser.get();
+        assertThat(user.getEmail()).isEqualTo(authRequest.getEmail());
+
+        boolean matches = passwordEncoder.matches(authRequest.getPassword(), user.getPassword());
+        assertThat(matches).isTrue();
+        assertThat(user.getCreatedAt()).isNotNull();
+        assertThat(user.getUpdatedAt()).isNotNull();
+        assertThat(user.getCreatedAt()).isEqualToIgnoringNanos(user.getUpdatedAt());
     }
 }
