@@ -2,7 +2,7 @@ package com.marketplace.product;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marketplace.product.model.Product;
-import com.marketplace.product.web.rest.ProductRepository;
+import com.marketplace.product.web.rest.repository.ProductRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

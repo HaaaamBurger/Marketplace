@@ -1,7 +1,7 @@
 spring:
   data:
     mongodb:
-      uri: mongodb://localhost:27017/marketplace
+      uri: ${MONGO_DB_URI}
 server:
   servlet:
     context-path: /api/product

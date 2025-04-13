@@ -1,7 +1,8 @@
-package com.marketplace.product.web.rest;
+package com.marketplace.product.web.rest.service;
 
 import com.marketplace.product.exception.ProductNotFoundException;
 import com.marketplace.product.model.Product;
+import com.marketplace.product.web.rest.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
