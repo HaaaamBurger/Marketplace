@@ -111,5 +111,4 @@ class ProductTest {
         assertFalse(violations.isEmpty());
         assertTrue(violations.stream().anyMatch(v -> v.getMessage().contains("digits")));
     }
-
 }

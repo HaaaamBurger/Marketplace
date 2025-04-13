@@ -41,7 +41,7 @@ class ProductServiceTest {
     @Test
     void shouldReturnProductById() {
         Product product = ProductDataBuilder.buildProductWithAllFields().build();
-        UUID id = product.getId();
+        String id = product.getId();
         when(productRepository.findById(id)).thenReturn(Optional.of(product));
 
         Product result = productService.getProductById(id);
@@ -51,7 +51,7 @@ class ProductServiceTest {
 
     @Test
     void shouldThrowExceptionIfProductNotFound() {
-        UUID id = UUID.randomUUID();
+        String id = UUID.randomUUID().toString();
         when(productRepository.findById(id)).thenReturn(Optional.empty());
 
         Exception exception = assertThrows(RuntimeException.class, () -> {
@@ -75,7 +75,7 @@ class ProductServiceTest {
     @Test
     void shouldUpdateProduct() {
         Product original = ProductDataBuilder.buildProductWithAllFields().build();
-        UUID id = original.getId();
+        String id = original.getId();
         Product updated = ProductDataBuilder.buildProductWithAllFields()
                 .id(id)
                 .name("Updated Name")
@@ -96,7 +96,7 @@ class ProductServiceTest {
     @Test
     void shouldDeleteProduct() {
         Product product = ProductDataBuilder.buildProductWithAllFields().build();
-        UUID id = product.getId();
+        String id = product.getId();
         when(productRepository.findById(id)).thenReturn(Optional.of(product));
 
         productService.deleteProduct(id);
@@ -104,4 +104,3 @@ class ProductServiceTest {
         verify(productRepository, times(1)).delete(product);
     }
 }
-

@@ -2,7 +2,6 @@ package com.marketplace.product;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marketplace.product.model.Product;
-import com.marketplace.product.util.ProductDataBuilder;
 import com.marketplace.product.web.rest.ProductRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,9 +13,9 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -31,8 +30,6 @@ class ProductControllerIntegrationTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    private Product product;
-
     @BeforeEach
     void setUp() {
         productRepository.deleteAll();
@@ -40,92 +37,89 @@ class ProductControllerIntegrationTest {
 
     @Test
     void getAllProducts_ShouldReturnList() throws Exception {
+        Product product = new Product();
+        product.setName("Test Product");
+        product.setDescription("Test Description");
+        product.setPrice(BigDecimal.valueOf(99.99));
+        productRepository.save(product);
 
-        product = ProductDataBuilder.buildProductWithAllFields().build();
-        product = productRepository.save(product);
-
-        String response = mockMvc.perform(get("/all"))
+        mockMvc.perform(get("/all"))
                 .andExpect(status().isOk())
-                .andReturn()
-                .getResponse()
-                .getContentAsString();
-
-        Product[] products = objectMapper.readValue(response, Product[].class);
-
-        assertEquals("Test Product", products[0].getName());
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].name", is("Test Product")));
     }
 
     @Test
     void getProductById_ShouldReturnProduct() throws Exception {
-
-        product = ProductDataBuilder.buildProductWithAllFields().build();
+        Product product = new Product();
+        product.setName("Test Product");
+        product.setDescription("Test Description");
+        product.setPrice(BigDecimal.valueOf(99.99));
         product = productRepository.save(product);
 
-        String response = mockMvc.perform(get("/" + product.getId()))
+        mockMvc.perform(get("/" + product.getId()))
                 .andExpect(status().isOk())
-                .andReturn()
-                .getResponse()
-                .getContentAsString();
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.id", is(product.getId())))
+                .andExpect(jsonPath("$.name", is("Test Product")));
+    }
 
-        Product actual = objectMapper.readValue(response, Product.class);
+    @Test
+    void getProductById_ShouldReturn404_WhenNotFound() throws Exception {
+        String invalidId = "nonexistent-id-123";
 
-        assertEquals("Test Product", actual.getName());
-        assertEquals(product.getId(), actual.getId());
-        assertEquals(product.getPrice(), actual.getPrice());
+        mockMvc.perform(get("/" + invalidId))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message", containsString("not found")));
     }
 
     @Test
     void createProduct_ShouldReturnCreatedProduct() throws Exception {
-        Product newProduct = ProductDataBuilder.buildProductWithAllFields()
-                .name("New Product")
-                .description("New Desc")
-                .price(BigDecimal.valueOf(59.99))
-                .build();
+        Product product = new Product();
+        product.setName("New Product");
+        product.setDescription("Some Description");
+        product.setPrice(BigDecimal.valueOf(49.99));
 
-        String response = mockMvc.perform(post("/create")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(newProduct)))
-                .andExpect(status().isOk())
-                .andReturn()
-                .getResponse()
-                .getContentAsString();
-
-        Product actual = objectMapper.readValue(response, Product.class);
-
-        assertEquals("New Product", actual.getName());
-        assertEquals("New Desc", actual.getDescription());
-        assertEquals(BigDecimal.valueOf(59.99), actual.getPrice());
-    }
-
-    @Test
-    void updateProduct_ShouldReturnUpdatedProduct() throws Exception {
-
-        product = ProductDataBuilder.buildProductWithAllFields().build();
-        product = productRepository.save(product);
-
-        product.setName("Updated Name");
-
-        String response = mockMvc.perform(put("/" + product.getId())
+        mockMvc.perform(post("/create")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(product)))
                 .andExpect(status().isOk())
-                .andReturn()
-                .getResponse()
-                .getContentAsString();
+                .andExpect(jsonPath("$.name", is("New Product")))
+                .andExpect(jsonPath("$.description", is("Some Description")));
+    }
 
-        Product actual = objectMapper.readValue(response, Product.class);
+    @Test
+    void updateProduct_ShouldUpdateAndReturnProduct() throws Exception {
+        Product product = new Product();
+        product.setName("Old Product");
+        product.setDescription("Old Desc");
+        product.setPrice(BigDecimal.valueOf(10.00));
+        product = productRepository.save(product);
 
-        assertEquals("Updated Name", actual.getName());
+        product.setName("Updated Product");
+        product.setDescription("Updated Desc");
+        product.setPrice(BigDecimal.valueOf(123.45));
+
+        mockMvc.perform(put("/" + product.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(product)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name", is("Updated Product")))
+                .andExpect(jsonPath("$.description", is("Updated Desc")));
     }
 
     @Test
     void deleteProduct_ShouldRemoveProduct() throws Exception {
-
-        product = ProductDataBuilder.buildProductWithAllFields().build();
+        Product product = new Product();
+        product.setName("To Delete");
+        product.setDescription("Delete Desc");
+        product.setPrice(BigDecimal.valueOf(12.34));
         product = productRepository.save(product);
 
         mockMvc.perform(delete("/" + product.getId()))
                 .andExpect(status().isOk());
+
 
         mockMvc.perform(get("/" + product.getId()))
                 .andExpect(status().isNotFound());

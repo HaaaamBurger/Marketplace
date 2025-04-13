@@ -1,9 +1,9 @@
 package com.marketplace.product.config;
 
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
+import org.springframework.data.mongodb.config.EnableMongoAuditing;
 
 @Configuration
-@EnableJpaAuditing
-public class JpaConfig {
+@EnableMongoAuditing
+public class MongoConfig {
 }

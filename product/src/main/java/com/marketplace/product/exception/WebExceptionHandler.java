@@ -1,6 +1,6 @@
 package com.marketplace.product.exception;
 
-import jakarta.persistence.EntityExistsException;
+
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
@@ -34,9 +34,9 @@ public class WebExceptionHandler extends ResponseEntityExceptionHandler {
                 );
     }
 
-    @ExceptionHandler(EntityExistsException.class)
-    public ResponseEntity<ExceptionResponse> handleEntityExistsException(
-            EntityExistsException exception, HttpServletRequest request) {
+    @ExceptionHandler(ResourceAlreadyExistsException.class)
+    public ResponseEntity<ExceptionResponse> handleResourceAlreadyExistsException(
+            ResourceAlreadyExistsException exception, HttpServletRequest request) {
 
         return ResponseEntity
                 .status(HttpStatus.CONFLICT)
@@ -48,6 +48,7 @@ public class WebExceptionHandler extends ResponseEntityExceptionHandler {
                         .build()
                 );
     }
+
 
     @ExceptionHandler(ProductNotFoundException.class)
     public ResponseEntity<ExceptionResponse> handleProductNotFoundException(

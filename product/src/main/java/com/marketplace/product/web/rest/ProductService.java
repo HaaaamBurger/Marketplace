@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
+
 
 @Service
 @RequiredArgsConstructor
@@ -19,7 +19,7 @@ public class ProductService {
         return productRepository.findAll();
     }
 
-    public Product getProductById(UUID id) {
+    public Product getProductById(String id) {
         return findProductByIdOrThrowException(id);
     }
 
@@ -27,7 +27,7 @@ public class ProductService {
         return productRepository.save(product);
     }
 
-    public Product updateProduct(UUID id, Product updatedProduct) {
+    public Product updateProduct(String id, Product updatedProduct) {
         Product existingProduct = findProductByIdOrThrowException(id);
 
         Optional.ofNullable(updatedProduct.getName()).ifPresent(existingProduct::setName);
@@ -37,12 +37,12 @@ public class ProductService {
         return productRepository.save(existingProduct);
     }
 
-    public void deleteProduct(UUID id) {
+    public void deleteProduct(String id) {
         Product product = findProductByIdOrThrowException(id);
         productRepository.delete(product);
     }
 
-    private Product findProductByIdOrThrowException(UUID id) {
+    private Product findProductByIdOrThrowException(String id) {
         return productRepository.findById(id)
                 .orElseThrow(() -> new ProductNotFoundException("Product not found with id: " + id));
     }
