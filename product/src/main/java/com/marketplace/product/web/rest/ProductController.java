@@ -1,8 +1,8 @@
-package com.marketplace.product.web.rest.controler;
+package com.marketplace.product.web.rest;
 
-import com.marketplace.product.model.Product;
+import com.marketplace.product.web.model.Product;
 
-import com.marketplace.product.web.rest.service.ProductService;
+import com.marketplace.product.service.ProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -37,7 +37,10 @@ public class ProductController {
     }
 
     @PutMapping("/{productId}")
-    public ResponseEntity<Product> updateProduct(@Valid @PathVariable String productId, @RequestBody Product updatedProduct) {
+    public ResponseEntity<Product> updateProduct(
+            @Valid @PathVariable String productId,
+            @RequestBody Product updatedProduct
+    ) {
         return ResponseEntity.ok(productService.updateProduct(productId, updatedProduct));
     }
 

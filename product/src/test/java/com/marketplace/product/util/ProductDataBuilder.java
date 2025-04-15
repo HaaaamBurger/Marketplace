@@ -1,6 +1,6 @@
 package com.marketplace.product.util;
 
-import com.marketplace.product.model.Product;
+import com.marketplace.product.web.model.Product;
 
 import java.math.BigDecimal;
 import java.util.UUID;

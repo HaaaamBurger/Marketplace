@@ -1,9 +1,8 @@
 package com.marketplace.product.service;
 
-import com.marketplace.product.model.Product;
+import com.marketplace.product.web.model.Product;
 import com.marketplace.product.util.ProductDataBuilder;
-import com.marketplace.product.web.rest.repository.ProductRepository;
-import com.marketplace.product.web.rest.service.ProductService;
+import com.marketplace.product.repository.ProductRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;

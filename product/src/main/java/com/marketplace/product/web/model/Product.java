@@ -1,4 +1,4 @@
-package com.marketplace.product.model;
+package com.marketplace.product.web.model;
 
 import jakarta.validation.constraints.*;
 import lombok.*;
@@ -9,13 +9,12 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import java.math.BigDecimal;
 
 @Data
-@Builder(toBuilder = true)
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(callSuper = true)
+@Builder(toBuilder = true)
 @Document(collection = "products")
+@EqualsAndHashCode(callSuper = true)
 public class Product extends AuditableEntity {
-
 
     @Id
     private String id;
@@ -33,4 +32,3 @@ public class Product extends AuditableEntity {
     @Digits(integer = 8, fraction = 2, message = "Price must have up to 8 digits before the decimal point and 2 after")
     private BigDecimal price;
 }
-

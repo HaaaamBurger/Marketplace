@@ -49,7 +49,6 @@ public class WebExceptionHandler extends ResponseEntityExceptionHandler {
                 );
     }
 
-
     @ExceptionHandler(ProductNotFoundException.class)
     public ResponseEntity<ExceptionResponse> handleProductNotFoundException(
             ProductNotFoundException exception, HttpServletRequest request) {

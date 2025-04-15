@@ -1,5 +1,6 @@
 package com.marketplace.product.model;
 
+import com.marketplace.product.web.model.Product;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;

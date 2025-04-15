@@ -1,14 +1,13 @@
-package com.marketplace.product.web.rest.service;
+package com.marketplace.product.service;
 
 import com.marketplace.product.exception.ProductNotFoundException;
-import com.marketplace.product.model.Product;
-import com.marketplace.product.web.rest.repository.ProductRepository;
+import com.marketplace.product.web.model.Product;
+import com.marketplace.product.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
-
 
 @Service
 @RequiredArgsConstructor
