@@ -5,4 +5,4 @@ spring:
 server:
   servlet:
     context-path: /api/product
-
+  port: 8060
