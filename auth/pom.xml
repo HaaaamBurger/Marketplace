@@ -6,7 +6,8 @@
     <parent>
         <groupId>com.main</groupId>
         <artifactId>Marketplace</artifactId>
-        <version>0.0.1-SNAPSHOT</version>
+        <version>0.0.1</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>auth</artifactId>

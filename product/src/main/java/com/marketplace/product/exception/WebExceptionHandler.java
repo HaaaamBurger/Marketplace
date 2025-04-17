@@ -1,6 +1,8 @@
 package com.marketplace.product.exception;
 
 
+import com.marketplace.auth.exception.ExceptionResponse;
+import com.marketplace.auth.exception.ExceptionType;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
