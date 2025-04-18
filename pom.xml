@@ -23,6 +23,7 @@
 	</developers>
     <modules>
         <module>auth</module>
+        <module>main</module>
 		<module>product</module>
 		<module>order</module>
 	</modules>
