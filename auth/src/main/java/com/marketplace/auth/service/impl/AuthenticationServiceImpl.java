@@ -1,9 +1,10 @@
-package com.marketplace.auth.service;
+package com.marketplace.auth.service.impl;
 
 import com.marketplace.auth.exception.EntityExistsException;
 import com.marketplace.auth.exception.TokenNotValidException;
 import com.marketplace.auth.repository.UserRepository;
 import com.marketplace.auth.security.JwtService;
+import com.marketplace.auth.service.AuthenticationService;
 import com.marketplace.auth.web.model.User;
 import com.marketplace.auth.web.model.UserRole;
 import com.marketplace.auth.web.rest.dto.AuthRefreshRequest;

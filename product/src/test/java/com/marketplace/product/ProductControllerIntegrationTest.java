@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
@@ -19,6 +20,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@ActiveProfiles("test")
 class ProductControllerIntegrationTest {
 
     @Autowired
@@ -43,7 +45,7 @@ class ProductControllerIntegrationTest {
         product.setPrice(BigDecimal.valueOf(99.99));
         productRepository.save(product);
 
-        mockMvc.perform(get("/all"))
+        mockMvc.perform(get("/product/all"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$", hasSize(1)))
@@ -58,7 +60,7 @@ class ProductControllerIntegrationTest {
         product.setPrice(BigDecimal.valueOf(99.99));
         product = productRepository.save(product);
 
-        mockMvc.perform(get("/" + product.getId()))
+        mockMvc.perform(get("/product/" + product.getId()))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.id", is(product.getId())))
@@ -69,7 +71,7 @@ class ProductControllerIntegrationTest {
     void getProductById_ShouldReturn404_WhenNotFound() throws Exception {
         String invalidId = "nonexistent-id-123";
 
-        mockMvc.perform(get("/" + invalidId))
+        mockMvc.perform(get("/product/" + invalidId))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message", containsString("not found")));
     }
@@ -81,7 +83,7 @@ class ProductControllerIntegrationTest {
         product.setDescription("Some Description");
         product.setPrice(BigDecimal.valueOf(49.99));
 
-        mockMvc.perform(post("/create")
+        mockMvc.perform(post("/product/create")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(product)))
                 .andExpect(status().isOk())
@@ -101,7 +103,7 @@ class ProductControllerIntegrationTest {
         product.setDescription("Updated Desc");
         product.setPrice(BigDecimal.valueOf(123.45));
 
-        mockMvc.perform(put("/" + product.getId())
+        mockMvc.perform(put("/product/" + product.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(product)))
                 .andExpect(status().isOk())
@@ -117,11 +119,11 @@ class ProductControllerIntegrationTest {
         product.setPrice(BigDecimal.valueOf(12.34));
         product = productRepository.save(product);
 
-        mockMvc.perform(delete("/" + product.getId()))
+        mockMvc.perform(delete("/product/" + product.getId()))
                 .andExpect(status().isOk());
 
 
-        mockMvc.perform(get("/" + product.getId()))
+        mockMvc.perform(get("/product/" + product.getId()))
                 .andExpect(status().isNotFound());
     }
 }
