@@ -1,0 +1,6 @@
+spring:
+  application:
+    name: product-test
+  data:
+    mongodb:
+      uri: ${MONGO_DB_URI}

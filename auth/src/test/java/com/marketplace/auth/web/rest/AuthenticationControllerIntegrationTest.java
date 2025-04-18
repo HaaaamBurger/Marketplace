@@ -72,7 +72,7 @@ class AuthenticationControllerIntegrationTest {
     public void shouldSignUpUserAndReturnSuccessfulResponse() throws Exception {
         AuthRequest authRequest = AuthRequestDataBuilder.withAllFields().build();
 
-        String contentAsString = mockMvc.perform(post("/sign-up")
+        String contentAsString = mockMvc.perform(post("/auth/sign-up")
                         .content(objectMapper.writeValueAsString(authRequest))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -94,7 +94,7 @@ class AuthenticationControllerIntegrationTest {
         AuthRequest authRequest = AuthRequestDataBuilder.withAllFields().build();
         userRepository.save(UserDataBuilder.buildUserWithAllFields().build());
 
-        String contentAsString = mockMvc.perform(post("/sign-up")
+        String contentAsString = mockMvc.perform(post("/auth/sign-up")
                         .content(objectMapper.writeValueAsString(authRequest))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
@@ -114,7 +114,7 @@ class AuthenticationControllerIntegrationTest {
                         .password(passwordEncoder.encode(authRequest.getPassword()))
                 .build());
 
-        String contentAsString = mockMvc.perform(post("/sign-in")
+        String contentAsString = mockMvc.perform(post("/auth/sign-in")
                         .content(objectMapper.writeValueAsString(authRequest))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -133,7 +133,7 @@ class AuthenticationControllerIntegrationTest {
     public void shouldThrowExceptionWhenSignInUserDoesNotExist() throws Exception {
         AuthRequest authRequest = AuthRequestDataBuilder.withAllFields().build();
 
-        String contentAsString = mockMvc.perform(post("/sign-in")
+        String contentAsString = mockMvc.perform(post("/auth/sign-in")
                         .content(objectMapper.writeValueAsString(authRequest))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized())
@@ -156,7 +156,7 @@ class AuthenticationControllerIntegrationTest {
 
         authRequest.setPassword("testPassword2");
 
-        String contentAsString = mockMvc.perform(post("/sign-in")
+        String contentAsString = mockMvc.perform(post("/auth/sign-in")
                         .content(objectMapper.writeValueAsString(authRequest))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
@@ -178,7 +178,7 @@ class AuthenticationControllerIntegrationTest {
 
         userRepository.save(user);
 
-        String contentAsString = mockMvc.perform(post("/refresh-token")
+        String contentAsString = mockMvc.perform(post("/auth/refresh-token")
                         .content(objectMapper.writeValueAsString(authRefreshRequest))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -202,7 +202,7 @@ class AuthenticationControllerIntegrationTest {
 
         userRepository.save(user);
 
-        String contentAsString = mockMvc.perform(post("/refresh-token")
+        String contentAsString = mockMvc.perform(post("/auth/refresh-token")
                         .content(objectMapper.writeValueAsString(authRefreshRequest))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
@@ -220,7 +220,7 @@ class AuthenticationControllerIntegrationTest {
     public void shouldSignUpUserAndReturnSuccessfulResponseWithAuditing() throws Exception {
         AuthRequest authRequest = AuthRequestDataBuilder.withAllFields().build();
 
-        String contentAsString = mockMvc.perform(post("/sign-up")
+        String contentAsString = mockMvc.perform(post("/auth/sign-up")
                         .content(objectMapper.writeValueAsString(authRequest))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
