@@ -1,6 +1,6 @@
 spring:
   application:
-    name: auth
+    name: main
   data:
     mongodb:
       uri: ${MONGO_DB_URI}
@@ -9,3 +9,6 @@ security:
     secret-key: ${JWT_SECRET_KEY}
     access-expiration-time: ${JWT_ACCESS_EXPIRATION_TIME}
     refresh-expiration-time: ${JWT_REFRESH_EXPIRATION_TIME}
+server:
+  servlet:
+    context-path: /api
