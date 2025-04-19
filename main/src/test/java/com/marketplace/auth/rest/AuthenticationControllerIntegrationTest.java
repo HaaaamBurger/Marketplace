@@ -1,16 +1,16 @@
-package com.marketplace.auth.web.rest;
+package com.marketplace.auth.rest;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.marketplace.auth.exception.ExceptionResponse;
 import com.marketplace.auth.exception.ExceptionType;
 import com.marketplace.auth.repository.UserRepository;
 import com.marketplace.auth.security.JwtService;
+import com.marketplace.auth.util.AuthRequestDataBuilder;
+import com.marketplace.auth.util.UserDataBuilder;
 import com.marketplace.auth.web.model.User;
 import com.marketplace.auth.web.rest.dto.AuthRefreshRequest;
 import com.marketplace.auth.web.rest.dto.AuthRequest;
 import com.marketplace.auth.web.rest.dto.AuthResponse;
-import com.marketplace.auth.exception.ExceptionResponse;
-import com.marketplace.auth.web.util.AuthRequestDataBuilder;
-import com.marketplace.auth.web.util.UserDataBuilder;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,7 +22,6 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Optional;
@@ -33,7 +32,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@ActiveProfiles("test")
 class AuthenticationControllerIntegrationTest {
 
     @Autowired
