@@ -1,12 +1,12 @@
-package com.marketplace.auth.rest;
+package com.marketplace.main.auth;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marketplace.auth.exception.ExceptionResponse;
 import com.marketplace.auth.exception.ExceptionType;
 import com.marketplace.auth.repository.UserRepository;
 import com.marketplace.auth.security.JwtService;
-import com.marketplace.auth.util.AuthRequestDataBuilder;
-import com.marketplace.auth.util.UserDataBuilder;
+import com.marketplace.main.util.AuthRequestDataBuilder;
+import com.marketplace.main.util.UserDataBuilder;
 import com.marketplace.auth.web.model.User;
 import com.marketplace.auth.web.rest.dto.AuthRefreshRequest;
 import com.marketplace.auth.web.rest.dto.AuthRequest;

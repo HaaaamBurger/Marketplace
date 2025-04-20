@@ -1,4 +1,4 @@
-package com.marketplace.product.util;
+package com.marketplace.main.util;
 
 import com.marketplace.product.web.model.Product;
 
