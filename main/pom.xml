@@ -12,6 +12,7 @@
 	</parent>
 
 	<artifactId>main</artifactId>
+	<version>0.0.1</version>
 
 	<properties>
 		<maven.compiler.source>17</maven.compiler.source>
@@ -29,6 +30,11 @@
 			<groupId>com.main</groupId>
 			<artifactId>product</artifactId>
 			<version>0.0.1</version>
+		</dependency>
+		<dependency>
+			<groupId>com.main</groupId>
+			<artifactId>common</artifactId>
+			<version>0.0.2</version>
 		</dependency>
 	</dependencies>
 
