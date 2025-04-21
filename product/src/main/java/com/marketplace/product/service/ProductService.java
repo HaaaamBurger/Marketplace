@@ -1,6 +1,6 @@
 package com.marketplace.product.service;
 
-import com.marketplace.product.exception.ProductNotFoundException;
+import com.main.common.exception.EntityNotFoundException;
 import com.marketplace.product.web.model.Product;
 import com.marketplace.product.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
@@ -44,7 +44,7 @@ public class ProductService {
 
     private Product findProductByIdOrThrowException(String id) {
         return productRepository.findById(id)
-                .orElseThrow(() -> new ProductNotFoundException("Product not found with id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Product not found with id: " + id));
     }
 
 }

@@ -1,6 +1,7 @@
 package com.marketplace.product.rest;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.main.common.exception.MainExceptionHandler;
 import com.marketplace.product.web.model.Product;
 import com.marketplace.product.repository.ProductRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -8,6 +9,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Import;
+import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -19,6 +23,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@Import(MainExceptionHandler.class)
 class ProductControllerIntegrationTest {
 
     @Autowired
@@ -30,8 +35,15 @@ class ProductControllerIntegrationTest {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @Autowired
+    private ApplicationContext applicationContext;
+
     @BeforeEach
     void setUp() {
+        applicationContext.getBeansOfType(MongoRepository.class)
+                .values()
+                .forEach(MongoRepository::deleteAll);
+
         productRepository.deleteAll();
     }
 

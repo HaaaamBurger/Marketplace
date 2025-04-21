@@ -1,4 +1,4 @@
-package com.marketplace.auth.exception;
+package com.main.common.exception;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolation;
@@ -13,7 +13,7 @@ import javax.security.auth.login.CredentialException;
 import java.util.stream.Collectors;
 
 @RestControllerAdvice
-public class WebExceptionHandler extends ResponseEntityExceptionHandler {
+public class MainExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<ExceptionResponse> handleConstraintViolationException(ConstraintViolationException exception, HttpServletRequest request) {
@@ -51,19 +51,6 @@ public class WebExceptionHandler extends ResponseEntityExceptionHandler {
         return ResponseEntity.badRequest().body(
                 ExceptionResponse.builder()
                         .status(HttpStatusCode.valueOf(401).value())
-                        .type(ExceptionType.AUTHORIZATION)
-                        .path(request.getRequestURI())
-                        .message(exception.getMessage())
-                        .build()
-        );
-    }
-
-    @ExceptionHandler(TokenNotValidException.class)
-    public ResponseEntity<ExceptionResponse> handleTokenNotValidException(TokenNotValidException exception, HttpServletRequest request) {
-
-        return ResponseEntity.badRequest().body(
-                ExceptionResponse.builder()
-                        .status(HttpStatusCode.valueOf(400).value())
                         .type(ExceptionType.AUTHORIZATION)
                         .path(request.getRequestURI())
                         .message(exception.getMessage())

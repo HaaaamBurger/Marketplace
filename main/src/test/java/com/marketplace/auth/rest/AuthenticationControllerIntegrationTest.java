@@ -1,8 +1,9 @@
 package com.marketplace.auth.rest;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.marketplace.auth.exception.ExceptionResponse;
-import com.marketplace.auth.exception.ExceptionType;
+import com.main.common.exception.ExceptionResponse;
+import com.main.common.exception.ExceptionType;
+import com.main.common.exception.MainExceptionHandler;
 import com.marketplace.auth.repository.UserRepository;
 import com.marketplace.auth.security.JwtService;
 import com.marketplace.auth.util.AuthRequestDataBuilder;
@@ -11,14 +12,12 @@ import com.marketplace.auth.web.model.User;
 import com.marketplace.auth.web.rest.dto.AuthRefreshRequest;
 import com.marketplace.auth.web.rest.dto.AuthRequest;
 import com.marketplace.auth.web.rest.dto.AuthResponse;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.ApplicationContext;
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -32,6 +31,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@Import(MainExceptionHandler.class)
 class AuthenticationControllerIntegrationTest {
 
     @Autowired
@@ -47,23 +47,11 @@ class AuthenticationControllerIntegrationTest {
     private PasswordEncoder passwordEncoder;
 
     @Autowired
-    private ApplicationContext applicationContext;
-
-    @Autowired
     private JwtService jwtService;
 
     @BeforeEach()
     public void setUp() {
-        applicationContext.getBeansOfType(CrudRepository.class)
-                .values()
-                .forEach(CrudRepository::deleteAll);
-    }
-
-    @AfterEach
-    public void tearDown() {
-        applicationContext.getBeansOfType(CrudRepository.class)
-                .values()
-                .forEach(CrudRepository::deleteAll);
+        userRepository.deleteAll();
     }
 
     @Test
