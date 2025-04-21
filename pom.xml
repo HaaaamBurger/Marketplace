@@ -17,6 +17,7 @@
 
     <modules>
         <module>main</module>
+        <module>common</module>
         <module>auth</module>
 		<module>product</module>
 	</modules>

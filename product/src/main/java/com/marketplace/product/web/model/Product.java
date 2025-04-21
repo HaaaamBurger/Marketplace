@@ -1,5 +1,6 @@
 package com.marketplace.product.web.model;
 
+import com.main.common.model.AuditableEntity;
 import jakarta.validation.constraints.*;
 import lombok.*;
 import lombok.EqualsAndHashCode;
