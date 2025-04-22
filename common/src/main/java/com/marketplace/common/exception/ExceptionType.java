@@ -1,4 +1,4 @@
-package com.marketplace.auth.exception;
+package com.marketplace.common.exception;
 
 public enum ExceptionType {
     WEB,
