@@ -1,7 +1,7 @@
 package com.marketplace.product.rest;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.main.common.exception.MainExceptionHandler;
+import com.marketplace.common.exception.MainExceptionHandler;
 import com.marketplace.product.web.model.Product;
 import com.marketplace.product.repository.ProductRepository;
 import org.junit.jupiter.api.BeforeEach;
