@@ -1,4 +1,4 @@
-package com.main.common.exception;
+package com.marketplace.common.exception;
 
 public class EntityExistsException extends RuntimeException {
     public EntityExistsException(String message) {

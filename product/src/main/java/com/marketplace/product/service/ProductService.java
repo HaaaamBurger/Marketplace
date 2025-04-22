@@ -1,6 +1,6 @@
 package com.marketplace.product.service;
 
-import com.main.common.exception.EntityNotFoundException;
+import com.marketplace.common.exception.EntityNotFoundException;
 import com.marketplace.product.web.model.Product;
 import com.marketplace.product.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;

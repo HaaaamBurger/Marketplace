@@ -1,4 +1,4 @@
-package com.main.common;
+package com.marketplace.common;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

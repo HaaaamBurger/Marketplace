@@ -5,7 +5,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>com.main</groupId>
+		<groupId>com.marketplace</groupId>
 		<artifactId>Marketplace</artifactId>
 		<version>0.0.1</version>
 		<relativePath>../pom.xml</relativePath>
@@ -22,19 +22,19 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>com.main</groupId>
+			<groupId>com.marketplace</groupId>
 			<artifactId>auth</artifactId>
 			<version>0.0.1</version>
 		</dependency>
 		<dependency>
-			<groupId>com.main</groupId>
+			<groupId>com.marketplace</groupId>
 			<artifactId>product</artifactId>
 			<version>0.0.1</version>
 		</dependency>
 		<dependency>
-			<groupId>com.main</groupId>
+			<groupId>com.marketplace</groupId>
 			<artifactId>common</artifactId>
-			<version>0.0.1</version>
+			<version>0.0.4</version>
 		</dependency>
 	</dependencies>
 

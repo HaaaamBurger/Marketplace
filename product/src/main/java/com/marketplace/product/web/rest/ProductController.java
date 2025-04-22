@@ -23,13 +23,11 @@ public class ProductController {
         return ResponseEntity.ok(products);
     }
 
-
     @GetMapping("/{productId}")
     public ResponseEntity<Product> getProductById(@PathVariable String productId) {
         Product product = productService.getProductById(productId);
         return ResponseEntity.ok(product);
     }
-
 
     @PostMapping("/create")
     public ResponseEntity<Product> createProduct(@Valid @RequestBody Product product) {

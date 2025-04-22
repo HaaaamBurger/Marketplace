@@ -1,9 +1,9 @@
 package com.marketplace.auth.rest;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.main.common.exception.ExceptionResponse;
-import com.main.common.exception.ExceptionType;
-import com.main.common.exception.MainExceptionHandler;
+import com.marketplace.common.exception.ExceptionResponse;
+import com.marketplace.common.exception.ExceptionType;
+import com.marketplace.common.exception.MainExceptionHandler;
 import com.marketplace.auth.repository.UserRepository;
 import com.marketplace.auth.security.JwtService;
 import com.marketplace.auth.util.AuthRequestDataBuilder;

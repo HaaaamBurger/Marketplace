@@ -1,4 +1,4 @@
-package com.main.common.exception;
+package com.marketplace.common.exception;
 
 import lombok.Builder;
 import lombok.Data;

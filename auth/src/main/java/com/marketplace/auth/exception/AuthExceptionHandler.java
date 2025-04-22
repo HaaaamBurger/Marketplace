@@ -1,16 +1,15 @@
 package com.marketplace.auth.exception;
 
-import com.main.common.exception.ExceptionResponse;
-import com.main.common.exception.ExceptionType;
+import com.marketplace.common.exception.ExceptionResponse;
+import com.marketplace.common.exception.ExceptionType;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 @RestControllerAdvice
-public class AuthExceptionHandler extends ResponseEntityExceptionHandler {
+public class AuthExceptionHandler {
 
     @ExceptionHandler(TokenNotValidException.class)
     public ResponseEntity<ExceptionResponse> handleTokenNotValidException(TokenNotValidException exception, HttpServletRequest request) {
