@@ -25,7 +25,13 @@ public class SecurityConfig {
                 .sessionManagement(sessionManager -> sessionManager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .exceptionHandling(exceptionHandlingConfigurer -> exceptionHandlingConfigurer.authenticationEntryPoint(restAuthenticationEntryPoint))
                 .authorizeHttpRequests(authorizationManagerRequestMatcherRegistry -> authorizationManagerRequestMatcherRegistry
-                    .requestMatchers("/auth/sign-in", "/auth/sign-up", "/auth/refresh-token").permitAll()
+                    .requestMatchers(
+                            "/auth/sign-in",
+                            "/auth/sign-up",
+                            "/auth/refresh-token",
+                            "/swagger-ui/**",
+                            "/v3/api-docs*/**"
+                    ).permitAll()
                     .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
