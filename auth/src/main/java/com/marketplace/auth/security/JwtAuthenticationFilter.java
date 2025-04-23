@@ -42,7 +42,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             addAuthenticationToContext(token);
         } catch (JwtException exception) {
             log.error("[JWT_AUTHENTICATION_FILTER]: {}", exception.getMessage());
-            throw new TokenNotValidException("Token not valid!!");
+            throw new TokenNotValidException("Token not valid!");
         }
 
         filterChain.doFilter(request, response);
@@ -71,7 +71,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             log.info("[JWT_AUTHENTICATION_FILTER]: Token validated successfully");
         } else {
             log.error("[JWT_AUTHENTICATION_FILTER]: Token validation failed");
-            throw new TokenNotValidException("Token not valid!!");
+            throw new TokenNotValidException("Token not valid!");
         }
     }
 

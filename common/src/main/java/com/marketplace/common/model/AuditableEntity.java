@@ -1,4 +1,4 @@
-package com.marketplace.auth.web.model;
+package com.marketplace.common.model;
 
 import lombok.Data;
 import org.springframework.data.annotation.CreatedDate;

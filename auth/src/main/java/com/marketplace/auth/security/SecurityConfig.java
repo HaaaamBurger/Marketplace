@@ -1,7 +1,5 @@
-package com.marketplace.auth.security.config;
+package com.marketplace.auth.security;
 
-import com.marketplace.auth.security.JwtAuthenticationFilter;
-import com.marketplace.auth.security.RestAuthenticationEntryPoint;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

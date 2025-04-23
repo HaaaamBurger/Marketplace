@@ -1,5 +1,6 @@
 package com.marketplace.auth.web.model;
 
+import com.marketplace.common.model.AuditableEntity;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import lombok.*;

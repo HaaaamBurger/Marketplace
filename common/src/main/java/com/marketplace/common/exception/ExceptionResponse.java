@@ -1,4 +1,4 @@
-package com.marketplace.auth.exception;
+package com.marketplace.common.exception;
 
 import lombok.Builder;
 import lombok.Data;
