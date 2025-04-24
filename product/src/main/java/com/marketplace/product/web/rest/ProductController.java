@@ -1,8 +1,8 @@
 package com.marketplace.product.web.rest;
 
+import com.marketplace.product.service.ProductService;
 import com.marketplace.product.web.model.Product;
 
-import com.marketplace.product.service.ProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

@@ -15,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @SpringBootTest
-class ProductServiceTest {
+class ProductServiceImplTest {
 
     @MockitoBean
     private ProductRepository productRepository;
