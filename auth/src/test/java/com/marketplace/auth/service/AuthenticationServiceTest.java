@@ -46,7 +46,7 @@ public class AuthenticationServiceTest {
     private AuthenticationServiceImpl authenticationService;
 
     @Test
-    public void shouldReturnTokenOnSignIn() {
+    public void signIn_shouldReturnPairOfTokens() {
         AuthRequest authRequest = AuthRequestDataBuilder.withAllFields().build();
         UserDetails mockUserDetails = mock(UserDetails.class);
         String mockAccessToken = "mockAccessToken";
@@ -67,7 +67,7 @@ public class AuthenticationServiceTest {
     }
 
     @Test
-    public void shouldThrowExceptionOnSignInWhenUserNotFound() {
+    public void signIn_shouldThrowException_WhenUserNotFound() {
         AuthRequest authRequest = AuthRequestDataBuilder.withAllFields().build();
 
         when(userDetailsService.loadUserByUsername(authRequest.getEmail())).thenThrow(EntityNotFoundException.class);
@@ -76,7 +76,7 @@ public class AuthenticationServiceTest {
     }
 
     @Test
-    public void shouldReturnMessageSignUp() {
+    public void signUp_shouldReturnMessage() {
         String encodedPassword = "encodedPassword";
         AuthRequest authRequest = AuthRequestDataBuilder.withAllFields().build();
         ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
@@ -94,7 +94,7 @@ public class AuthenticationServiceTest {
     }
 
     @Test
-    public void shouldThrowExceptionIfUserAlreadyExists() {
+    public void signUp_shouldThrowException_WhenUserAlreadyExists() {
         User mockUser = mock(User.class);
         AuthRequest authRequest = AuthRequestDataBuilder.withAllFields().build();
 
@@ -106,7 +106,7 @@ public class AuthenticationServiceTest {
     }
 
     @Test
-    public void shouldReturnNewPairOfTokensWhenOnRefreshToken() {
+    public void refreshToken_shouldReturnNewPairOfTokens() {
         String validRefreshToken = "validRefreshToken";
         String mockSubject = "mockSubject";
         String accessToken = "newAccessToken";

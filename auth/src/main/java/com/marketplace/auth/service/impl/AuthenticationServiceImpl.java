@@ -67,13 +67,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         String authRefreshToken = authRefreshRequest.getRefreshToken();
 
         try {
-            UserDetails userDetails = getUserDetailsIfTokenValid(authRefreshToken);
-
-            if (userDetails != null) {
-                return generateTokenPair(userDetails);
-            }
-
-            throw new TokenNotValidException("Token not valid!");
+            UserDetails userDetails = getUserDetailsIfTokenValidOrThrowException(authRefreshToken);
+            return generateTokenPair(userDetails);
 
         } catch (JwtException exception) {
             log.error("[AUTHENTICATION_SERVICE]: {}", exception.getMessage());
@@ -99,7 +94,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .build();
     }
 
-    private UserDetails getUserDetailsIfTokenValid(String token) {
+    private UserDetails getUserDetailsIfTokenValidOrThrowException(String token) {
         String subject = jwtService.extractSubject(token);
         UserDetails userDetails = userDetailsService.loadUserByUsername(subject);
 
@@ -109,7 +104,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             return userDetails;
         }
 
-        return null;
+        throw new TokenNotValidException("Token not valid!");
     }
 
     private void throwExceptionIfUserExistsByEmail(String email) {
