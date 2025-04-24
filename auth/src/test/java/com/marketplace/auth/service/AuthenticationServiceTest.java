@@ -19,6 +19,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
+import javax.security.auth.login.CredentialException;
 import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -72,7 +73,7 @@ public class AuthenticationServiceTest {
 
         when(userDetailsService.loadUserByUsername(authRequest.getEmail())).thenThrow(EntityNotFoundException.class);
 
-        assertThrows(EntityNotFoundException.class, () -> authenticationService.signIn(authRequest));
+        assertThrows(CredentialException.class, () -> authenticationService.signIn(authRequest));
     }
 
     @Test

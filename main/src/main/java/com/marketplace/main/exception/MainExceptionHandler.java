@@ -1,5 +1,8 @@
-package com.marketplace.common.exception;
+package com.marketplace.main.exception;
 
+import com.marketplace.common.exception.EntityExistsException;
+import com.marketplace.common.exception.ExceptionResponse;
+import com.marketplace.common.exception.ExceptionType;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
