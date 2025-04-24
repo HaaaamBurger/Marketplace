@@ -1,50 +1,19 @@
 package com.marketplace.product.service;
 
-import com.marketplace.common.exception.EntityNotFoundException;
 import com.marketplace.product.web.model.Product;
-import com.marketplace.product.repository.ProductRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
-@Service
-@RequiredArgsConstructor
-public class ProductService {
+public interface ProductService {
 
-    private final ProductRepository productRepository;
+    List<Product> getAllProducts();
 
-    public List<Product> getAllProducts() {
-        return productRepository.findAll();
-    }
+    Product getProductById(String id);
 
-    public Product getProductById(String id) {
-        return findProductByIdOrThrowException(id);
-    }
+    Product createProduct(Product product);
 
-    public Product createProduct(Product product) {
-        return productRepository.save(product);
-    }
+    Product updateProduct(String id, Product updatedProduct);
 
-    public Product updateProduct(String id, Product updatedProduct) {
-        Product existingProduct = findProductByIdOrThrowException(id);
-
-        Optional.ofNullable(updatedProduct.getName()).ifPresent(existingProduct::setName);
-        Optional.ofNullable(updatedProduct.getPrice()).ifPresent(existingProduct::setPrice);
-        Optional.ofNullable(updatedProduct.getDescription()).ifPresent(existingProduct::setDescription);
-
-        return productRepository.save(existingProduct);
-    }
-
-    public void deleteProduct(String id) {
-        Product product = findProductByIdOrThrowException(id);
-        productRepository.delete(product);
-    }
-
-    private Product findProductByIdOrThrowException(String id) {
-        return productRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Product not found with id: " + id));
-    }
+    void deleteProduct(String id);
 
 }

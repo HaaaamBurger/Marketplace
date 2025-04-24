@@ -17,6 +17,10 @@ import java.util.function.Function;
 @Service
 public class JwtService {
 
+    public static final String AUTHORIZATION_HEADER = "Authorization";
+
+    public static final String BEARER_PREFIX = "Bearer ";
+
     @Value("${security.jwt.secret-key}")
     private String jwtSecretKey;
 

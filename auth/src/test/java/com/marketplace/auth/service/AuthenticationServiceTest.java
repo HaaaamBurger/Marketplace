@@ -11,14 +11,13 @@ import com.marketplace.auth.web.rest.dto.AuthRequest;
 import com.marketplace.auth.web.rest.dto.AuthResponse;
 import com.marketplace.auth.web.util.AuthRequestDataBuilder;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.util.Optional;
 
@@ -28,26 +27,26 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
+@SpringBootTest
 public class AuthenticationServiceTest {
 
-    @Mock
+    @MockitoBean
     private UserDetailsService userDetailsService;
 
-    @Mock
+    @MockitoBean
     private UserRepository userRepository;
 
-    @Mock
+    @MockitoBean
     private PasswordEncoder passwordEncoder;
 
-    @Mock
+    @MockitoBean
     private JwtService jwtService;
 
-    @InjectMocks
+    @Autowired
     private AuthenticationServiceImpl authenticationService;
 
     @Test
-    public void shouldReturnTokenOnSignIn() {
+    public void signIn_shouldReturnPairOfTokens() {
         AuthRequest authRequest = AuthRequestDataBuilder.withAllFields().build();
         UserDetails mockUserDetails = mock(UserDetails.class);
         String mockAccessToken = "mockAccessToken";
@@ -68,7 +67,7 @@ public class AuthenticationServiceTest {
     }
 
     @Test
-    public void shouldThrowExceptionOnSignInWhenUserNotFound() {
+    public void signIn_shouldThrowException_WhenUserNotFound() {
         AuthRequest authRequest = AuthRequestDataBuilder.withAllFields().build();
 
         when(userDetailsService.loadUserByUsername(authRequest.getEmail())).thenThrow(EntityNotFoundException.class);
@@ -77,7 +76,7 @@ public class AuthenticationServiceTest {
     }
 
     @Test
-    public void shouldReturnMessageSignUp() {
+    public void signUp_shouldReturnMessage() {
         String encodedPassword = "encodedPassword";
         AuthRequest authRequest = AuthRequestDataBuilder.withAllFields().build();
         ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
@@ -95,7 +94,7 @@ public class AuthenticationServiceTest {
     }
 
     @Test
-    public void shouldThrowExceptionIfUserAlreadyExists() {
+    public void signUp_shouldThrowException_WhenUserAlreadyExists() {
         User mockUser = mock(User.class);
         AuthRequest authRequest = AuthRequestDataBuilder.withAllFields().build();
 
@@ -107,7 +106,7 @@ public class AuthenticationServiceTest {
     }
 
     @Test
-    public void shouldReturnNewPairOfTokensWhenOnRefreshToken() {
+    public void refreshToken_shouldReturnNewPairOfTokens() {
         String validRefreshToken = "validRefreshToken";
         String mockSubject = "mockSubject";
         String accessToken = "newAccessToken";

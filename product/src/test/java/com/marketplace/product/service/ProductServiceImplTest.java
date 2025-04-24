@@ -3,9 +3,10 @@ package com.marketplace.product.service;
 import com.marketplace.product.web.model.Product;
 import com.marketplace.product.util.ProductDataBuilder;
 import com.marketplace.product.repository.ProductRepository;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -13,18 +14,14 @@ import java.util.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-class ProductServiceTest {
+@SpringBootTest
+class ProductServiceImplTest {
 
-    @Mock
+    @MockitoBean
     private ProductRepository productRepository;
 
-    @InjectMocks
+    @Autowired
     private ProductService productService;
-
-    @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
-    }
 
     @Test
     void shouldReturnAllProducts() {

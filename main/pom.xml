@@ -12,7 +12,6 @@
 	</parent>
 
 	<artifactId>main</artifactId>
-	<version>0.0.1</version>
 
 	<properties>
 		<maven.compiler.source>17</maven.compiler.source>
@@ -34,7 +33,7 @@
 		<dependency>
 			<groupId>com.marketplace</groupId>
 			<artifactId>common</artifactId>
-			<version>0.0.4</version>
+			<version>0.0.1</version>
 		</dependency>
 	</dependencies>
 

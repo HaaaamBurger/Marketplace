@@ -22,6 +22,8 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 
+import static com.marketplace.auth.security.JwtService.AUTHORIZATION_HEADER;
+import static com.marketplace.auth.security.JwtService.BEARER_PREFIX;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -47,10 +49,6 @@ class ProductControllerIntegrationTest {
 
     @Autowired
     private ObjectMapper objectMapper;
-
-    private static final String AUTHORIZATION_HEADER = "Authorization";
-
-    private static final String BEARER_PREFIX = "Bearer ";
 
     @BeforeEach
     void setUp() {
