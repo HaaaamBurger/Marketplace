@@ -20,6 +20,7 @@
         <module>common</module>
         <module>auth</module>
 		<module>product</module>
+		<module>order</module>
 	</modules>
     <scm>
 		<connection/>
