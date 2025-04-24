@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -17,23 +18,25 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
+import static com.marketplace.auth.security.JwtService.AUTHORIZATION_HEADER;
+import static com.marketplace.auth.security.JwtService.BEARER_PREFIX;
+
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
-    private static final String AUTHORIZATION_HEADER = "Authorization";
-    private static final String BEARER_PREFIX = "Bearer ";
 
     private final JwtService jwtService;
+
     private final UserDetailsService userDetailsService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
-        String token = getJwtFromRequest(request);
+        String token = getTokenFromRequest(request);
 
-        if (token == null || SecurityContextHolder.getContext().getAuthentication() != null) {
+        if (isAuthenticatedOrNoToken(token)) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -48,31 +51,36 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
-    private String getJwtFromRequest(HttpServletRequest request) {
+    private String getTokenFromRequest(HttpServletRequest request) {
         String bearerToken = request.getHeader(AUTHORIZATION_HEADER);
 
-        if (bearerToken == null || !bearerToken.startsWith(BEARER_PREFIX)) {
-            return null;
+        if (isBearerTokenValid(bearerToken)) {
+            return bearerToken.substring(BEARER_PREFIX.length());
         }
 
-        return bearerToken.substring(BEARER_PREFIX.length());
+        return null;
+    }
+
+    private boolean isBearerTokenValid(String bearerToken) {
+        return bearerToken != null && bearerToken.startsWith(BEARER_PREFIX);
+    }
+
+    private boolean isAuthenticatedOrNoToken(String token) {
+        SecurityContext securityContext = SecurityContextHolder.getContext();
+
+        return securityContext.getAuthentication() != null || token == null;
     }
 
     private void addAuthenticationToContext(String token) {
         UserDetails userDetails = getUserDetailsIfTokenValid(token);
 
-        if (userDetails != null) {
-            UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                    userDetails,
-                    null,
-                    userDetails.getAuthorities());
+        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                userDetails,
+                null,
+                userDetails.getAuthorities());
 
-            SecurityContextHolder.getContext().setAuthentication(authToken);
-            log.info("[JWT_AUTHENTICATION_FILTER]: Token validated successfully");
-        } else {
-            log.error("[JWT_AUTHENTICATION_FILTER]: Token validation failed");
-            throw new TokenNotValidException("Token not valid!");
-        }
+        SecurityContextHolder.getContext().setAuthentication(authToken);
+        log.info("[JWT_AUTHENTICATION_FILTER]: Token validated successfully");
     }
 
     private UserDetails getUserDetailsIfTokenValid(String token) {
@@ -85,6 +93,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return userDetails;
         }
 
-        return null;
+        log.error("[JWT_AUTHENTICATION_FILTER]: Token validation failed");
+        throw new TokenNotValidException("Token not valid!");
     }
 }

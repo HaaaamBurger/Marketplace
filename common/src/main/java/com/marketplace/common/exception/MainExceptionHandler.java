@@ -12,18 +12,18 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import javax.security.auth.login.CredentialException;
 import java.util.stream.Collectors;
 
+import static com.marketplace.common.constants.Delimiters.COMMA_DELIMITER;
+import static com.marketplace.common.constants.Delimiters.COLON_DELIMITER;
+
 @RestControllerAdvice
 public class MainExceptionHandler {
-
-    private static final String COMA_DELIMITER = ", ";
-    private static final String SEMICOLON_DELIMITER = ": ";
 
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<ExceptionResponse> handleConstraintViolationException(ConstraintViolationException exception, HttpServletRequest request) {
 
         String invalidFields = exception.getConstraintViolations().stream()
                 .map(ConstraintViolation::getMessage)
-                .collect(Collectors.joining(COMA_DELIMITER));
+                .collect(Collectors.joining(COMMA_DELIMITER));
 
         return ResponseEntity.badRequest().body(
                 ExceptionResponse.builder()
@@ -67,8 +67,8 @@ public class MainExceptionHandler {
         String invalidFields = exception.getBindingResult()
                 .getFieldErrors()
                 .stream()
-                .map(fieldError -> fieldError.getField() + SEMICOLON_DELIMITER + fieldError.getDefaultMessage())
-                .collect(Collectors.joining(COMA_DELIMITER));
+                .map(fieldError -> fieldError.getField() + COLON_DELIMITER + fieldError.getDefaultMessage())
+                .collect(Collectors.joining(COLON_DELIMITER));
 
         return ResponseEntity.badRequest().body(
                 ExceptionResponse.builder()

@@ -28,8 +28,11 @@ import java.util.Optional;
 public class AuthenticationServiceImpl implements AuthenticationService {
 
     private final JwtService jwtService;
+
     private final UserRepository userRepository;
+
     private final PasswordEncoder passwordEncoder;
+
     private final UserDetailsService userDetailsService;
 
     @Override
