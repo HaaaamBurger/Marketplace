@@ -39,11 +39,19 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @SneakyThrows
     public AuthResponse signIn(AuthRequest authRequest) {
 
-        UserDetails userDetails = userDetailsService.loadUserByUsername(authRequest.getEmail());
+        User user = userRepository.findByEmail(authRequest.getEmail())
+                .orElseThrow(() ->  new CredentialException("Wrong credentials!"));
 
-        throwExceptionIfPasswordsNotMatching(authRequest.getPassword(), userDetails.getPassword());
+        boolean isPasswordValid = passwordEncoder.matches(
+                authRequest.getPassword(),
+                user.getPassword()
+        );
 
-        return generateTokenPair(userDetails);
+        if (!isPasswordValid) {
+            throw new CredentialException("Wrong credentials!");
+        }
+
+        return generateTokenPair(user);
     }
 
     @Override
@@ -76,14 +84,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         }
     }
 
-    private void throwExceptionIfPasswordsNotMatching(String rawPassword, String encodedPassword) throws CredentialException {
-        boolean matches = passwordEncoder.matches(rawPassword, encodedPassword);
-
-        if (!matches) {
-            throw new CredentialException("Wrong credentials!");
-        }
-    }
-
     private AuthResponse generateTokenPair(UserDetails userDetails) {
         String accessToken = jwtService.generateAccessToken(userDetails);
         String refreshToken = jwtService.generateRefreshToken(userDetails);
@@ -108,9 +108,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
 
     private void throwExceptionIfUserExistsByEmail(String email) {
-        Optional<User> byEmail = userRepository.findByEmail(email);
+        Optional<User> userOptional = userRepository.findByEmail(email);
 
-        if (byEmail.isPresent()) {
+        if (userOptional.isPresent()) {
             throw new EntityExistsException("User already exists!");
         }
     }

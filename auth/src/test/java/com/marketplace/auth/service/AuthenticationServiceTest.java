@@ -19,6 +19,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
+import javax.security.auth.login.CredentialException;
 import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -48,16 +49,16 @@ public class AuthenticationServiceTest {
     @Test
     public void signIn_shouldReturnPairOfTokens() {
         AuthRequest authRequest = AuthRequestDataBuilder.withAllFields().build();
-        UserDetails mockUserDetails = mock(UserDetails.class);
+        User mockUser = mock(User.class);
         String mockAccessToken = "mockAccessToken";
         String mockRefreshToken = "mockRefreshToken";
         String encodedPassword = "mockEncodedPassword";
 
-        when(mockUserDetails.getPassword()).thenReturn(encodedPassword);
-        when(userDetailsService.loadUserByUsername(authRequest.getEmail())).thenReturn(mockUserDetails);
+        when(mockUser.getPassword()).thenReturn(encodedPassword);
+        when(userRepository.findByEmail(authRequest.getEmail())).thenReturn(Optional.of(mockUser));
         when(passwordEncoder.matches(authRequest.getPassword(), encodedPassword)).thenReturn(true);
-        when(jwtService.generateAccessToken(mockUserDetails)).thenReturn(mockAccessToken);
-        when(jwtService.generateRefreshToken(mockUserDetails)).thenReturn(mockRefreshToken);
+        when(jwtService.generateAccessToken(mockUser)).thenReturn(mockAccessToken);
+        when(jwtService.generateRefreshToken(mockUser)).thenReturn(mockRefreshToken);
 
         AuthResponse authResponse = authenticationService.signIn(authRequest);
 
@@ -72,7 +73,7 @@ public class AuthenticationServiceTest {
 
         when(userDetailsService.loadUserByUsername(authRequest.getEmail())).thenThrow(EntityNotFoundException.class);
 
-        assertThrows(EntityNotFoundException.class, () -> authenticationService.signIn(authRequest));
+        assertThrows(CredentialException.class, () -> authenticationService.signIn(authRequest));
     }
 
     @Test

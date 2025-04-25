@@ -1,5 +1,8 @@
-package com.marketplace.common.exception;
+package com.marketplace.main.exception;
 
+import com.marketplace.common.exception.EntityExistsException;
+import com.marketplace.common.exception.ExceptionResponse;
+import com.marketplace.common.exception.ExceptionType;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
@@ -38,7 +41,7 @@ public class MainExceptionHandler {
     @ExceptionHandler(EntityExistsException.class)
     public ResponseEntity<ExceptionResponse> handleEntityExistsException(EntityExistsException exception, HttpServletRequest request) {
 
-        return ResponseEntity.badRequest().body(
+        return ResponseEntity.status(404).body(
                 ExceptionResponse.builder()
                         .status(HttpStatusCode.valueOf(404).value())
                         .type(ExceptionType.WEB)
@@ -51,7 +54,7 @@ public class MainExceptionHandler {
     @ExceptionHandler(CredentialException.class)
     public ResponseEntity<ExceptionResponse> handleCredentialsException(CredentialException exception, HttpServletRequest request) {
 
-        return ResponseEntity.badRequest().body(
+        return ResponseEntity.status(401).body(
                 ExceptionResponse.builder()
                         .status(HttpStatusCode.valueOf(401).value())
                         .type(ExceptionType.AUTHORIZATION)
