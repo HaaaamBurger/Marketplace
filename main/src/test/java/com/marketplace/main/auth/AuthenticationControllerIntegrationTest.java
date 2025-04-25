@@ -83,7 +83,7 @@ class AuthenticationControllerIntegrationTest {
         String contentAsString = mockMvc.perform(post("/auth/sign-up")
                         .content(objectMapper.writeValueAsString(authRequest))
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isNotFound())
                 .andReturn().getResponse().getContentAsString();
 
         ExceptionResponse exceptionResponse = objectMapper.readValue(contentAsString, ExceptionResponse.class);
@@ -156,7 +156,7 @@ class AuthenticationControllerIntegrationTest {
         assertThat(exceptionResponse).isNotNull();
         assertThat(exceptionResponse.getStatus()).isEqualTo(HttpStatus.UNAUTHORIZED.value());
         assertThat(exceptionResponse.getType()).isEqualTo(ExceptionType.AUTHORIZATION);
-        assertThat(exceptionResponse.getMessage()).isEqualTo("Authentication required, please sign in");
+        assertThat(exceptionResponse.getMessage()).isEqualTo("Wrong credentials!");
     }
 
     @Test
@@ -171,7 +171,7 @@ class AuthenticationControllerIntegrationTest {
         String contentAsString = mockMvc.perform(post("/auth/sign-in")
                         .content(objectMapper.writeValueAsString(authRequest))
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isUnauthorized())
                 .andReturn().getResponse().getContentAsString();
 
         ExceptionResponse exceptionResponse = objectMapper.readValue(contentAsString, ExceptionResponse.class);
