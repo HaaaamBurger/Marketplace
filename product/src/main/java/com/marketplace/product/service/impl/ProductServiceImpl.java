@@ -12,24 +12,28 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-public class ProductServiceImpl implements ProductService {
+public final class ProductServiceImpl implements ProductService {
 
     private final ProductRepository productRepository;
 
-    public List<Product> getAllProducts() {
+    @Override
+    public List<Product> findAll() {
         return productRepository.findAll();
     }
 
-    public Product getProductById(String id) {
-        return findProductByIdOrThrowException(id);
+    @Override
+    public Product findById(String productId) {
+        return findProductByIdOrThrowException(productId);
     }
 
-    public Product createProduct(Product product) {
+    @Override
+    public Product create(Product product) {
         return productRepository.save(product);
     }
 
-    public Product updateProduct(String id, Product updatedProduct) {
-        Product existingProduct = findProductByIdOrThrowException(id);
+    @Override
+    public Product update(String productId, Product updatedProduct) {
+        Product existingProduct = findProductByIdOrThrowException(productId);
 
         Optional.ofNullable(updatedProduct.getName()).ifPresent(existingProduct::setName);
         Optional.ofNullable(updatedProduct.getPrice()).ifPresent(existingProduct::setPrice);
@@ -38,14 +42,15 @@ public class ProductServiceImpl implements ProductService {
         return productRepository.save(existingProduct);
     }
 
-    public void deleteProduct(String id) {
-        Product product = findProductByIdOrThrowException(id);
+    @Override
+    public void delete(String productId) {
+        Product product = findProductByIdOrThrowException(productId);
         productRepository.delete(product);
     }
 
-    private Product findProductByIdOrThrowException(String id) {
-        return productRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Product not found with id: " + id));
+    private Product findProductByIdOrThrowException(String productId) {
+        return productRepository.findById(productId)
+                .orElseThrow(() -> new EntityNotFoundException("Product not found with id: " + productId));
     }
 
 }

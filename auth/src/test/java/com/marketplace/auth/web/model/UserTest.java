@@ -60,7 +60,7 @@ public class UserTest {
 
         assertThat(matchedViolation).isNotNull();
         assertThat(matchedViolation.getPropertyPath().toString()).isEqualTo("password");
-        assertThat(matchedViolation.getMessage()).isEqualTo("Password cannot be blank");
+        assertThat(matchedViolation.getMessage()).isEqualTo("Password is required");
     }
 
     private ConstraintViolation<User> getMatchedViolationByField(Set<ConstraintViolation<User>> violations, String field) {

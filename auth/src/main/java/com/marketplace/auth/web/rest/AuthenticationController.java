@@ -34,4 +34,5 @@ public class AuthenticationController {
     public ResponseEntity<AuthResponse> refreshToken(@RequestBody @Valid AuthRefreshRequest authRefreshRequest) {
         return ResponseEntity.ok(authenticationService.refreshToken(authRefreshRequest));
     }
+
 }

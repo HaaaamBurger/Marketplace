@@ -10,16 +10,20 @@ import com.marketplace.auth.web.model.UserRole;
 import com.marketplace.auth.web.rest.dto.AuthRefreshRequest;
 import com.marketplace.auth.web.rest.dto.AuthRequest;
 import com.marketplace.auth.web.rest.dto.AuthResponse;
+import com.marketplace.common.model.UserStatus;
 import io.jsonwebtoken.JwtException;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.security.auth.login.CredentialException;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Slf4j
@@ -58,11 +62,11 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     public String signUp(AuthRequest authRequest) {
 
         throwExceptionIfUserExistsByEmail(authRequest.getEmail());
-
         String encodedPassword = passwordEncoder.encode(authRequest.getPassword());
 
         userRepository.save(User.builder()
                 .role(UserRole.USER)
+                .status(UserStatus.ACTIVE)
                 .email(authRequest.getEmail())
                 .password(encodedPassword)
                 .build());
@@ -85,8 +89,12 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
 
     private AuthResponse generateTokenPair(UserDetails userDetails) {
-        String accessToken = jwtService.generateAccessToken(userDetails);
-        String refreshToken = jwtService.generateRefreshToken(userDetails);
+        List<String> roles = userDetails.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .toList();
+
+        String accessToken = jwtService.generateAccessToken(userDetails, Map.of("roles", roles));
+        String refreshToken = jwtService.generateRefreshToken(userDetails, Map.of("roles", roles));
 
         return AuthResponse.builder()
                 .accessToken(accessToken)

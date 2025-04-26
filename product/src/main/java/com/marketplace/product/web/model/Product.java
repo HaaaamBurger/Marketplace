@@ -10,8 +10,6 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import java.math.BigDecimal;
 
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 @Builder(toBuilder = true)
 @Document(collection = "products")
 @EqualsAndHashCode(callSuper = true)
@@ -32,4 +30,5 @@ public class Product extends AuditableEntity {
     @DecimalMin(value = "5.0", inclusive = false, message = "Price must be greater than 0")
     @Digits(integer = 8, fraction = 2, message = "Price must have up to 8 digits before the decimal point and 2 after")
     private BigDecimal price;
+
 }

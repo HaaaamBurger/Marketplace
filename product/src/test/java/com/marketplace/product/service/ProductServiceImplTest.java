@@ -28,7 +28,7 @@ class ProductServiceImplTest {
         Product product = ProductDataBuilder.buildProductWithAllFields().build();
         when(productRepository.findAll()).thenReturn(List.of(product));
 
-        List<Product> result = productService.getAllProducts();
+        List<Product> result = productService.findAll();
 
         assertEquals(1, result.size());
         assertEquals("Test Product", result.get(0).getName());
@@ -40,7 +40,7 @@ class ProductServiceImplTest {
         String id = product.getId();
         when(productRepository.findById(id)).thenReturn(Optional.of(product));
 
-        Product result = productService.getProductById(id);
+        Product result = productService.findById(id);
 
         assertEquals(product, result);
     }
@@ -51,7 +51,7 @@ class ProductServiceImplTest {
         when(productRepository.findById(id)).thenReturn(Optional.empty());
 
         Exception exception = assertThrows(RuntimeException.class, () -> {
-            productService.getProductById(id);
+            productService.findById(id);
         });
 
         assertTrue(exception.getMessage().contains("not found"));
@@ -62,7 +62,7 @@ class ProductServiceImplTest {
         Product product = ProductDataBuilder.buildProductWithAllFields().build();
         when(productRepository.save(product)).thenReturn(product);
 
-        Product created = productService.createProduct(product);
+        Product created = productService.create(product);
 
         assertEquals(product, created);
         verify(productRepository, times(1)).save(product);
@@ -82,7 +82,7 @@ class ProductServiceImplTest {
         when(productRepository.findById(id)).thenReturn(Optional.of(original));
         when(productRepository.save(any(Product.class))).thenReturn(updated);
 
-        Product result = productService.updateProduct(id, updated);
+        Product result = productService.update(id, updated);
 
         assertEquals("Updated Name", result.getName());
         assertEquals("Updated Description", result.getDescription());
@@ -95,7 +95,7 @@ class ProductServiceImplTest {
         String id = product.getId();
         when(productRepository.findById(id)).thenReturn(Optional.of(product));
 
-        productService.deleteProduct(id);
+        productService.delete(id);
 
         verify(productRepository, times(1)).delete(product);
     }
