@@ -15,6 +15,8 @@ import java.util.Collection;
 import java.util.Collections;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 @SuperBuilder(toBuilder = true)
 @Document(collection = "users")
 @EqualsAndHashCode(callSuper = true)

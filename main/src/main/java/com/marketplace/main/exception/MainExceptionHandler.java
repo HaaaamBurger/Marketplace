@@ -1,6 +1,7 @@
 package com.marketplace.main.exception;
 
 import com.marketplace.common.exception.EntityExistsException;
+import com.marketplace.common.exception.EntityNotFoundException;
 import com.marketplace.common.exception.ExceptionResponse;
 import com.marketplace.common.exception.ExceptionType;
 import jakarta.servlet.http.HttpServletRequest;
@@ -44,6 +45,19 @@ public class MainExceptionHandler {
         return ResponseEntity.status(404).body(
                 ExceptionResponse.builder()
                         .status(HttpStatusCode.valueOf(404).value())
+                        .type(ExceptionType.WEB)
+                        .path(request.getRequestURI())
+                        .message(exception.getMessage())
+                        .build()
+        );
+    }
+
+    @ExceptionHandler(EntityNotFoundException.class)
+    public ResponseEntity<ExceptionResponse> handleEntityNotFoundException(EntityNotFoundException exception, HttpServletRequest request) {
+
+        return ResponseEntity.badRequest().body(
+                ExceptionResponse.builder()
+                        .status(HttpStatusCode.valueOf(400).value())
                         .type(ExceptionType.WEB)
                         .path(request.getRequestURI())
                         .message(exception.getMessage())

@@ -2,9 +2,10 @@ package com.marketplace.user.web.rest;
 
 import com.marketplace.auth.web.model.User;
 import com.marketplace.user.service.UserService;
-import com.marketplace.user.web.dto.UserRequest;
+import com.marketplace.user.web.dto.UserCreateRequest;
 import com.marketplace.user.web.dto.UserResponse;
 import com.marketplace.user.web.dto.UserStatusRequest;
+import com.marketplace.user.web.dto.UserUpdateRequest;
 import com.marketplace.user.web.util.UserEntityMapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -23,8 +24,8 @@ public class UserController {
     private final UserEntityMapper userEntityMapper;
 
     @PostMapping
-    public ResponseEntity<UserResponse> createUser(@Valid @RequestBody UserRequest userRequest) {
-        User user = userService.create(userRequest);
+    public ResponseEntity<UserResponse> createUser(@Valid @RequestBody UserCreateRequest userCreateRequest) {
+        User user = userService.create(userCreateRequest);
         return ResponseEntity.ok(userEntityMapper.mapEntityToDto(user));
     }
 
@@ -43,9 +44,9 @@ public class UserController {
     @PutMapping("/{userId}")
     public ResponseEntity<UserResponse> updateUser(
             @PathVariable String userId,
-            @Valid @RequestBody UserRequest userRequest
+            @Valid @RequestBody UserUpdateRequest userUpdateRequest
     ) {
-        User user = userService.update(userId, userRequest);
+        User user = userService.update(userId, userUpdateRequest);
         return ResponseEntity.ok(userEntityMapper.mapEntityToDto(user));
     }
 

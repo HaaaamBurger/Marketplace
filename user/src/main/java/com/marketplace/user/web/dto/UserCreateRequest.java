@@ -9,14 +9,15 @@ import lombok.Data;
 
 @Data
 @Builder
-public class UserRequest {
+public class UserCreateRequest {
 
     @Pattern(regexp = "^[\\w.-]+@[a-zA-Z0-9-]+\\.[a-zA-Z]{2,}$", message = "Must be a valid e-mail address")
     private String email;
 
-    @NotNull
+    @NotNull(message = "Role is required")
     private UserRole role;
 
     @NotBlank(message = "Password cannot be blank")
     private String password;
+
 }

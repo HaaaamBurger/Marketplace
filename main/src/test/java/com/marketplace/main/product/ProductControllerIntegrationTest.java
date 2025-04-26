@@ -66,7 +66,7 @@ class ProductControllerIntegrationTest {
         productRepository.save(product);
 
         String accessToken = jwtService.generateAccessToken(user);
-        String response = mockMvc.perform(get("/product/all")
+        String response = mockMvc.perform(get("/products")
                         .header(AUTHORIZATION_HEADER, BEARER_PREFIX + accessToken))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -88,7 +88,7 @@ class ProductControllerIntegrationTest {
         productRepository.save(product);
 
         String accessToken = jwtService.generateAccessToken(user);
-        String response = mockMvc.perform(get("/product/" + product.getId())
+        String response = mockMvc.perform(get("/products/" + product.getId())
                         .header(AUTHORIZATION_HEADER, BEARER_PREFIX + accessToken))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -109,7 +109,7 @@ class ProductControllerIntegrationTest {
         userRepository.save(user);
         String accessToken = jwtService.generateAccessToken(user);
 
-        String response = mockMvc.perform(post("/product/create")
+        String response = mockMvc.perform(post("/products")
                         .header(AUTHORIZATION_HEADER, BEARER_PREFIX + accessToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(product)))
@@ -137,7 +137,7 @@ class ProductControllerIntegrationTest {
         product = productRepository.save(product);
         String accessToken = jwtService.generateAccessToken(user);
 
-        String response = mockMvc.perform(put("/product/" + product.getId())
+        String response = mockMvc.perform(put("/products/" + product.getId())
                         .header(AUTHORIZATION_HEADER, BEARER_PREFIX + accessToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updatedProduct)))
@@ -162,7 +162,7 @@ class ProductControllerIntegrationTest {
 
         assertThat(productRepository.findById(product.getId())).isPresent();
 
-        mockMvc.perform(delete("/product/" + product.getId())
+        mockMvc.perform(delete("/products/" + product.getId())
                         .header(AUTHORIZATION_HEADER, BEARER_PREFIX + accessToken))
                 .andExpect(status().isOk());
 
