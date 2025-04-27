@@ -4,7 +4,6 @@ import com.marketplace.common.exception.EntityExistsException;
 import com.marketplace.common.exception.EntityNotFoundException;
 import com.marketplace.auth.repository.UserRepository;
 import com.marketplace.auth.security.JwtService;
-import com.marketplace.auth.service.impl.AuthenticationServiceImpl;
 import com.marketplace.auth.web.model.User;
 import com.marketplace.auth.web.rest.dto.AuthRefreshRequest;
 import com.marketplace.auth.web.rest.dto.AuthRequest;
@@ -44,7 +43,7 @@ public class AuthenticationServiceTest {
     private JwtService jwtService;
 
     @Autowired
-    private AuthenticationServiceImpl authenticationService;
+    private AuthenticationService authenticationService;
 
     @Test
     public void signIn_shouldReturnPairOfTokens() {
