@@ -42,9 +42,9 @@ public class MainExceptionHandler {
     @ExceptionHandler(EntityExistsException.class)
     public ResponseEntity<ExceptionResponse> handleEntityExistsException(EntityExistsException exception, HttpServletRequest request) {
 
-        return ResponseEntity.status(404).body(
+        return ResponseEntity.badRequest().body(
                 ExceptionResponse.builder()
-                        .status(HttpStatusCode.valueOf(404).value())
+                        .status(HttpStatusCode.valueOf(400).value())
                         .type(ExceptionType.WEB)
                         .path(request.getRequestURI())
                         .message(exception.getMessage())
@@ -55,9 +55,9 @@ public class MainExceptionHandler {
     @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<ExceptionResponse> handleEntityNotFoundException(EntityNotFoundException exception, HttpServletRequest request) {
 
-        return ResponseEntity.badRequest().body(
+        return ResponseEntity.status(404).body(
                 ExceptionResponse.builder()
-                        .status(HttpStatusCode.valueOf(400).value())
+                        .status(HttpStatusCode.valueOf(404).value())
                         .type(ExceptionType.WEB)
                         .path(request.getRequestURI())
                         .message(exception.getMessage())

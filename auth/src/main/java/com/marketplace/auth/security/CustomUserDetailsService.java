@@ -1,6 +1,7 @@
 package com.marketplace.auth.security;
 
 import com.marketplace.auth.repository.UserRepository;
+import com.marketplace.common.exception.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -17,6 +18,6 @@ public class CustomUserDetailsService implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         return userRepository.findByEmail(username)
                 .map(user -> (UserDetails) user)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found by " + username));
+                .orElseThrow(() -> new EntityNotFoundException("User not found by " + username));
     }
 }

@@ -83,12 +83,12 @@ class AuthenticationControllerIntegrationTest {
         String contentAsString = mockMvc.perform(post("/auth/sign-up")
                         .content(objectMapper.writeValueAsString(authRequest))
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isNotFound())
+                .andExpect(status().isBadRequest())
                 .andReturn().getResponse().getContentAsString();
 
         ExceptionResponse exceptionResponse = objectMapper.readValue(contentAsString, ExceptionResponse.class);
         assertThat(exceptionResponse).isNotNull();
-        assertThat(exceptionResponse.getStatus()).isEqualTo(HttpStatus.NOT_FOUND.value());
+        assertThat(exceptionResponse.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
         assertThat(exceptionResponse.getType()).isEqualTo(ExceptionType.WEB);
         assertThat(exceptionResponse.getMessage()).isEqualTo("User already exists!");
     }
