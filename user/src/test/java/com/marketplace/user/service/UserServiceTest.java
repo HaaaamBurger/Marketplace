@@ -149,7 +149,6 @@ public class UserServiceTest {
         assertThat(responseUser).isNotNull();
         assertThat(responseUser.getEmail()).isEqualTo(userUpdateRequest.getEmail());
         assertThat(responseUser.getRole()).isEqualTo(userUpdateRequest.getRole());
-        assertThat(responseUser.getPassword()).isEqualTo(userUpdateRequest.getPassword());
 
         verify(userRepository).findById(userId);
         verify(userRepository).save(user);

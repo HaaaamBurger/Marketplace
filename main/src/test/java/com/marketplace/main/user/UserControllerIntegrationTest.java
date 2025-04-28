@@ -3,13 +3,13 @@ package com.marketplace.main.user;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marketplace.auth.repository.UserRepository;
+import com.marketplace.auth.util.AuthHelper;
 import com.marketplace.auth.web.model.User;
 import com.marketplace.auth.web.model.UserRole;
 import com.marketplace.common.exception.ExceptionResponse;
 import com.marketplace.common.exception.ExceptionType;
 import com.marketplace.common.model.UserStatus;
 import com.marketplace.main.exception.MainExceptionHandler;
-import com.marketplace.main.util.AuthHelper;
 import com.marketplace.main.util.builders.UserCreateRequestDataBuilder;
 import com.marketplace.main.util.builders.UserDataBuilder;
 import com.marketplace.user.web.dto.UserCreateRequest;
@@ -165,7 +165,7 @@ public class UserControllerIntegrationTest {
         String adminAuth = authHelper.createAdminAuth();
         userRepository.save(user);
 
-        String response = mockMvc.perform(get("/users/" + user.getId())
+        String response = mockMvc.perform(get("/users/{userId}", user.getId())
                         .header(AUTHORIZATION_HEADER, adminAuth))
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
@@ -182,7 +182,7 @@ public class UserControllerIntegrationTest {
 
         String adminAuth = authHelper.createAdminAuth();
 
-        String response = mockMvc.perform(get("/users/" + userId)
+        String response = mockMvc.perform(get("/users/{userId}", userId)
                         .header(AUTHORIZATION_HEADER, adminAuth))
                 .andExpect(status().isNotFound())
                 .andReturn().getResponse().getContentAsString();
@@ -203,7 +203,7 @@ public class UserControllerIntegrationTest {
         String adminAuth = authHelper.createAdminAuth();
         userRepository.save(user);
 
-        String response = mockMvc.perform(put("/users/" + user.getId())
+        String response = mockMvc.perform(put("/users/{userId}", user.getId())
                         .header(AUTHORIZATION_HEADER, adminAuth)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(userUpdateRequest)))
@@ -228,7 +228,7 @@ public class UserControllerIntegrationTest {
         String adminAuth = authHelper.createAdminAuth();
         userRepository.save(user);
 
-        mockMvc.perform(put("/users/" + user.getId())
+        mockMvc.perform(put("/users/{userId}", user.getId())
                         .header(AUTHORIZATION_HEADER, adminAuth)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(userUpdateRequest)))
@@ -243,6 +243,7 @@ public class UserControllerIntegrationTest {
 
     @Test
     public void update_ThenThrowException_WhenUserNotFound() throws Exception {
+        String userId = String.valueOf(UUID.randomUUID());
         UserUpdateRequest userUpdateRequest = UserUpdateRequest.builder()
                 .email("test1@gmail.com")
                 .build();
@@ -250,7 +251,7 @@ public class UserControllerIntegrationTest {
 
         String adminAuth = authHelper.createAdminAuth();
 
-        String response = mockMvc.perform(put("/users/" + user.getId())
+        String response = mockMvc.perform(put("/users/{userId}", userId)
                         .header(AUTHORIZATION_HEADER, adminAuth)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(userUpdateRequest)))
@@ -259,7 +260,7 @@ public class UserControllerIntegrationTest {
 
         ExceptionResponse exceptionResponse = objectMapper.readValue(response, ExceptionResponse.class);
 
-        assertThatUserNotFound(exceptionResponse, user.getId());
+        assertThatUserNotFound(exceptionResponse, userId);
     }
 
     @Test
@@ -317,7 +318,7 @@ public class UserControllerIntegrationTest {
         String adminAuth = authHelper.createAdminAuth();
         userRepository.save(user);
 
-        mockMvc.perform(delete("/users/" + user.getId())
+        mockMvc.perform(delete("/users/{userId}", user.getId())
                         .header(AUTHORIZATION_HEADER, adminAuth))
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
@@ -333,7 +334,7 @@ public class UserControllerIntegrationTest {
 
         String adminAuth = authHelper.createAdminAuth();
 
-        String response = mockMvc.perform(delete("/users/" + userId)
+        String response = mockMvc.perform(delete("/users/{userId}", userId)
                         .header(AUTHORIZATION_HEADER, adminAuth))
                 .andExpect(status().isNotFound())
                 .andReturn().getResponse().getContentAsString();

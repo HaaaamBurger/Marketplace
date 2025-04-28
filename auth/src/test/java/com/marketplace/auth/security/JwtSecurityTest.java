@@ -14,6 +14,7 @@ public class JwtSecurityTest {
     @Autowired
     private JwtService jwtService;
 
+
     @Test
     public void generateAccessToken_shouldGenerateValidAccessToken() {
         User user = UserDataBuilder.buildUserWithAllFields().build();

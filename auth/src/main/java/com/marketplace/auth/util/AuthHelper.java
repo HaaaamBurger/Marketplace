@@ -1,10 +1,9 @@
-package com.marketplace.main.util;
+package com.marketplace.auth.util;
 
 import com.marketplace.auth.repository.UserRepository;
 import com.marketplace.auth.security.JwtService;
 import com.marketplace.auth.web.model.User;
 import com.marketplace.auth.web.model.UserRole;
-import com.marketplace.main.util.builders.UserDataBuilder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -27,7 +26,7 @@ public class AuthHelper {
 
 
     public String createUserAuth() {
-        User user = UserDataBuilder.buildUserWithAllFields()
+        User user = User.builder()
                 .email("testuser@gmail.com")
                 .role(UserRole.USER)
                 .build();
@@ -38,7 +37,7 @@ public class AuthHelper {
     }
 
     public String createAdminAuth() {
-        User user = UserDataBuilder.buildUserWithAllFields()
+        User user = User.builder()
                 .email("testadmin@gmail.com")
                 .role(UserRole.ADMIN)
                 .build();
