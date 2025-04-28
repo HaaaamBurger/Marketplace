@@ -52,7 +52,7 @@ public final class UserServiceImpl implements UserService {
 
         Optional.ofNullable(userUpdateRequest.getEmail()).ifPresent(user::setEmail);
         Optional.ofNullable(userUpdateRequest.getRole()).ifPresent(user::setRole);
-        Optional.ofNullable(userUpdateRequest.getPassword()).ifPresent(user::setPassword);
+        Optional.ofNullable(userUpdateRequest.getPassword()).ifPresent(requestPassword -> user.setPassword(passwordEncoder.encode(requestPassword)));
 
         return userRepository.save(user);
     }

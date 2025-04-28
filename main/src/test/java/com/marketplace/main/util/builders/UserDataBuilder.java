@@ -1,10 +1,11 @@
-package com.marketplace.main.util;
+package com.marketplace.main.util.builders;
 
 import com.marketplace.auth.web.model.User;
 import com.marketplace.auth.web.model.UserRole;
 import com.marketplace.common.model.UserStatus;
 
 public class UserDataBuilder {
+
     public static User.UserBuilder buildUserWithAllFields() {
         return User.builder()
                 .email("test@gmail.com")
@@ -12,4 +13,5 @@ public class UserDataBuilder {
                 .role(UserRole.USER)
                 .password("testPassword1");
     }
+
 }

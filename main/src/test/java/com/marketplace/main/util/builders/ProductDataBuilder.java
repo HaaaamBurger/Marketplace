@@ -1,4 +1,4 @@
-package com.marketplace.main.util;
+package com.marketplace.main.util.builders;
 
 import com.marketplace.product.web.model.Product;
 
@@ -14,4 +14,5 @@ public class ProductDataBuilder {
                 .description("Test Description")
                 .price(BigDecimal.valueOf(99.99));
     }
+
 }

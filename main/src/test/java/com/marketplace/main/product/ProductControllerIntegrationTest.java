@@ -5,8 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marketplace.auth.repository.UserRepository;
 import com.marketplace.auth.security.JwtService;
 import com.marketplace.auth.web.model.User;
-import com.marketplace.main.util.ProductDataBuilder;
-import com.marketplace.main.util.UserDataBuilder;
+import com.marketplace.main.util.builders.ProductDataBuilder;
+import com.marketplace.main.util.builders.UserDataBuilder;
 import com.marketplace.product.repository.ProductRepository;
 import com.marketplace.product.web.model.Product;
 

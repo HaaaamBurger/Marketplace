@@ -167,7 +167,7 @@ public class UserServiceTest {
     }
 
     @Test
-    public void updateStatus_shouldUpdateUser() {
+    public void updateStatus_shouldUpdateStatus() {
         String userId = String.valueOf(UUID.randomUUID());
         User user = UserDataBuilder.buildUserWithAllFields().build();
 
