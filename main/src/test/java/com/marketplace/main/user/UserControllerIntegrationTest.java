@@ -10,8 +10,8 @@ import com.marketplace.common.exception.ExceptionResponse;
 import com.marketplace.common.exception.ExceptionType;
 import com.marketplace.common.model.UserStatus;
 import com.marketplace.main.exception.MainExceptionHandler;
-import com.marketplace.main.util.builders.UserCreateRequestDataBuilder;
-import com.marketplace.main.util.builders.UserDataBuilder;
+import com.marketplace.main.util.UserCreateRequestDataBuilder;
+import com.marketplace.main.util.UserDataBuilder;
 import com.marketplace.user.web.dto.UserCreateRequest;
 import com.marketplace.user.web.dto.UserStatusRequest;
 import com.marketplace.user.web.dto.UserUpdateRequest;
@@ -92,14 +92,14 @@ public class UserControllerIntegrationTest {
         UserCreateRequest userCreateRequest = UserCreateRequestDataBuilder.withAllFields().build();
 
         String userAuth = authHelper.createUserAuth();
-        String contentAsString = mockMvc.perform(post("/users")
+        String response = mockMvc.perform(post("/users")
                         .header(AUTHORIZATION_HEADER, userAuth)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(userCreateRequest)))
                 .andExpect(status().isForbidden())
                 .andReturn().getResponse().getContentAsString();
 
-        ExceptionResponse exceptionResponse = objectMapper.readValue(contentAsString, ExceptionResponse.class);
+        ExceptionResponse exceptionResponse = objectMapper.readValue(response, ExceptionResponse.class);
 
         assertThat(exceptionResponse).isNotNull();
         assertThat(exceptionResponse.getStatus()).isEqualTo(HttpStatus.FORBIDDEN.value());
@@ -115,14 +115,14 @@ public class UserControllerIntegrationTest {
         String adminAuth = authHelper.createAdminAuth();
         userRepository.save(user);
 
-        String contentAsString = mockMvc.perform(post("/users")
+        String response = mockMvc.perform(post("/users")
                         .header(AUTHORIZATION_HEADER, adminAuth)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(userCreateRequest)))
                 .andExpect(status().isBadRequest())
                 .andReturn().getResponse().getContentAsString();
 
-        ExceptionResponse exceptionResponse = objectMapper.readValue(contentAsString, ExceptionResponse.class);
+        ExceptionResponse exceptionResponse = objectMapper.readValue(response, ExceptionResponse.class);
 
         assertThat(exceptionResponse).isNotNull();
         assertThat(exceptionResponse.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
@@ -142,12 +142,12 @@ public class UserControllerIntegrationTest {
         String adminAuth = authHelper.createAdminAuth();
         userRepository.saveAll(List.of(user1, user2));
 
-        String contentAsString = mockMvc.perform(get("/users")
+        String response = mockMvc.perform(get("/users")
                         .header(AUTHORIZATION_HEADER, adminAuth))
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
 
-        List<User> usersResponse = objectMapper.readValue(contentAsString, new TypeReference<>() {});
+        List<User> usersResponse = objectMapper.readValue(response, new TypeReference<>() {});
 
         assertThat(usersResponse).isNotNull();
         assertThat(usersResponse.size()).isEqualTo(3);
@@ -247,7 +247,6 @@ public class UserControllerIntegrationTest {
         UserUpdateRequest userUpdateRequest = UserUpdateRequest.builder()
                 .email("test1@gmail.com")
                 .build();
-        User user = UserDataBuilder.buildUserWithAllFields().build();
 
         String adminAuth = authHelper.createAdminAuth();
 
