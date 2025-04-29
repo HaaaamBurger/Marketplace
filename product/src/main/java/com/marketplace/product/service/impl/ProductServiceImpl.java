@@ -4,6 +4,7 @@ import com.marketplace.auth.web.model.User;
 import com.marketplace.auth.web.model.UserRole;
 import com.marketplace.common.exception.EntityNotFoundException;
 import com.marketplace.product.service.ProductService;
+import com.marketplace.product.web.dto.ProductCreateRequest;
 import com.marketplace.product.web.model.Product;
 import com.marketplace.product.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
@@ -33,9 +34,15 @@ public final class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public Product create(Product product) {
+    public Product create(ProductCreateRequest productCreateRequest) {
         User principalUserId = getPrincipalUser();
-        product.setOwnerId(principalUserId.getId());
+
+        Product product = Product.builder()
+                .name(productCreateRequest.getName())
+                .ownerId(principalUserId.getId())
+                .description(productCreateRequest.getDescription())
+                .price(productCreateRequest.getPrice())
+                .build();
 
         return productRepository.save(product);
     }

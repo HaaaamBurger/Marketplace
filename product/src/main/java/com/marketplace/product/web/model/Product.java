@@ -4,6 +4,7 @@ import com.marketplace.common.model.AuditableEntity;
 import jakarta.validation.constraints.*;
 import lombok.*;
 import lombok.EqualsAndHashCode;
+import lombok.experimental.SuperBuilder;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -12,7 +13,7 @@ import java.math.BigDecimal;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder(toBuilder = true)
+@SuperBuilder(toBuilder = true)
 @Document(collection = "products")
 @EqualsAndHashCode(callSuper = true)
 public class Product extends AuditableEntity {

@@ -1,12 +1,13 @@
 package com.marketplace.product.service;
 
+import com.marketplace.product.web.dto.ProductCreateRequest;
 import com.marketplace.product.web.model.Product;
 
 import java.util.List;
 
 public interface ProductService {
 
-    Product create(Product product);
+    Product create(ProductCreateRequest productCreateRequest);
 
     List<Product> findAll();
 

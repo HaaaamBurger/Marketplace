@@ -40,10 +40,4 @@ public class UserEntityMapper implements EntityMapper<User, UserResponse> {
                 .toList();
     }
 
-    public List<User> mapDtosToEntities(List<UserResponse> dtos) {
-        return dtos.stream()
-                .map(this::mapDtoToEntity)
-                .toList();
-    }
-
 }

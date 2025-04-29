@@ -3,6 +3,7 @@ package com.marketplace.product.service;
 import com.marketplace.auth.web.model.User;
 import com.marketplace.common.exception.EntityNotFoundException;
 import com.marketplace.product.util.UserDataBuilder;
+import com.marketplace.product.web.dto.ProductCreateRequest;
 import com.marketplace.product.web.model.Product;
 import com.marketplace.product.util.ProductDataBuilder;
 import com.marketplace.product.repository.ProductRepository;
@@ -66,6 +67,11 @@ class ProductServiceTest {
     void shouldCreateProduct() {
         User user = UserDataBuilder.buildUserWithAllFields().build();
         Product product = ProductDataBuilder.buildProductWithAllFields().build();
+        ProductCreateRequest productCreateRequest = ProductCreateRequest.builder()
+                .name(product.getName())
+                .description(product.getDescription())
+                .price(product.getPrice())
+                .build();
 
         SecurityContext mockSecurityContext = mock(SecurityContext.class);
         Authentication mockAuthentication = mock(Authentication.class);
@@ -76,7 +82,7 @@ class ProductServiceTest {
 
         when(productRepository.save(product)).thenReturn(product);
 
-        Product resultProduct = productService.create(product);
+        Product resultProduct = productService.create(productCreateRequest);
 
         assertEquals(product, resultProduct);
         verify(productRepository, times(1)).save(product);
