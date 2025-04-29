@@ -9,7 +9,8 @@ public class ProductDataBuilder {
 
     public static Product.ProductBuilder buildProductWithAllFields() {
         return Product.builder()
-                .id(UUID.randomUUID().toString())
+                .id(String.valueOf(UUID.randomUUID()))
+                .ownerId(String.valueOf(UUID.randomUUID()))
                 .name("Test Product")
                 .description("Test Description")
                 .price(BigDecimal.valueOf(99.99));

@@ -21,8 +21,13 @@ public class AuthHelper {
     private final UserRepository userRepository;
 
     public AuthHelperResponse createUserAuth() {
+        String email = "userauth@gmail.com";
+        return createUserAuth(email);
+    }
+
+    public AuthHelperResponse createUserAuth(String email) {
         User user = User.builder()
-                .email("testuser@gmail.com")
+                .email(email)
                 .role(UserRole.USER)
                 .build();
 
@@ -35,8 +40,13 @@ public class AuthHelper {
     }
 
     public AuthHelperResponse createAdminAuth() {
+        String email = "adminauth@gmail.com";
+        return createAdminAuth(email);
+    }
+
+    public AuthHelperResponse createAdminAuth(String email) {
         User user = User.builder()
-                .email("testadmin@gmail.com")
+                .email(email)
                 .role(UserRole.ADMIN)
                 .build();
 
