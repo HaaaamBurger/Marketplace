@@ -2,11 +2,8 @@ package com.marketplace.main.product;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.marketplace.auth.repository.UserRepository;
-import com.marketplace.auth.security.JwtService;
-import com.marketplace.auth.web.model.User;
+import com.marketplace.auth.util.AuthHelper;
 import com.marketplace.main.util.ProductDataBuilder;
-import com.marketplace.main.util.UserDataBuilder;
 import com.marketplace.product.repository.ProductRepository;
 import com.marketplace.product.web.model.Product;
 
@@ -23,7 +20,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.List;
 
 import static com.marketplace.auth.security.JwtService.AUTHORIZATION_HEADER;
-import static com.marketplace.auth.security.JwtService.BEARER_PREFIX;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -39,13 +35,10 @@ class ProductControllerIntegrationTest {
     private ProductRepository productRepository;
 
     @Autowired
-    private JwtService jwtService;
-
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
     private ApplicationContext applicationContext;
+
+    @Autowired
+    private AuthHelper authHelper;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -59,15 +52,13 @@ class ProductControllerIntegrationTest {
 
     @Test
     void getAllProducts_ShouldReturnList() throws Exception {
-        User user = UserDataBuilder.buildUserWithAllFields().build();
         Product product = ProductDataBuilder.buildProductWithAllFields().build();
 
-        userRepository.save(user);
         productRepository.save(product);
 
-        String accessToken = jwtService.generateAccessToken(user);
-        String response = mockMvc.perform(get("/product/all")
-                        .header(AUTHORIZATION_HEADER, BEARER_PREFIX + accessToken))
+        AuthHelper.AuthHelperResponse userAuth = authHelper.createUserAuth();
+        String response = mockMvc.perform(get("/products")
+                        .header(AUTHORIZATION_HEADER, userAuth.getToken()))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andReturn().getResponse().getContentAsString();
@@ -81,15 +72,13 @@ class ProductControllerIntegrationTest {
 
     @Test
     void getProductById_ShouldReturnProduct() throws Exception {
-        User user = UserDataBuilder.buildUserWithAllFields().build();
         Product product = ProductDataBuilder.buildProductWithAllFields().build();
 
-        userRepository.save(user);
         productRepository.save(product);
 
-        String accessToken = jwtService.generateAccessToken(user);
-        String response = mockMvc.perform(get("/product/" + product.getId())
-                        .header(AUTHORIZATION_HEADER, BEARER_PREFIX + accessToken))
+        AuthHelper.AuthHelperResponse userAuth = authHelper.createUserAuth();
+        String response = mockMvc.perform(get("/products/" + product.getId())
+                        .header(AUTHORIZATION_HEADER, userAuth.getToken()))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andReturn().getResponse().getContentAsString();
@@ -103,14 +92,11 @@ class ProductControllerIntegrationTest {
 
     @Test
     void createProduct_ShouldReturnCreatedProduct() throws Exception {
-        User user = UserDataBuilder.buildUserWithAllFields().build();
         Product product = ProductDataBuilder.buildProductWithAllFields().build();
 
-        userRepository.save(user);
-        String accessToken = jwtService.generateAccessToken(user);
-
-        String response = mockMvc.perform(post("/product/create")
-                        .header(AUTHORIZATION_HEADER, BEARER_PREFIX + accessToken)
+        AuthHelper.AuthHelperResponse userAuth = authHelper.createUserAuth();
+        String response = mockMvc.perform(post("/products")
+                        .header(AUTHORIZATION_HEADER, userAuth.getToken())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(product)))
                 .andExpect(status().isOk())
@@ -127,18 +113,16 @@ class ProductControllerIntegrationTest {
 
     @Test
     void updateProduct_ShouldUpdateAndReturnProduct() throws Exception {
-        User user = UserDataBuilder.buildUserWithAllFields().build();
         Product product = ProductDataBuilder.buildProductWithAllFields().build();
         Product updatedProduct = ProductDataBuilder.buildProductWithAllFields()
                 .name("Updated Product")
                 .build();
 
-        userRepository.save(user);
         product = productRepository.save(product);
-        String accessToken = jwtService.generateAccessToken(user);
 
-        String response = mockMvc.perform(put("/product/" + product.getId())
-                        .header(AUTHORIZATION_HEADER, BEARER_PREFIX + accessToken)
+        AuthHelper.AuthHelperResponse userAuth = authHelper.createUserAuth();
+        String response = mockMvc.perform(put("/products/" + product.getId())
+                        .header(AUTHORIZATION_HEADER, userAuth.getToken())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updatedProduct)))
                 .andExpect(status().isOk())
@@ -153,17 +137,15 @@ class ProductControllerIntegrationTest {
 
     @Test
     void deleteProduct_ShouldRemoveProduct() throws Exception {
-        User user = UserDataBuilder.buildUserWithAllFields().build();
         Product product = ProductDataBuilder.buildProductWithAllFields().build();
 
-        userRepository.save(user);
         product = productRepository.save(product);
-        String accessToken = jwtService.generateAccessToken(user);
 
         assertThat(productRepository.findById(product.getId())).isPresent();
 
-        mockMvc.perform(delete("/product/" + product.getId())
-                        .header(AUTHORIZATION_HEADER, BEARER_PREFIX + accessToken))
+        AuthHelper.AuthHelperResponse userAuth = authHelper.createUserAuth();
+        mockMvc.perform(delete("/products/" + product.getId())
+                        .header(AUTHORIZATION_HEADER, userAuth.getToken()))
                 .andExpect(status().isOk());
 
         assertThat(productRepository.findById(product.getId())).isNotPresent();

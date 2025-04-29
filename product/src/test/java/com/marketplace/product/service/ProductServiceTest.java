@@ -11,11 +11,12 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import java.math.BigDecimal;
 import java.util.*;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @SpringBootTest
-class ProductServiceImplTest {
+class ProductServiceTest {
 
     @MockitoBean
     private ProductRepository productRepository;
@@ -28,20 +29,19 @@ class ProductServiceImplTest {
         Product product = ProductDataBuilder.buildProductWithAllFields().build();
         when(productRepository.findAll()).thenReturn(List.of(product));
 
-        List<Product> result = productService.getAllProducts();
+        List<Product> products = productService.findAll();
 
-        assertEquals(1, result.size());
-        assertEquals("Test Product", result.get(0).getName());
+        assertEquals(1, products.size());
+        assertEquals("Test Product", products.get(0).getName());
     }
 
     @Test
     void shouldReturnProductById() {
         Product product = ProductDataBuilder.buildProductWithAllFields().build();
-        String id = product.getId();
-        when(productRepository.findById(id)).thenReturn(Optional.of(product));
 
-        Product result = productService.getProductById(id);
+        when(productRepository.findById(product.getId())).thenReturn(Optional.of(product));
 
+        Product result = productService.findById(product.getId());
         assertEquals(product, result);
     }
 
@@ -51,10 +51,10 @@ class ProductServiceImplTest {
         when(productRepository.findById(id)).thenReturn(Optional.empty());
 
         Exception exception = assertThrows(RuntimeException.class, () -> {
-            productService.getProductById(id);
+            productService.findById(id);
         });
 
-        assertTrue(exception.getMessage().contains("not found"));
+        assertThat(exception.getMessage()).isEqualTo("Product not found with id: " + id);
     }
 
     @Test
@@ -62,41 +62,38 @@ class ProductServiceImplTest {
         Product product = ProductDataBuilder.buildProductWithAllFields().build();
         when(productRepository.save(product)).thenReturn(product);
 
-        Product created = productService.createProduct(product);
+        Product resultProduct = productService.create(product);
 
-        assertEquals(product, created);
+        assertEquals(product, resultProduct);
         verify(productRepository, times(1)).save(product);
     }
 
     @Test
     void shouldUpdateProduct() {
-        Product original = ProductDataBuilder.buildProductWithAllFields().build();
-        String id = original.getId();
-        Product updated = ProductDataBuilder.buildProductWithAllFields()
-                .id(id)
+        Product product = ProductDataBuilder.buildProductWithAllFields().build();
+        Product updatedProduct = ProductDataBuilder.buildProductWithAllFields()
+                .id(product.getId())
                 .name("Updated Name")
                 .description("Updated Description")
                 .price(BigDecimal.valueOf(199.99))
                 .build();
 
-        when(productRepository.findById(id)).thenReturn(Optional.of(original));
-        when(productRepository.save(any(Product.class))).thenReturn(updated);
+        when(productRepository.findById(product.getId())).thenReturn(Optional.of(product));
+        when(productRepository.save(any(Product.class))).thenReturn(updatedProduct);
 
-        Product result = productService.updateProduct(id, updated);
+        Product resultProduct = productService.update(product.getId(), updatedProduct);
 
-        assertEquals("Updated Name", result.getName());
-        assertEquals("Updated Description", result.getDescription());
-        assertEquals(BigDecimal.valueOf(199.99), result.getPrice());
+        assertEquals("Updated Name", resultProduct.getName());
+        assertEquals("Updated Description", resultProduct.getDescription());
+        assertEquals(BigDecimal.valueOf(199.99), resultProduct.getPrice());
     }
 
     @Test
     void shouldDeleteProduct() {
         Product product = ProductDataBuilder.buildProductWithAllFields().build();
-        String id = product.getId();
-        when(productRepository.findById(id)).thenReturn(Optional.of(product));
 
-        productService.deleteProduct(id);
-
+        when(productRepository.findById(product.getId())).thenReturn(Optional.of(product));
+        productService.delete(product.getId());
         verify(productRepository, times(1)).delete(product);
     }
 }

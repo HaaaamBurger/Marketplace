@@ -10,6 +10,7 @@ import com.marketplace.auth.web.model.UserRole;
 import com.marketplace.auth.web.rest.dto.AuthRefreshRequest;
 import com.marketplace.auth.web.rest.dto.AuthRequest;
 import com.marketplace.auth.web.rest.dto.AuthResponse;
+import com.marketplace.common.model.UserStatus;
 import io.jsonwebtoken.JwtException;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -58,11 +59,11 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     public String signUp(AuthRequest authRequest) {
 
         throwExceptionIfUserExistsByEmail(authRequest.getEmail());
-
         String encodedPassword = passwordEncoder.encode(authRequest.getPassword());
 
         userRepository.save(User.builder()
                 .role(UserRole.USER)
+                .status(UserStatus.ACTIVE)
                 .email(authRequest.getEmail())
                 .password(encodedPassword)
                 .build());
@@ -85,6 +86,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
 
     private AuthResponse generateTokenPair(UserDetails userDetails) {
+
         String accessToken = jwtService.generateAccessToken(userDetails);
         String refreshToken = jwtService.generateRefreshToken(userDetails);
 

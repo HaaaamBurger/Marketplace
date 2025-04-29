@@ -1,9 +1,11 @@
 package com.marketplace.auth.web.model;
 
 import com.marketplace.common.model.AuditableEntity;
+import com.marketplace.common.model.UserStatus;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.security.core.GrantedAuthority;
@@ -15,7 +17,7 @@ import java.util.Collections;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder(toBuilder = true)
+@SuperBuilder(toBuilder = true)
 @Document(collection = "users")
 @EqualsAndHashCode(callSuper = true)
 public class User extends AuditableEntity implements UserDetails {
@@ -28,7 +30,9 @@ public class User extends AuditableEntity implements UserDetails {
 
     private UserRole role;
 
-    @NotBlank(message = "Password cannot be blank")
+    private UserStatus status;
+
+    @NotBlank(message = "Password is required")
     private String password;
 
     @Override
