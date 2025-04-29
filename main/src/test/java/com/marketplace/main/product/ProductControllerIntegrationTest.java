@@ -56,8 +56,9 @@ class ProductControllerIntegrationTest {
 
         productRepository.save(product);
 
+        AuthHelper.AuthHelperResponse userAuth = authHelper.createUserAuth();
         String response = mockMvc.perform(get("/products")
-                        .header(AUTHORIZATION_HEADER, authHelper.createUserAuth()))
+                        .header(AUTHORIZATION_HEADER, userAuth.getToken()))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andReturn().getResponse().getContentAsString();
@@ -75,8 +76,9 @@ class ProductControllerIntegrationTest {
 
         productRepository.save(product);
 
+        AuthHelper.AuthHelperResponse userAuth = authHelper.createUserAuth();
         String response = mockMvc.perform(get("/products/" + product.getId())
-                        .header(AUTHORIZATION_HEADER, authHelper.createUserAuth()))
+                        .header(AUTHORIZATION_HEADER, userAuth.getToken()))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andReturn().getResponse().getContentAsString();
@@ -92,8 +94,9 @@ class ProductControllerIntegrationTest {
     void createProduct_ShouldReturnCreatedProduct() throws Exception {
         Product product = ProductDataBuilder.buildProductWithAllFields().build();
 
+        AuthHelper.AuthHelperResponse userAuth = authHelper.createUserAuth();
         String response = mockMvc.perform(post("/products")
-                        .header(AUTHORIZATION_HEADER, authHelper.createUserAuth())
+                        .header(AUTHORIZATION_HEADER, userAuth.getToken())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(product)))
                 .andExpect(status().isOk())
@@ -117,8 +120,9 @@ class ProductControllerIntegrationTest {
 
         product = productRepository.save(product);
 
+        AuthHelper.AuthHelperResponse userAuth = authHelper.createUserAuth();
         String response = mockMvc.perform(put("/products/" + product.getId())
-                        .header(AUTHORIZATION_HEADER, authHelper.createUserAuth())
+                        .header(AUTHORIZATION_HEADER, userAuth.getToken())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updatedProduct)))
                 .andExpect(status().isOk())
@@ -139,8 +143,9 @@ class ProductControllerIntegrationTest {
 
         assertThat(productRepository.findById(product.getId())).isPresent();
 
+        AuthHelper.AuthHelperResponse userAuth = authHelper.createUserAuth();
         mockMvc.perform(delete("/products/" + product.getId())
-                        .header(AUTHORIZATION_HEADER, authHelper.createUserAuth()))
+                        .header(AUTHORIZATION_HEADER, userAuth.getToken()))
                 .andExpect(status().isOk());
 
         assertThat(productRepository.findById(product.getId())).isNotPresent();

@@ -3,6 +3,7 @@ package com.marketplace.auth.security;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
@@ -11,6 +12,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -20,6 +22,8 @@ public class JwtService {
     public static final String AUTHORIZATION_HEADER = "Authorization";
 
     public static final String BEARER_PREFIX = "Bearer ";
+
+    public static final String ROLES_CLAIM = "roles";
 
     @Value("${security.jwt.secret-key}")
     private String jwtSecretKey;
@@ -31,7 +35,8 @@ public class JwtService {
     private long jwtRefreshExpirationTime;
 
     public String generateAccessToken(UserDetails userDetails) {
-        return generateAccessToken(userDetails, new HashMap<>());
+        List<String> roles = getRoles(userDetails);
+        return generateAccessToken(userDetails, Map.of(ROLES_CLAIM, roles));
     }
 
     public String generateAccessToken(UserDetails userDetails, Map<String, Object> claims) {
@@ -39,7 +44,8 @@ public class JwtService {
     }
 
     public String generateRefreshToken(UserDetails userDetails) {
-        return generateRefreshToken(userDetails, new HashMap<>());
+        List<String> roles = getRoles(userDetails);
+        return generateRefreshToken(userDetails, Map.of(ROLES_CLAIM, roles));
     }
 
     public String generateRefreshToken(UserDetails userDetails, Map<String, Object> claims) {
@@ -95,5 +101,11 @@ public class JwtService {
 
     public String extractSubject(String token) {
         return extractClaim(token, Claims::getSubject);
+    }
+
+    public List<String> getRoles(UserDetails userDetails) {
+        return userDetails.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .toList();
     }
 }

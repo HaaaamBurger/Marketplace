@@ -72,9 +72,9 @@ public class UserControllerIntegrationTest {
     public void createUser_shouldReturnCreatedUser() throws Exception {
         UserCreateRequest userCreateRequest = UserCreateRequestDataBuilder.withAllFields().build();
 
-        String adminAuth = authHelper.createAdminAuth();
+        AuthHelper.AuthHelperResponse adminAuth = authHelper.createAdminAuth();
         String response = mockMvc.perform(post("/users")
-                        .header(AUTHORIZATION_HEADER, adminAuth)
+                        .header(AUTHORIZATION_HEADER, adminAuth.getToken())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(userCreateRequest)))
                 .andExpect(status().isOk())
@@ -91,9 +91,9 @@ public class UserControllerIntegrationTest {
     public void createUser_WhenRoleUser_ThenForbidden() throws Exception {
         UserCreateRequest userCreateRequest = UserCreateRequestDataBuilder.withAllFields().build();
 
-        String userAuth = authHelper.createUserAuth();
+        AuthHelper.AuthHelperResponse userAuth = authHelper.createUserAuth();
         String response = mockMvc.perform(post("/users")
-                        .header(AUTHORIZATION_HEADER, userAuth)
+                        .header(AUTHORIZATION_HEADER, userAuth.getToken())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(userCreateRequest)))
                 .andExpect(status().isForbidden())
@@ -112,11 +112,11 @@ public class UserControllerIntegrationTest {
         User user = UserDataBuilder.buildUserWithAllFields().build();
         UserCreateRequest userCreateRequest = UserCreateRequestDataBuilder.withAllFields().build();
 
-        String adminAuth = authHelper.createAdminAuth();
+        AuthHelper.AuthHelperResponse adminAuth = authHelper.createAdminAuth();
         userRepository.save(user);
 
         String response = mockMvc.perform(post("/users")
-                        .header(AUTHORIZATION_HEADER, adminAuth)
+                        .header(AUTHORIZATION_HEADER, adminAuth.getToken())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(userCreateRequest)))
                 .andExpect(status().isBadRequest())
@@ -139,11 +139,11 @@ public class UserControllerIntegrationTest {
                 .email("test2@gmail.com")
                 .build();
 
-        String adminAuth = authHelper.createAdminAuth();
+        AuthHelper.AuthHelperResponse adminAuth = authHelper.createAdminAuth();
         userRepository.saveAll(List.of(user1, user2));
 
         String response = mockMvc.perform(get("/users")
-                        .header(AUTHORIZATION_HEADER, adminAuth))
+                        .header(AUTHORIZATION_HEADER, adminAuth.getToken()))
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
 
@@ -162,11 +162,11 @@ public class UserControllerIntegrationTest {
     public void findById_ThenReturnUser() throws Exception {
         User user = UserDataBuilder.buildUserWithAllFields().build();
 
-        String adminAuth = authHelper.createAdminAuth();
+        AuthHelper.AuthHelperResponse adminAuth = authHelper.createAdminAuth();
         userRepository.save(user);
 
         String response = mockMvc.perform(get("/users/{userId}", user.getId())
-                        .header(AUTHORIZATION_HEADER, adminAuth))
+                        .header(AUTHORIZATION_HEADER, adminAuth.getToken()))
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
 
@@ -180,10 +180,10 @@ public class UserControllerIntegrationTest {
     public void findById_ThenThrowException_WhenUserNotFound() throws Exception {
         String userId = String.valueOf(UUID.randomUUID());
 
-        String adminAuth = authHelper.createAdminAuth();
+        AuthHelper.AuthHelperResponse adminAuth = authHelper.createAdminAuth();
 
         String response = mockMvc.perform(get("/users/{userId}", userId)
-                        .header(AUTHORIZATION_HEADER, adminAuth))
+                        .header(AUTHORIZATION_HEADER, adminAuth.getToken()))
                 .andExpect(status().isNotFound())
                 .andReturn().getResponse().getContentAsString();
 
@@ -200,11 +200,11 @@ public class UserControllerIntegrationTest {
                 .build();
         User user = UserDataBuilder.buildUserWithAllFields().build();
 
-        String adminAuth = authHelper.createAdminAuth();
+        AuthHelper.AuthHelperResponse adminAuth = authHelper.createAdminAuth();
         userRepository.save(user);
 
         String response = mockMvc.perform(put("/users/{userId}", user.getId())
-                        .header(AUTHORIZATION_HEADER, adminAuth)
+                        .header(AUTHORIZATION_HEADER, adminAuth.getToken())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(userUpdateRequest)))
                 .andExpect(status().isOk())
@@ -225,11 +225,11 @@ public class UserControllerIntegrationTest {
                 .build();
         User user = UserDataBuilder.buildUserWithAllFields().build();
 
-        String adminAuth = authHelper.createAdminAuth();
+        AuthHelper.AuthHelperResponse adminAuth = authHelper.createAdminAuth();
         userRepository.save(user);
 
         mockMvc.perform(put("/users/{userId}", user.getId())
-                        .header(AUTHORIZATION_HEADER, adminAuth)
+                        .header(AUTHORIZATION_HEADER, adminAuth.getToken())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(userUpdateRequest)))
                 .andExpect(status().isOk());
@@ -248,10 +248,10 @@ public class UserControllerIntegrationTest {
                 .email("test1@gmail.com")
                 .build();
 
-        String adminAuth = authHelper.createAdminAuth();
+        AuthHelper.AuthHelperResponse adminAuth = authHelper.createAdminAuth();
 
         String response = mockMvc.perform(put("/users/{userId}", userId)
-                        .header(AUTHORIZATION_HEADER, adminAuth)
+                        .header(AUTHORIZATION_HEADER, adminAuth.getToken())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(userUpdateRequest)))
                 .andExpect(status().isNotFound())
@@ -273,11 +273,11 @@ public class UserControllerIntegrationTest {
                 .status(UserStatus.BLOCKED)
                 .build();
 
-        String adminAuth = authHelper.createAdminAuth();
+        AuthHelper.AuthHelperResponse adminAuth = authHelper.createAdminAuth();
         userRepository.save(user);
 
         mockMvc.perform(put("/users/status")
-                        .header(AUTHORIZATION_HEADER, adminAuth)
+                        .header(AUTHORIZATION_HEADER, adminAuth.getToken())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(userStatusRequest)))
                 .andExpect(status().isOk());
@@ -297,10 +297,10 @@ public class UserControllerIntegrationTest {
                 .status(UserStatus.BLOCKED)
                 .build();
 
-        String adminAuth = authHelper.createAdminAuth();
+        AuthHelper.AuthHelperResponse adminAuth = authHelper.createAdminAuth();
 
         String response = mockMvc.perform(put("/users/status")
-                        .header(AUTHORIZATION_HEADER, adminAuth)
+                        .header(AUTHORIZATION_HEADER, adminAuth.getToken())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(userStatusRequest)))
                 .andExpect(status().isNotFound()).andReturn().getResponse().getContentAsString();
@@ -314,11 +314,11 @@ public class UserControllerIntegrationTest {
     public void delete_ThenDeleteUser() throws Exception {
         User user = UserDataBuilder.buildUserWithAllFields().build();
 
-        String adminAuth = authHelper.createAdminAuth();
+        AuthHelper.AuthHelperResponse adminAuth = authHelper.createAdminAuth();
         userRepository.save(user);
 
         mockMvc.perform(delete("/users/{userId}", user.getId())
-                        .header(AUTHORIZATION_HEADER, adminAuth))
+                        .header(AUTHORIZATION_HEADER, adminAuth.getToken()))
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
 
@@ -331,10 +331,10 @@ public class UserControllerIntegrationTest {
     public void delete_ThenThrowException_WhenUserNotFound() throws Exception {
         String userId = String.valueOf(UUID.randomUUID());
 
-        String adminAuth = authHelper.createAdminAuth();
+        AuthHelper.AuthHelperResponse adminAuth = authHelper.createAdminAuth();
 
         String response = mockMvc.perform(delete("/users/{userId}", userId)
-                        .header(AUTHORIZATION_HEADER, adminAuth))
+                        .header(AUTHORIZATION_HEADER, adminAuth.getToken()))
                 .andExpect(status().isNotFound())
                 .andReturn().getResponse().getContentAsString();
 

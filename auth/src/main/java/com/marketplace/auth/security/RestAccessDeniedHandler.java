@@ -3,7 +3,6 @@ package com.marketplace.auth.security;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marketplace.common.exception.ExceptionResponse;
 import com.marketplace.common.exception.ExceptionType;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;

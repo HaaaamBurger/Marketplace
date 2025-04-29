@@ -56,8 +56,8 @@ public class AuthenticationServiceTest {
         when(mockUser.getPassword()).thenReturn(mockEncodedPassword);
         when(userRepository.findByEmail(authRequest.getEmail())).thenReturn(Optional.of(mockUser));
         when(passwordEncoder.matches(authRequest.getPassword(), mockEncodedPassword)).thenReturn(true);
-        when(jwtService.generateAccessToken(eq(mockUser), anyMap())).thenReturn(mockAccessToken);
-        when(jwtService.generateRefreshToken(eq(mockUser), anyMap())).thenReturn(mockRefreshToken);
+        when(jwtService.generateAccessToken(mockUser)).thenReturn(mockAccessToken);
+        when(jwtService.generateRefreshToken(mockUser)).thenReturn(mockRefreshToken);
 
         AuthResponse authResponse = authenticationService.signIn(authRequest);
 
@@ -121,8 +121,8 @@ public class AuthenticationServiceTest {
         when(jwtService.extractSubject(mockValidRefreshToken)).thenReturn(mockSubject);
         when(userDetailsService.loadUserByUsername(mockSubject)).thenReturn(mockUser);
         when(jwtService.isTokenValid(mockValidRefreshToken, mockUser)).thenReturn(true);
-        when(jwtService.generateAccessToken(eq(mockUser), anyMap())).thenReturn(mockAccessToken);
-        when(jwtService.generateRefreshToken(eq(mockUser), anyMap())).thenReturn(mockRefreshToken);
+        when(jwtService.generateAccessToken(mockUser)).thenReturn(mockAccessToken);
+        when(jwtService.generateRefreshToken(mockUser)).thenReturn(mockRefreshToken);
 
         AuthResponse authResponse = authenticationService.refreshToken(authRefreshRequest);
 
