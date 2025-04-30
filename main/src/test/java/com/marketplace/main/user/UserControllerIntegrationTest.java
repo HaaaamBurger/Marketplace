@@ -342,6 +342,6 @@ public class UserControllerIntegrationTest {
         assertThat(exceptionResponse).isNotNull();
         assertThat(exceptionResponse.getStatus()).isEqualTo(HttpStatus.NOT_FOUND.value());
         assertThat(exceptionResponse.getType()).isEqualTo(ExceptionType.WEB);
-        assertThat(exceptionResponse.getMessage()).isEqualTo("User not found by id: " + userId);
+        assertThat(exceptionResponse.getMessage()).isEqualTo("User not found!");
     }
 }

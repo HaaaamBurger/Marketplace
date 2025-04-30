@@ -1,5 +1,6 @@
 package com.marketplace.auth.service;
 
+import com.marketplace.auth.exception.CredentialException;
 import com.marketplace.auth.exception.EntityExistsException;
 import com.marketplace.auth.exception.EntityNotFoundException;
 import com.marketplace.auth.repository.UserRepository;
@@ -18,7 +19,6 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
-import javax.security.auth.login.CredentialException;
 import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;

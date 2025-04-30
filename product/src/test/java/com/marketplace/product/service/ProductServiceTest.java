@@ -10,6 +10,7 @@ import com.marketplace.product.repository.ProductRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
@@ -62,7 +63,7 @@ class ProductServiceTest {
                 .build();
 
         when(productRepository.save(any(Product.class))).thenAnswer(invocation -> invocation.getArgument(0));
-        AuthenticationServiceException exception = assertThrows(AuthenticationServiceException.class, () -> productService.create(productRequest));
+        AuthenticationCredentialsNotFoundException exception = assertThrows(AuthenticationCredentialsNotFoundException.class, () -> productService.create(productRequest));
         assertThat(exception.getMessage()).isEqualTo("Authentication is unavailable!");
     }
 
@@ -95,7 +96,7 @@ class ProductServiceTest {
         when(productRepository.findById(id)).thenReturn(Optional.empty());
 
         Exception exception = assertThrows(EntityNotFoundException.class, () -> productService.findById(id));
-        assertThat(exception.getMessage()).isEqualTo("Product not found with id: " + id);
+        assertThat(exception.getMessage()).isEqualTo("Product not found!");
     }
 
 

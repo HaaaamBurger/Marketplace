@@ -224,6 +224,6 @@ public class UserServiceTest {
     private void assertThatThrownByFindById(String userId) {
         assertThatThrownBy(() -> userService.findById(userId))
                 .isInstanceOf(EntityNotFoundException.class)
-                .hasMessage("User not found by id: " + userId);
+                .hasMessage("User not found!");
     }
 }
