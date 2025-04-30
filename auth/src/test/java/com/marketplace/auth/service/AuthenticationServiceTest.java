@@ -1,7 +1,7 @@
 package com.marketplace.auth.service;
 
-import com.marketplace.common.exception.EntityExistsException;
-import com.marketplace.common.exception.EntityNotFoundException;
+import com.marketplace.auth.exception.EntityExistsException;
+import com.marketplace.auth.exception.EntityNotFoundException;
 import com.marketplace.auth.repository.UserRepository;
 import com.marketplace.auth.security.JwtService;
 import com.marketplace.auth.web.model.User;

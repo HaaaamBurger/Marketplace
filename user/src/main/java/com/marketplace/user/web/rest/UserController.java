@@ -2,10 +2,9 @@ package com.marketplace.user.web.rest;
 
 import com.marketplace.auth.web.model.User;
 import com.marketplace.user.service.UserService;
-import com.marketplace.user.web.dto.UserCreateRequest;
+import com.marketplace.user.web.dto.UserRequest;
 import com.marketplace.user.web.dto.UserResponse;
 import com.marketplace.user.web.dto.UserStatusRequest;
-import com.marketplace.user.web.dto.UserUpdateRequest;
 import com.marketplace.user.web.util.UserEntityMapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -24,30 +23,30 @@ public class UserController {
     private final UserEntityMapper userEntityMapper;
 
     @PostMapping
-    public ResponseEntity<UserResponse> createUser(@Valid @RequestBody UserCreateRequest userCreateRequest) {
-        User user = userService.create(userCreateRequest);
-        return ResponseEntity.ok(userEntityMapper.mapEntityToDto(user));
+    public ResponseEntity<UserResponse> createUser(@Valid @RequestBody UserRequest userRequest) {
+        User user = userService.create(userRequest);
+        return ResponseEntity.ok(userEntityMapper.mapEntityToResponseDto(user));
     }
 
     @GetMapping
     public ResponseEntity<List<UserResponse>> getAll() {
         List<User> users = userService.findAll();
-        return ResponseEntity.ok(userEntityMapper.mapEntitiesToDtos(users));
+        return ResponseEntity.ok(userEntityMapper.mapEntitiesToResponseDtos(users));
     }
 
     @GetMapping("/{userId}")
     public ResponseEntity<UserResponse> getById(@PathVariable String userId) {
         User user = userService.findById(userId);
-        return ResponseEntity.ok(userEntityMapper.mapEntityToDto(user));
+        return ResponseEntity.ok(userEntityMapper.mapEntityToResponseDto(user));
     }
 
     @PutMapping("/{userId}")
     public ResponseEntity<UserResponse> updateUser(
             @PathVariable String userId,
-            @Valid @RequestBody UserUpdateRequest userUpdateRequest
+            @Valid @RequestBody UserRequest userRequest
     ) {
-        User user = userService.update(userId, userUpdateRequest);
-        return ResponseEntity.ok(userEntityMapper.mapEntityToDto(user));
+        User user = userService.update(userId, userRequest);
+        return ResponseEntity.ok(userEntityMapper.mapEntityToResponseDto(user));
     }
 
     @PutMapping("/status")

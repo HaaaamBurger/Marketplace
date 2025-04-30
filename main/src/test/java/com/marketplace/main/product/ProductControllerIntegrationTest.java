@@ -2,9 +2,9 @@ package com.marketplace.main.product;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.marketplace.auth.exception.ExceptionResponse;
+import com.marketplace.auth.exception.ExceptionType;
 import com.marketplace.auth.util.AuthHelper;
-import com.marketplace.common.exception.ExceptionResponse;
-import com.marketplace.common.exception.ExceptionType;
 import com.marketplace.main.util.ProductDataBuilder;
 import com.marketplace.product.repository.ProductRepository;
 import com.marketplace.product.web.model.Product;

@@ -2,20 +2,19 @@ package com.marketplace.user.service;
 
 import com.marketplace.auth.web.model.User;
 import com.marketplace.common.model.UserStatus;
-import com.marketplace.user.web.dto.UserCreateRequest;
-import com.marketplace.user.web.dto.UserUpdateRequest;
+import com.marketplace.user.web.dto.UserRequest;
 
 import java.util.List;
 
 public interface UserService {
 
-    User create(UserCreateRequest userCreateRequest);
+    User create(UserRequest userRequest);
 
     List<User> findAll();
 
     User findById(String userId);
 
-    User update(String userId, UserUpdateRequest userUpdateRequest);
+    User update(String userId, UserRequest userRequest);
 
     void updateStatus(String userId, UserStatus userStatus);
 

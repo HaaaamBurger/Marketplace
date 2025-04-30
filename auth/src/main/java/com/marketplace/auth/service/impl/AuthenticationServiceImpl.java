@@ -1,6 +1,6 @@
 package com.marketplace.auth.service.impl;
 
-import com.marketplace.common.exception.EntityExistsException;
+import com.marketplace.auth.exception.EntityExistsException;
 import com.marketplace.auth.exception.TokenNotValidException;
 import com.marketplace.auth.repository.UserRepository;
 import com.marketplace.auth.security.JwtService;
