@@ -11,7 +11,7 @@ import com.marketplace.product.web.util.ProductEntityMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.authentication.AuthenticationServiceException;
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -73,16 +73,16 @@ public final class ProductServiceImpl implements ProductService {
 
         if (authentication == null) {
             log.error("[PRODUCT_SERVICE_IMPL]: Authentication is null");
-            throw new AuthenticationServiceException("Authentication is unavailable!");
+            throw new AuthenticationCredentialsNotFoundException("Authentication is unavailable!");
         }
 
         return (User) authentication.getPrincipal();
     }
 
     private Product findProductByIdOrThrowException(String productId) {
-        log.error("[PRODUCT_SERVICE_IMPL]: Product not found");
+        log.error("[PRODUCT_SERVICE_IMPL]: Product not found by id {}", productId);
         return productRepository.findById(productId)
-                .orElseThrow(() -> new EntityNotFoundException("Product not found with id: " + productId));
+                .orElseThrow(() -> new EntityNotFoundException("Product not found!"));
     }
 
     private Product validateProductOwnerElseThrowException(String productId) {

@@ -9,12 +9,14 @@ import com.marketplace.user.service.UserService;
 import com.marketplace.user.web.dto.UserRequest;
 import com.marketplace.user.web.util.UserEntityMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public final class UserServiceImpl implements UserService {
@@ -77,12 +79,16 @@ public final class UserServiceImpl implements UserService {
         Optional<User> userOptional = userRepository.findByEmail(email);
 
         if (userOptional.isPresent()) {
+            log.error("[USER_SERVICE_IMPL]: User already exists by email: {}", email);
             throw new EntityExistsException("User already exists!");
         }
     }
 
     private User findUserByIdOrThrowException(String userId) {
         return userRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("User not found by id: " + userId));
+                .orElseThrow(() -> {
+                    log.error("[USER_SERVICE_IMPL]: User not found by id: {}", userId);
+                    return new EntityNotFoundException("User not found!");
+                });
     }
 }

@@ -1,9 +1,6 @@
 package com.marketplace.main.exception;
 
-import com.marketplace.auth.exception.EntityExistsException;
-import com.marketplace.auth.exception.EntityNotFoundException;
-import com.marketplace.auth.exception.ExceptionResponse;
-import com.marketplace.auth.exception.ExceptionType;
+import com.marketplace.auth.exception.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
@@ -13,7 +10,6 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import javax.security.auth.login.CredentialException;
 import java.util.stream.Collectors;
 
 import static com.marketplace.common.constants.Delimiters.COMMA_DELIMITER;
@@ -96,4 +92,5 @@ public class MainExceptionHandler {
                         .build()
         );
     }
+
 }

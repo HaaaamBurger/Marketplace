@@ -1,5 +1,6 @@
 package com.marketplace.auth.service.impl;
 
+import com.marketplace.auth.exception.CredentialException;
 import com.marketplace.auth.exception.EntityExistsException;
 import com.marketplace.auth.exception.TokenNotValidException;
 import com.marketplace.auth.repository.UserRepository;
@@ -13,14 +14,12 @@ import com.marketplace.auth.web.rest.dto.AuthResponse;
 import com.marketplace.common.model.UserStatus;
 import io.jsonwebtoken.JwtException;
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import javax.security.auth.login.CredentialException;
 import java.util.Optional;
 
 @Slf4j
@@ -37,11 +36,13 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final UserDetailsService userDetailsService;
 
     @Override
-    @SneakyThrows
     public AuthResponse signIn(AuthRequest authRequest) {
 
         User user = userRepository.findByEmail(authRequest.getEmail())
-                .orElseThrow(() ->  new CredentialException("Wrong credentials!"));
+                .orElseThrow(() ->  {
+                    logAuthenticationError("User does not exist with email: " + authRequest.getEmail());
+                    return new CredentialException("Wrong credentials!");
+                });
 
         boolean isPasswordValid = passwordEncoder.matches(
                 authRequest.getPassword(),
@@ -49,6 +50,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         );
 
         if (!isPasswordValid) {
+            logAuthenticationError("User password " + authRequest.getPassword() + " is not matching");
             throw new CredentialException("Wrong credentials!");
         }
 
@@ -80,7 +82,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             return generateTokenPair(userDetails);
 
         } catch (JwtException exception) {
-            log.error("[AUTHENTICATION_SERVICE]: {}", exception.getMessage());
+            logAuthenticationError(exception.getMessage());
             throw new TokenNotValidException("Token not valid!");
         }
     }
@@ -105,7 +107,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         if (isTokenValid) {
             return userDetails;
         }
-
         throw new TokenNotValidException("Token not valid!");
     }
 
@@ -113,7 +114,12 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         Optional<User> userOptional = userRepository.findByEmail(email);
 
         if (userOptional.isPresent()) {
+            logAuthenticationError("User by email " + email + " already exists!");
             throw new EntityExistsException("User already exists!");
         }
+    }
+
+    private void logAuthenticationError(String message) {
+        log.error("[AUTHENTICATION_SERVICE_IMPL]: {}", message);
     }
 }

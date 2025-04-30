@@ -1,5 +1,6 @@
 package com.marketplace.auth.security;
 
+import com.marketplace.auth.web.model.UserRole;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -36,7 +37,7 @@ public class SecurityConfig {
                             "/swagger-ui/**",
                             "/v3/api-docs*/**"
                     ).permitAll()
-                    .requestMatchers("/users/**").hasAuthority("ADMIN")
+                    .requestMatchers("/users/**").hasAuthority(UserRole.ADMIN.name())
                     .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
