@@ -28,7 +28,7 @@ public class UserTest {
 
         Set<ConstraintViolation<User>> violations = validator.validate(user);
 
-        assertTrue(violations.isEmpty(), "User should be valid");
+        assertTrue(violations.isEmpty());
     }
 
     @Test
@@ -40,11 +40,13 @@ public class UserTest {
         Set<ConstraintViolation<User>> violations = validator.validate(user);
         assertEquals(1, violations.size());
 
-        ConstraintViolation<User> matchedViolation = getMatchedViolationByField(violations, "email");
+        ConstraintViolation<User> matchedViolation = getMatchedViolationByFieldAndMessage(
+                violations,
+                "email",
+                "Must be a valid e-mail address"
+        );
 
         assertThat(matchedViolation).isNotNull();
-        assertThat(matchedViolation.getPropertyPath().toString()).isEqualTo("email");
-        assertThat(matchedViolation.getMessage()).isEqualTo("Must be a valid e-mail address");
     }
 
     @Test
@@ -54,21 +56,38 @@ public class UserTest {
                 .build();
 
         Set<ConstraintViolation<User>> violations = validator.validate(user);
-        assertEquals(1, violations.size());
+        assertEquals(2, violations.size());
 
-        ConstraintViolation<User> matchedViolation = getMatchedViolationByField(violations, "password");
+        ConstraintViolation<User> blankPasswordViolation = getMatchedViolationByFieldAndMessage(
+                violations,
+                "password",
+                "Password is required"
+        );
 
-        assertThat(matchedViolation).isNotNull();
-        assertThat(matchedViolation.getPropertyPath().toString()).isEqualTo("password");
-        assertThat(matchedViolation.getMessage()).isEqualTo("Password is required");
+        ConstraintViolation<User> invalidLengthPasswordViolation = getMatchedViolationByFieldAndMessage(
+                violations,
+                "password",
+                "Password length must be between 8 to 32 characters"
+        );
+
+        assertThat(blankPasswordViolation).isNotNull();
+        assertThat(invalidLengthPasswordViolation).isNotNull();
     }
 
-    private ConstraintViolation<User> getMatchedViolationByField(Set<ConstraintViolation<User>> violations, String field) {
+    private ConstraintViolation<User> getMatchedViolationByFieldAndMessage(
+            Set<ConstraintViolation<User>> violations,
+            String violationField,
+            String violationMessage
+    ) {
         return violations.stream()
-                .filter(userConstraintViolation -> userConstraintViolation
-                        .getPropertyPath()
-                        .toString()
-                        .equals(field))
+                .filter(userConstraintViolation -> {
+                    String field = userConstraintViolation
+                            .getPropertyPath()
+                            .toString();
+                    String message = userConstraintViolation.getMessage();
+
+                    return violationField.equals(field) && violationMessage.equals(message);
+                })
                 .findFirst()
                 .orElseThrow();
     }

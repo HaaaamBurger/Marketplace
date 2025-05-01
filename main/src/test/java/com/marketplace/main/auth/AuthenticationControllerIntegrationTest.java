@@ -58,13 +58,10 @@ class AuthenticationControllerIntegrationTest {
     public void signUp_shouldReturnSuccessfulResponse() throws Exception {
         AuthRequest authRequest = AuthRequestDataBuilder.withAllFields().build();
 
-        String contentAsString = mockMvc.perform(post("/auth/sign-up")
+         mockMvc.perform(post("/auth/sign-up")
                         .content(objectMapper.writeValueAsString(authRequest))
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString();
-
-        assertThat(contentAsString).isEqualTo("User successfully created!");
+                .andExpect(status().isOk());
 
         Optional<User> optionalUser = userRepository.findByEmail(authRequest.getEmail());
 
@@ -97,13 +94,10 @@ class AuthenticationControllerIntegrationTest {
     public void signUp_shouldReturnSuccessfulResponseWithAuditing() throws Exception {
         AuthRequest authRequest = AuthRequestDataBuilder.withAllFields().build();
 
-        String contentAsString = mockMvc.perform(post("/auth/sign-up")
+        mockMvc.perform(post("/auth/sign-up")
                         .content(objectMapper.writeValueAsString(authRequest))
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString();
-
-        assertThat(contentAsString).isEqualTo("User successfully created!");
+                .andExpect(status().isOk());
 
         Optional<User> optionalUser = userRepository.findByEmail(authRequest.getEmail());
 

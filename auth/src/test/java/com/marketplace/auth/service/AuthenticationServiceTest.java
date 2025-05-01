@@ -3,6 +3,7 @@ package com.marketplace.auth.service;
 import com.marketplace.auth.exception.CredentialException;
 import com.marketplace.auth.exception.EntityExistsException;
 import com.marketplace.auth.exception.EntityNotFoundException;
+import com.marketplace.auth.exception.TokenNotValidException;
 import com.marketplace.auth.repository.UserRepository;
 import com.marketplace.auth.security.JwtService;
 import com.marketplace.auth.web.model.User;
@@ -70,9 +71,26 @@ public class AuthenticationServiceTest {
     public void signIn_shouldThrowException_WhenUserNotFound() {
         AuthRequest authRequest = AuthRequestDataBuilder.withAllFields().build();
 
-        when(userDetailsService.loadUserByUsername(authRequest.getEmail())).thenThrow(EntityNotFoundException.class);
+        when(userRepository.findByEmail((authRequest.getEmail()))).thenReturn(Optional.empty());
 
-        assertThrows(CredentialException.class, () -> authenticationService.signIn(authRequest));
+        String exceptionMessage = assertThrows(CredentialException.class, () -> authenticationService.signIn(authRequest)).getMessage();
+        assertThat(exceptionMessage).isNotBlank();
+        assertThat(exceptionMessage).isEqualTo("Wrong credentials!");
+    }
+
+    @Test
+    public void signIn_shouldThrowException_WhenPasswordNotMatched() {
+        User mockUser = mock(User.class);
+        String mockEncodedPassword = "mockEncodedPassword";
+        AuthRequest authRequest = AuthRequestDataBuilder.withAllFields().build();
+
+        when(userRepository.findByEmail((authRequest.getEmail()))).thenReturn(Optional.of(mockUser));
+        when(mockUser.getPassword()).thenReturn(mockEncodedPassword);
+        when(passwordEncoder.matches(authRequest.getPassword(), mockEncodedPassword)).thenReturn(false);
+
+        String exceptionMessage = assertThrows(CredentialException.class, () -> authenticationService.signIn(authRequest)).getMessage();
+        assertThat(exceptionMessage).isNotBlank();
+        assertThat(exceptionMessage).isEqualTo("Wrong credentials!");
     }
 
     @Test
@@ -83,15 +101,13 @@ public class AuthenticationServiceTest {
 
         when(userRepository.findByEmail(authRequest.getEmail())).thenReturn(Optional.empty());
         when(passwordEncoder.encode(authRequest.getPassword())).thenReturn(encodedPassword);
-        String responseString = authenticationService.signUp(authRequest);
+        authenticationService.signUp(authRequest);
 
         verify(userRepository).save(userCaptor.capture());
 
         assertThat(userCaptor.getValue().getEmail()).isEqualTo(authRequest.getEmail());
         assertThat(userCaptor.getValue().getPassword()).isEqualTo(encodedPassword);
         assertThat(userCaptor.getValue().getStatus()).isEqualTo(UserStatus.ACTIVE);
-        assertThat(responseString).isNotBlank();
-        assertThat(responseString).isEqualTo("User successfully created!");
     }
 
     @Test
@@ -129,5 +145,24 @@ public class AuthenticationServiceTest {
         assertNotNull(authResponse);
         assertThat(authResponse.getAccessToken()).isEqualTo(mockAccessToken);
         assertThat(authResponse.getRefreshToken()).isEqualTo(mockRefreshToken);
+    }
+
+    @Test
+    public void refreshToken_shouldThrowException_WhenTokenNotValid() {
+        String mockValidRefreshToken = "validRefreshToken";
+        String mockSubject = "mockSubject";
+        User mockUser = mock(User.class);
+
+        AuthRefreshRequest authRefreshRequest = AuthRefreshRequest.builder()
+                .refreshToken(mockValidRefreshToken)
+                .build();
+
+        when(jwtService.extractSubject(mockValidRefreshToken)).thenReturn(mockSubject);
+        when(userDetailsService.loadUserByUsername(mockSubject)).thenReturn(mockUser);
+        when(jwtService.isTokenValid(mockValidRefreshToken, mockUser)).thenReturn(false);
+
+        assertThatThrownBy(() -> authenticationService.refreshToken(authRefreshRequest))
+                .isInstanceOf(TokenNotValidException.class)
+                .hasMessage("Token not valid!");
     }
 }

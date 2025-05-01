@@ -54,11 +54,11 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             throw new CredentialException("Wrong credentials!");
         }
 
-        return generateTokenPair(user);
+        return generateAuthResponse(user);
     }
 
     @Override
-    public String signUp(AuthRequest authRequest) {
+    public void signUp(AuthRequest authRequest) {
 
         throwExceptionIfUserExistsByEmail(authRequest.getEmail());
         String encodedPassword = passwordEncoder.encode(authRequest.getPassword());
@@ -69,8 +69,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .email(authRequest.getEmail())
                 .password(encodedPassword)
                 .build());
-
-        return "User successfully created!";
     }
 
     @Override
@@ -79,7 +77,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         try {
             UserDetails userDetails = getUserDetailsIfTokenValidOrThrowException(authRefreshToken);
-            return generateTokenPair(userDetails);
+            return generateAuthResponse(userDetails);
 
         } catch (JwtException exception) {
             logAuthenticationError(exception.getMessage());
@@ -87,7 +85,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         }
     }
 
-    private AuthResponse generateTokenPair(UserDetails userDetails) {
+    private AuthResponse generateAuthResponse(UserDetails userDetails) {
 
         String accessToken = jwtService.generateAccessToken(userDetails);
         String refreshToken = jwtService.generateRefreshToken(userDetails);
@@ -107,6 +105,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         if (isTokenValid) {
             return userDetails;
         }
+
         throw new TokenNotValidException("Token not valid!");
     }
 
