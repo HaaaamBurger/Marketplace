@@ -1,5 +1,6 @@
 package com.marketplace.product.model;
 
+import com.marketplace.product.util.ProductDataBuilder;
 import com.marketplace.product.web.model.Product;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
@@ -25,22 +26,16 @@ class ProductTest {
 
     @Test
     void whenProductIsValid_thenNoViolations() {
-        Product product = Product.builder()
-                .name("Valid Product Name")
-                .description("This is a valid product description.")
-                .price(BigDecimal.valueOf(49.99))
-                .build();
+        Product product = ProductDataBuilder.buildProductWithAllFields().build();
 
         Set<ConstraintViolation<Product>> violations = validator.validate(product);
-        assertTrue(violations.isEmpty(), "Expected no validation violations");
+        assertTrue(violations.isEmpty());
     }
 
     @Test
     void whenNameIsBlank_thenValidationFails() {
-        Product product = Product.builder()
-                .name("  ")
-                .description("Valid description")
-                .price(BigDecimal.valueOf(49.99))
+        Product product = ProductDataBuilder.buildProductWithAllFields()
+                .name(" ")
                 .build();
 
         Set<ConstraintViolation<Product>> violations = validator.validate(product);
@@ -50,10 +45,8 @@ class ProductTest {
 
     @Test
     void whenNameIsTooShort_thenValidationFails() {
-        Product product = Product.builder()
-                .name("A")
-                .description("Valid description")
-                .price(BigDecimal.valueOf(49.99))
+        Product product = ProductDataBuilder.buildProductWithAllFields()
+                .name("t")
                 .build();
 
         Set<ConstraintViolation<Product>> violations = validator.validate(product);
@@ -63,10 +56,8 @@ class ProductTest {
 
     @Test
     void whenDescriptionTooShort_thenValidationFails() {
-        Product product = Product.builder()
-                .name("Valid Name")
-                .description("1234")
-                .price(BigDecimal.valueOf(49.99))
+        Product product = ProductDataBuilder.buildProductWithAllFields()
+                .description("test")
                 .build();
 
         Set<ConstraintViolation<Product>> violations = validator.validate(product);
@@ -76,22 +67,19 @@ class ProductTest {
 
     @Test
     void whenPriceIsNull_thenValidationFails() {
-        Product product = Product.builder()
-                .name("Valid Name")
-                .description("Valid description")
+        Product product = ProductDataBuilder.buildProductWithAllFields()
                 .price(null)
                 .build();
 
         Set<ConstraintViolation<Product>> violations = validator.validate(product);
         assertFalse(violations.isEmpty());
-        assertTrue(violations.stream().anyMatch(v -> v.getPropertyPath().toString().equals("price")));
+        assertTrue(violations.stream()
+                .anyMatch(v -> v.getPropertyPath().toString().equals("price")));
     }
 
     @Test
     void whenPriceIsNegative_thenValidationFails() {
-        Product product = Product.builder()
-                .name("Valid Name")
-                .description("Valid description")
+        Product product = ProductDataBuilder.buildProductWithAllFields()
                 .price(BigDecimal.valueOf(-5.00))
                 .build();
 
@@ -102,9 +90,7 @@ class ProductTest {
 
     @Test
     void whenPriceTooPrecise_thenValidationFails() {
-        Product product = Product.builder()
-                .name("Valid Name")
-                .description("Valid description")
+        Product product = ProductDataBuilder.buildProductWithAllFields()
                 .price(new BigDecimal("123456789.999"))
                 .build();
 

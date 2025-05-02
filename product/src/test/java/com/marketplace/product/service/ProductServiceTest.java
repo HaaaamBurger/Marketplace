@@ -11,7 +11,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
-import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -34,6 +33,26 @@ class ProductServiceTest {
     private ProductService productService;
 
     @Test
+    public void findById_shouldReturnProductById() {
+        Product product = ProductDataBuilder.buildProductWithAllFields().build();
+
+        when(productRepository.findById(product.getId())).thenReturn(Optional.of(product));
+
+        Product result = productService.findById(product.getId());
+        assertEquals(product, result);
+    }
+
+    @Test
+    public void findById_shouldThrowExceptionIfProductNotFound() {
+        String id = UUID.randomUUID().toString();
+
+        when(productRepository.findById(id)).thenReturn(Optional.empty());
+
+        Exception exception = assertThrows(EntityNotFoundException.class, () -> productService.findById(id));
+        assertThat(exception.getMessage()).isEqualTo("Product not found!");
+    }
+
+    @Test
     public void create_shouldCreateProduct() {
         User user = UserDataBuilder.buildUserWithAllFields().build();
         Product product = ProductDataBuilder.buildProductWithAllFields().build();
@@ -44,7 +63,7 @@ class ProductServiceTest {
                 .build();
 
         mockAuthenticationAndSetContext(user);
-
+        
         when(productRepository.save(any(Product.class))).thenAnswer(invocation -> invocation.getArgument(0));
         Product responseProduct = productService.create(productRequest);
 
@@ -78,27 +97,6 @@ class ProductServiceTest {
         assertEquals(1, products.size());
         assertEquals("Test Product", products.get(0).getName());
     }
-
-    @Test
-    public void findById_shouldReturnProductById() {
-        Product product = ProductDataBuilder.buildProductWithAllFields().build();
-
-        when(productRepository.findById(product.getId())).thenReturn(Optional.of(product));
-
-        Product result = productService.findById(product.getId());
-        assertEquals(product, result);
-    }
-
-    @Test
-    public void findById_shouldThrowExceptionIfProductNotFound() {
-        String id = UUID.randomUUID().toString();
-
-        when(productRepository.findById(id)).thenReturn(Optional.empty());
-
-        Exception exception = assertThrows(EntityNotFoundException.class, () -> productService.findById(id));
-        assertThat(exception.getMessage()).isEqualTo("Product not found!");
-    }
-
 
     @Test
     public void update_shouldUpdateProduct() {

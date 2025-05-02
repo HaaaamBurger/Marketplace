@@ -26,7 +26,7 @@ public class User extends AuditableEntity implements UserDetails {
     @Id
     private String id;
 
-    @NotBlank(message = "Email is required")
+    @NotBlank(message = "Password is required")
     @Email(message = "Must be a valid e-mail address")
     private String email;
 

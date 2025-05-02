@@ -37,6 +37,35 @@ public class UserServiceTest {
     private UserService userService;
 
     @Test
+    public void findById_shouldReturnUserById() {
+        String userId = String.valueOf(UUID.randomUUID());
+        User user = UserDataBuilder.buildUserWithAllFields()
+                .id(userId)
+                .build();
+
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+
+        User responseUser = userService.findById(userId);
+        assertThat(responseUser).isNotNull();
+        assertThat(responseUser.getId()).isEqualTo(userId);
+
+        verify(userRepository).findById(userId);
+    }
+
+    @Test
+    public void findById_shouldThrowException() {
+        String userId = String.valueOf(UUID.randomUUID());
+
+        when(userRepository.findById(userId)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> userService.findById(userId))
+                .isInstanceOf(EntityNotFoundException.class)
+                .hasMessage("User not found!");
+
+        verify(userRepository).findById(userId);
+    }
+
+    @Test
     public void create_shouldCreateUser() {
         String mockEmail = "mockEmail";
         String mockPassword = "mockPassword";
@@ -105,33 +134,6 @@ public class UserServiceTest {
     }
 
     @Test
-    public void findById_shouldReturnUserById() {
-        String userId = String.valueOf(UUID.randomUUID());
-        User user = UserDataBuilder.buildUserWithAllFields()
-                .id(userId)
-                .build();
-
-        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-
-        User responseUser = userService.findById(userId);
-        assertThat(responseUser).isNotNull();
-        assertThat(responseUser.getId()).isEqualTo(userId);
-
-        verify(userRepository).findById(userId);
-    }
-
-    @Test
-    public void findById_shouldThrowException() {
-        String userId = String.valueOf(UUID.randomUUID());
-
-        when(userRepository.findById(userId)).thenReturn(Optional.empty());
-
-        assertThatThrownByFindById(userId);
-
-        verify(userRepository).findById(userId);
-    }
-
-    @Test
     public void update_shouldReturnUpdatedUser() {
         String userId = String.valueOf(UUID.randomUUID());
         User user = UserDataBuilder.buildUserWithAllFields().build();
@@ -154,17 +156,6 @@ public class UserServiceTest {
     }
 
     @Test
-    public void update_shouldThrowException() {
-        String userId = String.valueOf(UUID.randomUUID());
-
-        when(userRepository.findById(userId)).thenReturn(Optional.empty());
-
-        assertThatThrownByFindById(userId);
-
-        verify(userRepository).findById(userId);
-    }
-
-    @Test
     public void updateStatus_shouldUpdateStatus() {
         String userId = String.valueOf(UUID.randomUUID());
         User user = UserDataBuilder.buildUserWithAllFields().build();
@@ -176,17 +167,6 @@ public class UserServiceTest {
         assertThat(user.getStatus()).isEqualTo(UserStatus.BLOCKED);
 
         verify(userRepository).save(user);
-    }
-
-    @Test
-    public void updateStatus_shouldThrowException() {
-        String userId = String.valueOf(UUID.randomUUID());
-
-        when(userRepository.findById(userId)).thenReturn(Optional.empty());
-
-        assertThatThrownByFindById(userId);
-
-        verify(userRepository).findById(userId);
     }
 
     @Test
@@ -210,20 +190,4 @@ public class UserServiceTest {
         verify(userRepository, times(2)).findById(userId);
     }
 
-    @Test
-    public void delete_shouldThrowException() {
-        String userId = String.valueOf(UUID.randomUUID());
-
-        when(userRepository.findById(userId)).thenReturn(Optional.empty());
-
-        assertThatThrownByFindById(userId);
-
-        verify(userRepository).findById(userId);
-    }
-
-    private void assertThatThrownByFindById(String userId) {
-        assertThatThrownBy(() -> userService.findById(userId))
-                .isInstanceOf(EntityNotFoundException.class)
-                .hasMessage("User not found!");
-    }
 }
