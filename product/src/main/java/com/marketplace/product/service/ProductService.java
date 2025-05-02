@@ -1,19 +1,20 @@
 package com.marketplace.product.service;
 
+import com.marketplace.product.web.dto.ProductRequest;
 import com.marketplace.product.web.model.Product;
 
 import java.util.List;
 
 public interface ProductService {
 
-    List<Product> getAllProducts();
+    Product create(ProductRequest productRequest);
 
-    Product getProductById(String id);
+    List<Product> findAll();
 
-    Product createProduct(Product product);
+    Product findById(String productId);
 
-    Product updateProduct(String id, Product updatedProduct);
+    Product update(String productId, ProductRequest productRequest);
 
-    void deleteProduct(String id);
+    void delete(String productId);
 
 }

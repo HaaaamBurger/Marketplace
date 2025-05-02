@@ -1,7 +1,7 @@
 package com.marketplace.order.service.impl;
 
+import com.marketplace.auth.exception.EntityNotFoundException;
 import com.marketplace.auth.repository.UserRepository;
-import com.marketplace.common.exception.EntityNotFoundException;
 import com.marketplace.order.repository.OrderRepository;
 import com.marketplace.order.service.OrderService;
 import com.marketplace.order.web.model.Order;

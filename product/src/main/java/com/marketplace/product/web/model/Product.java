@@ -4,6 +4,7 @@ import com.marketplace.common.model.AuditableEntity;
 import jakarta.validation.constraints.*;
 import lombok.*;
 import lombok.EqualsAndHashCode;
+import lombok.experimental.SuperBuilder;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -12,7 +13,7 @@ import java.math.BigDecimal;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder(toBuilder = true)
+@SuperBuilder(toBuilder = true)
 @Document(collection = "products")
 @EqualsAndHashCode(callSuper = true)
 public class Product extends AuditableEntity {
@@ -24,6 +25,8 @@ public class Product extends AuditableEntity {
     @Size(min = 2, max = 100, message = "Name must be between 2 and 100 characters")
     private String name;
 
+    private String ownerId;
+
     @NotBlank(message = "Description is required")
     @Size(min = 5, max = 250, message = "Description must be between 5 and 250 characters")
     private String description;
@@ -32,4 +35,5 @@ public class Product extends AuditableEntity {
     @DecimalMin(value = "5.0", inclusive = false, message = "Price must be greater than 0")
     @Digits(integer = 8, fraction = 2, message = "Price must have up to 8 digits before the decimal point and 2 after")
     private BigDecimal price;
+
 }

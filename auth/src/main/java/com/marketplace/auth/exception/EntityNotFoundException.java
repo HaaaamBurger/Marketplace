@@ -1,4 +1,4 @@
-package com.marketplace.common.exception;
+package com.marketplace.auth.exception;
 
 public class EntityNotFoundException extends RuntimeException {
     public EntityNotFoundException(String message) {

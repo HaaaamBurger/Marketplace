@@ -1,7 +1,5 @@
 package com.marketplace.auth.exception;
 
-import com.marketplace.common.exception.ExceptionResponse;
-import com.marketplace.common.exception.ExceptionType;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;

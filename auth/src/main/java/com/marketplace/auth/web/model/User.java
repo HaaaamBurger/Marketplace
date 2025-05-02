@@ -1,9 +1,12 @@
 package com.marketplace.auth.web.model;
 
 import com.marketplace.common.model.AuditableEntity;
+import com.marketplace.common.model.UserStatus;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
+import org.hibernate.validator.constraints.Length;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.security.core.GrantedAuthority;
@@ -15,7 +18,7 @@ import java.util.Collections;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder(toBuilder = true)
+@SuperBuilder(toBuilder = true)
 @Document(collection = "users")
 @EqualsAndHashCode(callSuper = true)
 public class User extends AuditableEntity implements UserDetails {
@@ -23,12 +26,16 @@ public class User extends AuditableEntity implements UserDetails {
     @Id
     private String id;
 
-    @Pattern(regexp = "^[\\w.-]+@[a-zA-Z0-9-]+\\.[a-zA-Z]{2,}$", message = "Must be a valid e-mail address")
+    @NotBlank(message = "Password is required")
+    @Email(message = "Must be a valid e-mail address")
     private String email;
 
     private UserRole role;
 
-    @NotBlank(message = "Password cannot be blank")
+    private UserStatus status;
+
+    @NotBlank(message = "Password is required")
+    @Length(min = 8, max = 32, message = "Password length must be between 8 to 32 characters")
     private String password;
 
     @Override

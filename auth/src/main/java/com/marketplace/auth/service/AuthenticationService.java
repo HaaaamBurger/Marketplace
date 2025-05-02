@@ -8,7 +8,7 @@ public interface AuthenticationService {
 
     AuthResponse signIn(AuthRequest authRequest);
 
-    String signUp(AuthRequest authRequest);
+    void signUp(AuthRequest authRequest);
 
     AuthResponse refreshToken(AuthRefreshRequest authRefreshRequest);
 

@@ -21,6 +21,7 @@
         <module>auth</module>
 		<module>product</module>
 		<module>order</module>
+		<module>user</module>
 	</modules>
     <scm>
 		<connection/>

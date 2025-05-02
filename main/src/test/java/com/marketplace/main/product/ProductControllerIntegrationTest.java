@@ -2,11 +2,10 @@ package com.marketplace.main.product;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.marketplace.auth.repository.UserRepository;
-import com.marketplace.auth.security.JwtService;
-import com.marketplace.auth.web.model.User;
+import com.marketplace.auth.exception.ExceptionResponse;
+import com.marketplace.auth.exception.ExceptionType;
+import com.marketplace.auth.util.AuthHelper;
 import com.marketplace.main.util.ProductDataBuilder;
-import com.marketplace.main.util.UserDataBuilder;
 import com.marketplace.product.repository.ProductRepository;
 import com.marketplace.product.web.model.Product;
 
@@ -17,13 +16,13 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 
 import static com.marketplace.auth.security.JwtService.AUTHORIZATION_HEADER;
-import static com.marketplace.auth.security.JwtService.BEARER_PREFIX;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -39,35 +38,30 @@ class ProductControllerIntegrationTest {
     private ProductRepository productRepository;
 
     @Autowired
-    private JwtService jwtService;
-
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
     private ApplicationContext applicationContext;
+
+    @Autowired
+    private AuthHelper authHelper;
 
     @Autowired
     private ObjectMapper objectMapper;
 
     @BeforeEach
-    void setUp() {
+    public void setUp() {
         applicationContext.getBeansOfType(MongoRepository.class)
                 .values()
                 .forEach(MongoRepository::deleteAll);
     }
 
     @Test
-    void getAllProducts_ShouldReturnList() throws Exception {
-        User user = UserDataBuilder.buildUserWithAllFields().build();
+    public void getAllProducts_ShouldReturnList() throws Exception {
+        AuthHelper.AuthHelperResponse userAuth = authHelper.createUserAuth();
         Product product = ProductDataBuilder.buildProductWithAllFields().build();
 
-        userRepository.save(user);
         productRepository.save(product);
 
-        String accessToken = jwtService.generateAccessToken(user);
-        String response = mockMvc.perform(get("/product/all")
-                        .header(AUTHORIZATION_HEADER, BEARER_PREFIX + accessToken))
+        String response = mockMvc.perform(get("/products")
+                        .header(AUTHORIZATION_HEADER, userAuth.getToken()))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andReturn().getResponse().getContentAsString();
@@ -80,16 +74,14 @@ class ProductControllerIntegrationTest {
     }
 
     @Test
-    void getProductById_ShouldReturnProduct() throws Exception {
-        User user = UserDataBuilder.buildUserWithAllFields().build();
+    public void getProductById_ShouldReturnProduct() throws Exception {
+        AuthHelper.AuthHelperResponse userAuth = authHelper.createUserAuth();
         Product product = ProductDataBuilder.buildProductWithAllFields().build();
 
-        userRepository.save(user);
         productRepository.save(product);
 
-        String accessToken = jwtService.generateAccessToken(user);
-        String response = mockMvc.perform(get("/product/" + product.getId())
-                        .header(AUTHORIZATION_HEADER, BEARER_PREFIX + accessToken))
+        String response = mockMvc.perform(get("/products/{productId}", product.getId())
+                        .header(AUTHORIZATION_HEADER, userAuth.getToken()))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andReturn().getResponse().getContentAsString();
@@ -102,15 +94,32 @@ class ProductControllerIntegrationTest {
     }
 
     @Test
-    void createProduct_ShouldReturnCreatedProduct() throws Exception {
-        User user = UserDataBuilder.buildUserWithAllFields().build();
+    public void getProductById_ShouldThrowException_WhenProductNotFound() throws Exception {
+        AuthHelper.AuthHelperResponse userAuth = authHelper.createUserAuth();
         Product product = ProductDataBuilder.buildProductWithAllFields().build();
 
-        userRepository.save(user);
-        String accessToken = jwtService.generateAccessToken(user);
+        String response = mockMvc.perform(get("/products/{productId}", product.getId())
+                        .header(AUTHORIZATION_HEADER, userAuth.getToken()))
+                .andExpect(status().isNotFound())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andReturn().getResponse().getContentAsString();
 
-        String response = mockMvc.perform(post("/product/create")
-                        .header(AUTHORIZATION_HEADER, BEARER_PREFIX + accessToken)
+        ExceptionResponse exceptionResponse = objectMapper.readValue(response, ExceptionResponse.class);
+
+        assertThat(exceptionResponse).isNotNull();
+        assertThat(exceptionResponse.getStatus()).isEqualTo(HttpStatus.NOT_FOUND.value());
+        assertThat(exceptionResponse.getType()).isEqualTo(ExceptionType.WEB);
+        assertThat(exceptionResponse.getMessage()).isEqualTo("Product not found!");
+        assertThat(exceptionResponse.getPath()).isEqualTo("/products/%s", product.getId());
+    }
+
+    @Test
+    public void createProduct_ShouldReturnCreatedProduct() throws Exception {
+        AuthHelper.AuthHelperResponse userAuth = authHelper.createUserAuth();
+        Product product = ProductDataBuilder.buildProductWithAllFields().build();
+
+        String response = mockMvc.perform(post("/products")
+                        .header(AUTHORIZATION_HEADER, userAuth.getToken())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(product)))
                 .andExpect(status().isOk())
@@ -126,19 +135,19 @@ class ProductControllerIntegrationTest {
     }
 
     @Test
-    void updateProduct_ShouldUpdateAndReturnProduct() throws Exception {
-        User user = UserDataBuilder.buildUserWithAllFields().build();
-        Product product = ProductDataBuilder.buildProductWithAllFields().build();
+    public void updateProduct_ShouldUpdateAndReturnProduct() throws Exception {
+        AuthHelper.AuthHelperResponse userAuth = authHelper.createUserAuth();
+        Product product = ProductDataBuilder.buildProductWithAllFields()
+                .ownerId(userAuth.getAuthUser().getId())
+                .build();
         Product updatedProduct = ProductDataBuilder.buildProductWithAllFields()
                 .name("Updated Product")
                 .build();
 
-        userRepository.save(user);
         product = productRepository.save(product);
-        String accessToken = jwtService.generateAccessToken(user);
 
-        String response = mockMvc.perform(put("/product/" + product.getId())
-                        .header(AUTHORIZATION_HEADER, BEARER_PREFIX + accessToken)
+        String response = mockMvc.perform(put("/products/{productId}", product.getId())
+                        .header(AUTHORIZATION_HEADER, userAuth.getToken())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updatedProduct)))
                 .andExpect(status().isOk())
@@ -152,20 +161,104 @@ class ProductControllerIntegrationTest {
     }
 
     @Test
-    void deleteProduct_ShouldRemoveProduct() throws Exception {
-        User user = UserDataBuilder.buildUserWithAllFields().build();
+    public void updateProduct_ShouldNotAllow_WhenUserNotOwner() throws Exception {
+        AuthHelper.AuthHelperResponse userAuth = authHelper.createUserAuth();
         Product product = ProductDataBuilder.buildProductWithAllFields().build();
+        Product updatedProduct = ProductDataBuilder.buildProductWithAllFields()
+                .name("Updated Product")
+                .build();
 
-        userRepository.save(user);
         product = productRepository.save(product);
-        String accessToken = jwtService.generateAccessToken(user);
 
+        String response = mockMvc.perform(put("/products/{productId}", product.getId())
+                        .header(AUTHORIZATION_HEADER, userAuth.getToken())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updatedProduct)))
+                .andExpect(status().isForbidden())
+                .andReturn().getResponse().getContentAsString();
+
+        ExceptionResponse exceptionResponse = objectMapper.readValue(response, ExceptionResponse.class);
+
+        assertThat(exceptionResponse).isNotNull();
+        assertThat(exceptionResponse.getStatus()).isEqualTo(HttpStatus.FORBIDDEN.value());
+        assertThat(exceptionResponse.getType()).isEqualTo(ExceptionType.AUTHORIZATION);
+        assertThat(exceptionResponse.getMessage()).isEqualTo("Forbidden, not enough access!");
+        assertThat(exceptionResponse.getPath()).isEqualTo("/products/%s", product.getId());
+    }
+
+    @Test
+    public void updateProduct_ShouldUpdate_WhenUserNotOwnerButAdmin() throws Exception {
+        AuthHelper.AuthHelperResponse userAuth = authHelper.createAdminAuth();
+        Product product = ProductDataBuilder.buildProductWithAllFields().build();
+        Product updatedProduct = ProductDataBuilder.buildProductWithAllFields()
+                .name("Updated Product")
+                .build();
+
+        product = productRepository.save(product);
+
+        String response = mockMvc.perform(put("/products/{productId}", product.getId())
+                        .header(AUTHORIZATION_HEADER, userAuth.getToken())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updatedProduct)))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        Product responseProduct = objectMapper.readValue(response, Product.class);
+
+        assertThat(responseProduct).isNotNull();
+        assertThat(responseProduct.getName()).isEqualTo(updatedProduct.getName());
+    }
+
+    @Test
+    public void deleteProduct_ShouldRemoveProduct() throws Exception {
+        AuthHelper.AuthHelperResponse userAuth = authHelper.createUserAuth();
+        Product product = ProductDataBuilder.buildProductWithAllFields()
+                .ownerId(userAuth.getAuthUser().getId())
+                .build();
+
+        product = productRepository.save(product);
         assertThat(productRepository.findById(product.getId())).isPresent();
 
-        mockMvc.perform(delete("/product/" + product.getId())
-                        .header(AUTHORIZATION_HEADER, BEARER_PREFIX + accessToken))
+        mockMvc.perform(delete("/products/{productId}", product.getId())
+                        .header(AUTHORIZATION_HEADER, userAuth.getToken()))
                 .andExpect(status().isOk());
 
         assertThat(productRepository.findById(product.getId())).isNotPresent();
     }
+
+    @Test
+    public void deleteProduct_ShouldNotAllow_WhenUserNotOwner() throws Exception {
+        AuthHelper.AuthHelperResponse userAuth = authHelper.createUserAuth();
+        Product product = ProductDataBuilder.buildProductWithAllFields().build();
+
+        product = productRepository.save(product);
+
+        String response = mockMvc.perform(delete("/products/{productId}", product.getId())
+                        .header(AUTHORIZATION_HEADER, userAuth.getToken()))
+                .andExpect(status().isForbidden())
+                .andReturn().getResponse().getContentAsString();
+
+        ExceptionResponse exceptionResponse = objectMapper.readValue(response, ExceptionResponse.class);
+
+        assertThat(exceptionResponse).isNotNull();
+        assertThat(exceptionResponse.getStatus()).isEqualTo(HttpStatus.FORBIDDEN.value());
+        assertThat(exceptionResponse.getType()).isEqualTo(ExceptionType.AUTHORIZATION);
+        assertThat(exceptionResponse.getMessage()).isEqualTo("Forbidden, not enough access!");
+        assertThat(exceptionResponse.getPath()).isEqualTo("/products/%s", product.getId());
+    }
+
+    @Test
+    public void deleteProduct_ShouldRemove_WhenUserNotOwnerButAdmin() throws Exception {
+        AuthHelper.AuthHelperResponse userAuth = authHelper.createAdminAuth();
+        Product product = ProductDataBuilder.buildProductWithAllFields().build();
+
+        product = productRepository.save(product);
+
+         mockMvc.perform(delete("/products/{productId}", product.getId())
+                        .header(AUTHORIZATION_HEADER, userAuth.getToken()))
+                .andExpect(status().isOk());
+
+        assertThat(productRepository.findById(product.getId())).isNotPresent();
+    }
+
 }

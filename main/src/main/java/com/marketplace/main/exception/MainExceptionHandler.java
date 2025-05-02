@@ -1,5 +1,6 @@
-package com.marketplace.common.exception;
+package com.marketplace.main.exception;
 
+import com.marketplace.auth.exception.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
@@ -9,7 +10,6 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import javax.security.auth.login.CredentialException;
 import java.util.stream.Collectors;
 
 import static com.marketplace.common.constants.Delimiters.COMMA_DELIMITER;
@@ -40,6 +40,19 @@ public class MainExceptionHandler {
 
         return ResponseEntity.badRequest().body(
                 ExceptionResponse.builder()
+                        .status(HttpStatusCode.valueOf(400).value())
+                        .type(ExceptionType.WEB)
+                        .path(request.getRequestURI())
+                        .message(exception.getMessage())
+                        .build()
+        );
+    }
+
+    @ExceptionHandler(EntityNotFoundException.class)
+    public ResponseEntity<ExceptionResponse> handleEntityNotFoundException(EntityNotFoundException exception, HttpServletRequest request) {
+
+        return ResponseEntity.status(404).body(
+                ExceptionResponse.builder()
                         .status(HttpStatusCode.valueOf(404).value())
                         .type(ExceptionType.WEB)
                         .path(request.getRequestURI())
@@ -51,7 +64,7 @@ public class MainExceptionHandler {
     @ExceptionHandler(CredentialException.class)
     public ResponseEntity<ExceptionResponse> handleCredentialsException(CredentialException exception, HttpServletRequest request) {
 
-        return ResponseEntity.badRequest().body(
+        return ResponseEntity.status(401).body(
                 ExceptionResponse.builder()
                         .status(HttpStatusCode.valueOf(401).value())
                         .type(ExceptionType.AUTHORIZATION)
@@ -79,4 +92,5 @@ public class MainExceptionHandler {
                         .build()
         );
     }
+
 }

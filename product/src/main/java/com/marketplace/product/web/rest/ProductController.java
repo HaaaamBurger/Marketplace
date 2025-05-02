@@ -1,8 +1,11 @@
 package com.marketplace.product.web.rest;
 
 import com.marketplace.product.service.ProductService;
+import com.marketplace.product.web.dto.ProductResponse;
+import com.marketplace.product.web.dto.ProductRequest;
 import com.marketplace.product.web.model.Product;
 
+import com.marketplace.product.web.util.ProductEntityMapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -12,38 +15,42 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/product")
+@RequestMapping("/products")
 public class ProductController {
 
     private final ProductService productService;
 
-    @GetMapping("/all")
-    public ResponseEntity<List<Product>> getAllProducts() {
-        List<Product> products = productService.getAllProducts();
-        return ResponseEntity.ok(products);
+    private final ProductEntityMapper productEntityMapper;
+
+    @GetMapping
+    public ResponseEntity<List<ProductResponse>> getAllProducts() {
+        List<Product> products = productService.findAll();
+        return ResponseEntity.ok(productEntityMapper.mapEntitiesToResponseDtos(products));
     }
 
     @GetMapping("/{productId}")
-    public ResponseEntity<Product> getProductById(@PathVariable String productId) {
-        Product product = productService.getProductById(productId);
-        return ResponseEntity.ok(product);
+    public ResponseEntity<ProductResponse> getProductById(@PathVariable String productId) {
+        Product product = productService.findById(productId);
+        return ResponseEntity.ok(productEntityMapper.mapEntityToResponseDto(product));
     }
 
-    @PostMapping("/create")
-    public ResponseEntity<Product> createProduct(@Valid @RequestBody Product product) {
-        return ResponseEntity.ok(productService.createProduct(product));
+    @PostMapping
+    public ResponseEntity<ProductResponse> createProduct(@Valid @RequestBody ProductRequest productRequest) {
+        Product product = productService.create(productRequest);
+        return ResponseEntity.ok(productEntityMapper.mapEntityToResponseDto(product));
     }
 
     @PutMapping("/{productId}")
-    public ResponseEntity<Product> updateProduct(
-            @Valid @PathVariable String productId,
-            @RequestBody Product updatedProduct
+    public ResponseEntity<ProductResponse> updateProduct(
+             @PathVariable String productId,
+             @Valid @RequestBody ProductRequest productRequest
     ) {
-        return ResponseEntity.ok(productService.updateProduct(productId, updatedProduct));
+        Product product = productService.update(productId, productRequest);
+        return ResponseEntity.ok(productEntityMapper.mapEntityToResponseDto(product));
     }
 
     @DeleteMapping("/{productId}")
     public void deleteProduct(@PathVariable String productId) {
-        productService.deleteProduct(productId);
+        productService.delete(productId);
     }
 }

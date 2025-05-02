@@ -39,7 +39,7 @@ class OrderServiceImplTest {
     private UserRepository userRepository;
 
     @Autowired
-    private OrderServiceImpl orderService;
+    private OrderService orderService;
 
     @Test
     void shouldReturnAllOrders() {

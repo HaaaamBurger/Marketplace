@@ -26,12 +26,13 @@ public class AuthenticationController {
     }
 
     @PostMapping("/sign-up")
-    public ResponseEntity<String> signUp(@RequestBody @Valid AuthRequest authRequest) {
-        return ResponseEntity.ok(authenticationService.signUp(authRequest));
+    public void signUp(@RequestBody @Valid AuthRequest authRequest) {
+        authenticationService.signUp(authRequest);
     }
 
     @PostMapping("/refresh-token")
     public ResponseEntity<AuthResponse> refreshToken(@RequestBody @Valid AuthRefreshRequest authRefreshRequest) {
         return ResponseEntity.ok(authenticationService.refreshToken(authRefreshRequest));
     }
+
 }

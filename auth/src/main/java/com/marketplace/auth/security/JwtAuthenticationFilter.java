@@ -1,6 +1,8 @@
 package com.marketplace.auth.security;
 
 import com.marketplace.auth.exception.TokenNotValidException;
+import com.marketplace.auth.web.model.User;
+import com.marketplace.common.model.UserStatus;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -8,6 +10,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -74,6 +77,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private void addAuthenticationToContext(String token) {
         UserDetails userDetails = getUserDetailsIfTokenValid(token);
 
+        validateUserNotBlocked((User) userDetails);
+
         UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                 userDetails,
                 null,
@@ -95,5 +100,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         log.error("[JWT_AUTHENTICATION_FILTER]: Token validation failed");
         throw new TokenNotValidException("Token not valid!");
+    }
+
+    private void validateUserNotBlocked(User user) {
+        if (user.getStatus() == UserStatus.BLOCKED) {
+            log.error("[JWT_AUTHENTICATION_FILTER]: User {} cannot access this resource because status is {}", user.getId(), UserStatus.BLOCKED);
+            throw new AccessDeniedException("Forbidden, not enough access!");
+        }
     }
 }
