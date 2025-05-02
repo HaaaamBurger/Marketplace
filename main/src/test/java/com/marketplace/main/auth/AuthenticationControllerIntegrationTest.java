@@ -94,6 +94,7 @@ class AuthenticationControllerIntegrationTest {
         assertThat(exceptionResponse.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
         assertThat(exceptionResponse.getType()).isEqualTo(ExceptionType.WEB);
         assertThat(exceptionResponse.getMessage()).isEqualTo("User already exists!");
+        assertThat(exceptionResponse.getPath()).isEqualTo("/auth/sign-up");
     }
 
     @Test
@@ -134,6 +135,7 @@ class AuthenticationControllerIntegrationTest {
         assertThat(exceptionResponse.getStatus()).isEqualTo(HttpStatus.UNAUTHORIZED.value());
         assertThat(exceptionResponse.getType()).isEqualTo(ExceptionType.AUTHORIZATION);
         assertThat(exceptionResponse.getMessage()).isEqualTo("Wrong credentials!");
+        assertThat(exceptionResponse.getPath()).isEqualTo("/auth/sign-in");
     }
 
     @Test
@@ -157,6 +159,7 @@ class AuthenticationControllerIntegrationTest {
         assertThat(exceptionResponse.getStatus()).isEqualTo(HttpStatus.UNAUTHORIZED.value());
         assertThat(exceptionResponse.getType()).isEqualTo(ExceptionType.AUTHORIZATION);
         assertThat(exceptionResponse.getMessage()).isEqualTo("Wrong credentials!");
+        assertThat(exceptionResponse.getPath()).isEqualTo("/auth/sign-in");
     }
 
     @Test
@@ -202,6 +205,7 @@ class AuthenticationControllerIntegrationTest {
         assertThat(exceptionResponse.getStatus()).isEqualTo(HttpStatus.UNAUTHORIZED.value());
         assertThat(exceptionResponse.getType()).isEqualTo(ExceptionType.AUTHORIZATION);
         assertThat(exceptionResponse.getMessage()).isEqualTo("Authentication required, please sign in");
+        assertThat(exceptionResponse.getPath()).isEqualTo("/auth/refresh-token");
     }
 
     @Test
@@ -225,5 +229,6 @@ class AuthenticationControllerIntegrationTest {
         assertThat(exceptionResponse.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
         assertThat(exceptionResponse.getType()).isEqualTo(ExceptionType.AUTHORIZATION);
         assertThat(exceptionResponse.getMessage()).isEqualTo("Token not valid!");
+        assertThat(exceptionResponse.getPath()).isEqualTo("/auth/refresh-token");
     }
 }

@@ -101,6 +101,7 @@ public class UserControllerIntegrationTest {
         assertThat(exceptionResponse.getStatus()).isEqualTo(HttpStatus.NOT_FOUND.value());
         assertThat(exceptionResponse.getType()).isEqualTo(ExceptionType.WEB);
         assertThat(exceptionResponse.getMessage()).isEqualTo("User not found!");
+        assertThat(exceptionResponse.getPath()).isEqualTo("/users/%s", userId);
     }
 
     @Test
@@ -140,6 +141,7 @@ public class UserControllerIntegrationTest {
         assertThat(exceptionResponse.getStatus()).isEqualTo(HttpStatus.FORBIDDEN.value());
         assertThat(exceptionResponse.getType()).isEqualTo(ExceptionType.AUTHORIZATION);
         assertThat(exceptionResponse.getMessage()).isEqualTo("Forbidden, not enough access!");
+        assertThat(exceptionResponse.getPath()).isEqualTo("/users");
     }
 
     @Test
@@ -163,6 +165,7 @@ public class UserControllerIntegrationTest {
         assertThat(exceptionResponse.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
         assertThat(exceptionResponse.getType()).isEqualTo(ExceptionType.WEB);
         assertThat(exceptionResponse.getMessage()).isEqualTo("User already exists!");
+        assertThat(exceptionResponse.getPath()).isEqualTo("/users");
     }
 
     @Test

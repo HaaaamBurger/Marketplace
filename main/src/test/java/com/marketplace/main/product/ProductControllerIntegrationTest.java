@@ -110,6 +110,7 @@ class ProductControllerIntegrationTest {
         assertThat(exceptionResponse.getStatus()).isEqualTo(HttpStatus.NOT_FOUND.value());
         assertThat(exceptionResponse.getType()).isEqualTo(ExceptionType.WEB);
         assertThat(exceptionResponse.getMessage()).isEqualTo("Product not found!");
+        assertThat(exceptionResponse.getPath()).isEqualTo("/products/%s", product.getId());
     }
 
     @Test
@@ -182,6 +183,7 @@ class ProductControllerIntegrationTest {
         assertThat(exceptionResponse.getStatus()).isEqualTo(HttpStatus.FORBIDDEN.value());
         assertThat(exceptionResponse.getType()).isEqualTo(ExceptionType.AUTHORIZATION);
         assertThat(exceptionResponse.getMessage()).isEqualTo("Forbidden, not enough access!");
+        assertThat(exceptionResponse.getPath()).isEqualTo("/products/%s", product.getId());
     }
 
     @Test
@@ -242,6 +244,7 @@ class ProductControllerIntegrationTest {
         assertThat(exceptionResponse.getStatus()).isEqualTo(HttpStatus.FORBIDDEN.value());
         assertThat(exceptionResponse.getType()).isEqualTo(ExceptionType.AUTHORIZATION);
         assertThat(exceptionResponse.getMessage()).isEqualTo("Forbidden, not enough access!");
+        assertThat(exceptionResponse.getPath()).isEqualTo("/products/%s", product.getId());
     }
 
     @Test
