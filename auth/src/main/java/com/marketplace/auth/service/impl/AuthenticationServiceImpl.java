@@ -1,6 +1,7 @@
 package com.marketplace.auth.service.impl;
 
-import com.marketplace.common.exception.EntityExistsException;
+import com.marketplace.auth.exception.CredentialException;
+import com.marketplace.auth.exception.EntityExistsException;
 import com.marketplace.auth.exception.TokenNotValidException;
 import com.marketplace.auth.repository.UserRepository;
 import com.marketplace.auth.security.JwtService;
@@ -13,14 +14,12 @@ import com.marketplace.auth.web.rest.dto.AuthResponse;
 import com.marketplace.common.model.UserStatus;
 import io.jsonwebtoken.JwtException;
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import javax.security.auth.login.CredentialException;
 import java.util.Optional;
 
 @Slf4j
@@ -37,11 +36,13 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final UserDetailsService userDetailsService;
 
     @Override
-    @SneakyThrows
     public AuthResponse signIn(AuthRequest authRequest) {
 
         User user = userRepository.findByEmail(authRequest.getEmail())
-                .orElseThrow(() ->  new CredentialException("Wrong credentials!"));
+                .orElseThrow(() ->  {
+                    log.error("[AUTHENTICATION_SERVICE_IMPL]:User does not exist with email: {}", authRequest.getEmail());
+                    return new CredentialException("Wrong credentials!");
+                });
 
         boolean isPasswordValid = passwordEncoder.matches(
                 authRequest.getPassword(),
@@ -49,14 +50,15 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         );
 
         if (!isPasswordValid) {
+            log.error("[AUTHENTICATION_SERVICE_IMPL]: User password {} is not matching", authRequest.getPassword());
             throw new CredentialException("Wrong credentials!");
         }
 
-        return generateTokenPair(user);
+        return generateAuthResponse(user);
     }
 
     @Override
-    public String signUp(AuthRequest authRequest) {
+    public void signUp(AuthRequest authRequest) {
 
         throwExceptionIfUserExistsByEmail(authRequest.getEmail());
         String encodedPassword = passwordEncoder.encode(authRequest.getPassword());
@@ -67,8 +69,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .email(authRequest.getEmail())
                 .password(encodedPassword)
                 .build());
-
-        return "User successfully created!";
     }
 
     @Override
@@ -77,15 +77,15 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         try {
             UserDetails userDetails = getUserDetailsIfTokenValidOrThrowException(authRefreshToken);
-            return generateTokenPair(userDetails);
+            return generateAuthResponse(userDetails);
 
         } catch (JwtException exception) {
-            log.error("[AUTHENTICATION_SERVICE]: {}", exception.getMessage());
+            log.error("[AUTHENTICATION_SERVICE_IMPL]: {}", exception.getMessage());
             throw new TokenNotValidException("Token not valid!");
         }
     }
 
-    private AuthResponse generateTokenPair(UserDetails userDetails) {
+    private AuthResponse generateAuthResponse(UserDetails userDetails) {
 
         String accessToken = jwtService.generateAccessToken(userDetails);
         String refreshToken = jwtService.generateRefreshToken(userDetails);
@@ -113,6 +113,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         Optional<User> userOptional = userRepository.findByEmail(email);
 
         if (userOptional.isPresent()) {
+            log.error("[AUTHENTICATION_SERVICE_IMPL]: User by email {} already exists!", email);
             throw new EntityExistsException("User already exists!");
         }
     }

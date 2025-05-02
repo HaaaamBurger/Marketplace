@@ -1,13 +1,17 @@
 package com.marketplace.product.service.impl;
 
+import com.marketplace.auth.exception.EntityNotFoundException;
 import com.marketplace.auth.web.model.User;
 import com.marketplace.auth.web.model.UserRole;
-import com.marketplace.common.exception.EntityNotFoundException;
 import com.marketplace.product.service.ProductService;
+import com.marketplace.product.web.dto.ProductRequest;
 import com.marketplace.product.web.model.Product;
 import com.marketplace.product.repository.ProductRepository;
+import com.marketplace.product.web.util.ProductEntityMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -16,11 +20,25 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public final class ProductServiceImpl implements ProductService {
 
     private final ProductRepository productRepository;
+
+    private final ProductEntityMapper productEntityMapper;
+
+    @Override
+    public Product create(ProductRequest productRequest) {
+        User principalUserId = getPrincipalUser();
+
+        Product product = productEntityMapper.mapRequestDtoToEntity(productRequest).toBuilder()
+                .ownerId(principalUserId.getId())
+                .build();
+
+        return productRepository.save(product);
+    }
 
     @Override
     public List<Product> findAll() {
@@ -33,21 +51,13 @@ public final class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public Product create(Product product) {
-        User principalUserId = getPrincipalUser();
-        product.setOwnerId(principalUserId.getId());
-
-        return productRepository.save(product);
-    }
-
-    @Override
-    public Product update(String productId, Product updatedProduct) {
+    public Product update(String productId, ProductRequest productRequest) {
 
         Product product = validateProductOwnerElseThrowException(productId);
 
-        Optional.ofNullable(updatedProduct.getName()).ifPresent(product::setName);
-        Optional.ofNullable(updatedProduct.getPrice()).ifPresent(product::setPrice);
-        Optional.ofNullable(updatedProduct.getDescription()).ifPresent(product::setDescription);
+        Optional.ofNullable(productRequest.getName()).ifPresent(product::setName);
+        Optional.ofNullable(productRequest.getPrice()).ifPresent(product::setPrice);
+        Optional.ofNullable(productRequest.getDescription()).ifPresent(product::setDescription);
 
         return productRepository.save(product);
     }
@@ -58,14 +68,21 @@ public final class ProductServiceImpl implements ProductService {
         productRepository.delete(product);
     }
 
-    private Product findProductByIdOrThrowException(String productId) {
-        return productRepository.findById(productId)
-                .orElseThrow(() -> new EntityNotFoundException("Product not found with id: " + productId));
-    }
-
     private User getPrincipalUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null) {
+            log.error("[PRODUCT_SERVICE_IMPL]: Authentication is null");
+            throw new AuthenticationCredentialsNotFoundException("Authentication is unavailable!");
+        }
+
         return (User) authentication.getPrincipal();
+    }
+
+    private Product findProductByIdOrThrowException(String productId) {
+        log.error("[PRODUCT_SERVICE_IMPL]: Product not found by id {}", productId);
+        return productRepository.findById(productId)
+                .orElseThrow(() -> new EntityNotFoundException("Product not found!"));
     }
 
     private Product validateProductOwnerElseThrowException(String productId) {
@@ -76,7 +93,8 @@ public final class ProductServiceImpl implements ProductService {
             return product;
         }
 
-        throw new AccessDeniedException("User: " + principalUser.getId() + " is not owner of product: " + productId);
+        log.error("[PRODUCT_SERVICE_IMPL]: User {} is not owner of product: {} or not ADMIN", principalUser.getId(), productId);
+        throw new AccessDeniedException("Access denied!");
     }
 
     private boolean checkUserOwnerOrAdmin(User user, String productOwnerId) {

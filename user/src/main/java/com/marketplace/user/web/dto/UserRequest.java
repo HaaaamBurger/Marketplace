@@ -9,7 +9,7 @@ import lombok.Data;
 
 @Data
 @Builder
-public class UserCreateRequest {
+public class UserRequest {
 
     @Pattern(regexp = "^[\\w.-]+@[a-zA-Z0-9-]+\\.[a-zA-Z]{2,}$", message = "Must be a valid e-mail address")
     private String email;

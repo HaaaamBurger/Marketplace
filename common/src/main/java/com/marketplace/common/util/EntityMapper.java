@@ -1,9 +1,9 @@
 package com.marketplace.common.util;
 
-public interface EntityMapper<T, R> {
+public interface EntityMapper<Entity, RequestDto, ResponseDto> {
 
-    R mapEntityToDto(T entity);
+    ResponseDto mapEntityToResponseDto(Entity entity);
 
-    T mapDtoToEntity(R dto);
+    Entity mapRequestDtoToEntity(RequestDto requestDto);
 
 }

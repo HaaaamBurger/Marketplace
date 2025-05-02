@@ -2,48 +2,39 @@ package com.marketplace.user.web.util;
 
 import com.marketplace.auth.web.model.User;
 import com.marketplace.common.util.EntityMapper;
+import com.marketplace.user.web.dto.UserRequest;
 import com.marketplace.user.web.dto.UserResponse;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
-public class UserEntityMapper implements EntityMapper<User, UserResponse> {
+public class UserEntityMapper implements EntityMapper<User, UserRequest, UserResponse> {
 
     @Override
-    public UserResponse mapEntityToDto(User entity) {
+    public UserResponse mapEntityToResponseDto(User user) {
         return UserResponse.builder()
-                .id(entity.getId())
-                .email(entity.getEmail())
-                .role(entity.getRole())
-                .status(entity.getStatus())
-                .createdAt(entity.getCreatedAt())
-                .updatedAt(entity.getUpdatedAt())
+                .id(user.getId())
+                .email(user.getEmail())
+                .role(user.getRole())
+                .status(user.getStatus())
+                .createdAt(user.getCreatedAt())
+                .updatedAt(user.getUpdatedAt())
                 .build();
     }
 
     @Override
-    public User mapDtoToEntity(UserResponse dto) {
+    public User mapRequestDtoToEntity(UserRequest userRequest) {
         return User.builder()
-                .id(dto.getId())
-                .email(dto.getEmail())
-                .role(dto.getRole())
-                .status(dto.getStatus())
-                .createdAt(dto.getCreatedAt())
-                .updatedAt(dto.getUpdatedAt())
+                .email(userRequest.getEmail())
+                .role(userRequest.getRole())
+                .password(userRequest.getPassword())
                 .build();
     }
 
-    public List<UserResponse> mapEntitiesToDtos(List<User> users) {
+    public List<UserResponse> mapEntitiesToResponseDtos(List<User> users) {
         return users.stream()
-                .map(this::mapEntityToDto)
+                .map(this::mapEntityToResponseDto)
                 .toList();
     }
-
-    public List<User> mapDtosToEntities(List<UserResponse> dtos) {
-        return dtos.stream()
-                .map(this::mapDtoToEntity)
-                .toList();
-    }
-
 }

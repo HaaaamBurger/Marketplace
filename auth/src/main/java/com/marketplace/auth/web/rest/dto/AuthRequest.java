@@ -9,7 +9,7 @@ import lombok.Data;
 @Builder
 public class AuthRequest {
 
-    @NotNull(message = "Email cannot be empty")
+    @NotNull(message = "Email is required")
     @Pattern(regexp = "^[\\w.-]+@[a-zA-Z0-9-]+\\.[a-zA-Z]{2,}$", message = "Must be a valid e-mail address")
     private String email;
 

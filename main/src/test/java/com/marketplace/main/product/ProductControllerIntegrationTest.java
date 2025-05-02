@@ -2,9 +2,9 @@ package com.marketplace.main.product;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.marketplace.auth.exception.ExceptionResponse;
+import com.marketplace.auth.exception.ExceptionType;
 import com.marketplace.auth.util.AuthHelper;
-import com.marketplace.common.exception.ExceptionResponse;
-import com.marketplace.common.exception.ExceptionType;
 import com.marketplace.main.util.ProductDataBuilder;
 import com.marketplace.product.repository.ProductRepository;
 import com.marketplace.product.web.model.Product;
@@ -80,7 +80,7 @@ class ProductControllerIntegrationTest {
 
         productRepository.save(product);
 
-        String response = mockMvc.perform(get("/products/" + product.getId())
+        String response = mockMvc.perform(get("/products/{productId}", product.getId())
                         .header(AUTHORIZATION_HEADER, userAuth.getToken()))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -91,6 +91,26 @@ class ProductControllerIntegrationTest {
         assertThat(responseProduct).isNotNull();
         assertThat(responseProduct.getId()).isEqualTo(product.getId());
         assertThat(responseProduct.getName()).isEqualTo(product.getName());
+    }
+
+    @Test
+    public void getProductById_ShouldThrowException_WhenProductNotFound() throws Exception {
+        AuthHelper.AuthHelperResponse userAuth = authHelper.createUserAuth();
+        Product product = ProductDataBuilder.buildProductWithAllFields().build();
+
+        String response = mockMvc.perform(get("/products/{productId}", product.getId())
+                        .header(AUTHORIZATION_HEADER, userAuth.getToken()))
+                .andExpect(status().isNotFound())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andReturn().getResponse().getContentAsString();
+
+        ExceptionResponse exceptionResponse = objectMapper.readValue(response, ExceptionResponse.class);
+
+        assertThat(exceptionResponse).isNotNull();
+        assertThat(exceptionResponse.getStatus()).isEqualTo(HttpStatus.NOT_FOUND.value());
+        assertThat(exceptionResponse.getType()).isEqualTo(ExceptionType.WEB);
+        assertThat(exceptionResponse.getMessage()).isEqualTo("Product not found!");
+        assertThat(exceptionResponse.getPath()).isEqualTo("/products/%s", product.getId());
     }
 
     @Test
@@ -126,7 +146,7 @@ class ProductControllerIntegrationTest {
 
         product = productRepository.save(product);
 
-        String response = mockMvc.perform(put("/products/" + product.getId())
+        String response = mockMvc.perform(put("/products/{productId}", product.getId())
                         .header(AUTHORIZATION_HEADER, userAuth.getToken())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updatedProduct)))
@@ -150,7 +170,7 @@ class ProductControllerIntegrationTest {
 
         product = productRepository.save(product);
 
-        String response = mockMvc.perform(put("/products/" + product.getId())
+        String response = mockMvc.perform(put("/products/{productId}", product.getId())
                         .header(AUTHORIZATION_HEADER, userAuth.getToken())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updatedProduct)))
@@ -163,6 +183,7 @@ class ProductControllerIntegrationTest {
         assertThat(exceptionResponse.getStatus()).isEqualTo(HttpStatus.FORBIDDEN.value());
         assertThat(exceptionResponse.getType()).isEqualTo(ExceptionType.AUTHORIZATION);
         assertThat(exceptionResponse.getMessage()).isEqualTo("Forbidden, not enough access!");
+        assertThat(exceptionResponse.getPath()).isEqualTo("/products/%s", product.getId());
     }
 
     @Test
@@ -175,7 +196,7 @@ class ProductControllerIntegrationTest {
 
         product = productRepository.save(product);
 
-        String response = mockMvc.perform(put("/products/" + product.getId())
+        String response = mockMvc.perform(put("/products/{productId}", product.getId())
                         .header(AUTHORIZATION_HEADER, userAuth.getToken())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updatedProduct)))
@@ -198,7 +219,7 @@ class ProductControllerIntegrationTest {
         product = productRepository.save(product);
         assertThat(productRepository.findById(product.getId())).isPresent();
 
-        mockMvc.perform(delete("/products/" + product.getId())
+        mockMvc.perform(delete("/products/{productId}", product.getId())
                         .header(AUTHORIZATION_HEADER, userAuth.getToken()))
                 .andExpect(status().isOk());
 
@@ -212,7 +233,7 @@ class ProductControllerIntegrationTest {
 
         product = productRepository.save(product);
 
-        String response = mockMvc.perform(delete("/products/" + product.getId())
+        String response = mockMvc.perform(delete("/products/{productId}", product.getId())
                         .header(AUTHORIZATION_HEADER, userAuth.getToken()))
                 .andExpect(status().isForbidden())
                 .andReturn().getResponse().getContentAsString();
@@ -223,6 +244,7 @@ class ProductControllerIntegrationTest {
         assertThat(exceptionResponse.getStatus()).isEqualTo(HttpStatus.FORBIDDEN.value());
         assertThat(exceptionResponse.getType()).isEqualTo(ExceptionType.AUTHORIZATION);
         assertThat(exceptionResponse.getMessage()).isEqualTo("Forbidden, not enough access!");
+        assertThat(exceptionResponse.getPath()).isEqualTo("/products/%s", product.getId());
     }
 
     @Test
@@ -232,7 +254,7 @@ class ProductControllerIntegrationTest {
 
         product = productRepository.save(product);
 
-         mockMvc.perform(delete("/products/" + product.getId())
+         mockMvc.perform(delete("/products/{productId}", product.getId())
                         .header(AUTHORIZATION_HEADER, userAuth.getToken()))
                 .andExpect(status().isOk());
 

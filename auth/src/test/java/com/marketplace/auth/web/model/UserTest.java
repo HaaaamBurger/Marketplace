@@ -10,7 +10,6 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Set;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class UserTest {
@@ -23,16 +22,28 @@ public class UserTest {
     }
 
     @Test
-    public void testValidUser() {
+    public void whenUserIsValid_thenNoViolations() {
         User user = UserDataBuilder.buildUserWithAllFields().build();
 
         Set<ConstraintViolation<User>> violations = validator.validate(user);
 
-        assertTrue(violations.isEmpty(), "User should be valid");
+        assertTrue(violations.isEmpty());
     }
 
     @Test
-    public void testUserWithInvalidEmail() {
+    public void whenEmailIsBlank_thenValidationFails() {
+        User user = UserDataBuilder.buildUserWithAllFields()
+                .email("")
+                .build();
+
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+        assertEquals(1, violations.size());
+
+        assertTrue(violations.stream().anyMatch(v -> v.getMessage().contains("Password is required")));
+    }
+
+    @Test
+    public void whenEmailIsInvalid_thenValidationFails() {
         User user = UserDataBuilder.buildUserWithAllFields()
                 .email("testgmail.com")
                 .build();
@@ -40,36 +51,21 @@ public class UserTest {
         Set<ConstraintViolation<User>> violations = validator.validate(user);
         assertEquals(1, violations.size());
 
-        ConstraintViolation<User> matchedViolation = getMatchedViolationByField(violations, "email");
-
-        assertThat(matchedViolation).isNotNull();
-        assertThat(matchedViolation.getPropertyPath().toString()).isEqualTo("email");
-        assertThat(matchedViolation.getMessage()).isEqualTo("Must be a valid e-mail address");
+        assertTrue(violations.stream().anyMatch(v -> v.getMessage().contains("Must be a valid e-mail address")));
     }
 
+
     @Test
-    public void testUserWithInvalidPassword() {
+    public void whenPasswordIsInvalid_thenValidationFails() {
         User user = UserDataBuilder.buildUserWithAllFields()
                 .password("")
                 .build();
 
         Set<ConstraintViolation<User>> violations = validator.validate(user);
-        assertEquals(1, violations.size());
+        assertEquals(2, violations.size());
 
-        ConstraintViolation<User> matchedViolation = getMatchedViolationByField(violations, "password");
-
-        assertThat(matchedViolation).isNotNull();
-        assertThat(matchedViolation.getPropertyPath().toString()).isEqualTo("password");
-        assertThat(matchedViolation.getMessage()).isEqualTo("Password is required");
+        assertTrue(violations.stream().anyMatch(v -> v.getMessage().contains("Password is required")));
+        assertTrue(violations.stream().anyMatch(v -> v.getMessage().contains("Password length must be between 8 to 32 characters")));
     }
 
-    private ConstraintViolation<User> getMatchedViolationByField(Set<ConstraintViolation<User>> violations, String field) {
-        return violations.stream()
-                .filter(userConstraintViolation -> userConstraintViolation
-                        .getPropertyPath()
-                        .toString()
-                        .equals(field))
-                .findFirst()
-                .orElseThrow();
-    }
 }

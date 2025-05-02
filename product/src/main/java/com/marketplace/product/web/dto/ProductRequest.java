@@ -1,31 +1,18 @@
-package com.marketplace.product.web.model;
+package com.marketplace.product.web.dto;
 
-import com.marketplace.common.model.AuditableEntity;
 import jakarta.validation.constraints.*;
-import lombok.*;
-import lombok.EqualsAndHashCode;
-import lombok.experimental.SuperBuilder;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
+import lombok.Builder;
+import lombok.Data;
 
 import java.math.BigDecimal;
 
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
-@SuperBuilder(toBuilder = true)
-@Document(collection = "products")
-@EqualsAndHashCode(callSuper = true)
-public class Product extends AuditableEntity {
-
-    @Id
-    private String id;
+@Builder
+public class ProductRequest {
 
     @NotBlank(message = "Name is required")
     @Size(min = 2, max = 100, message = "Name must be between 2 and 100 characters")
     private String name;
-
-    private String ownerId;
 
     @NotBlank(message = "Description is required")
     @Size(min = 5, max = 250, message = "Description must be between 5 and 250 characters")

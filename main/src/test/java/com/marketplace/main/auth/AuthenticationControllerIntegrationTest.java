@@ -1,8 +1,8 @@
 package com.marketplace.main.auth;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.marketplace.common.exception.ExceptionResponse;
-import com.marketplace.common.exception.ExceptionType;
+import com.marketplace.auth.exception.ExceptionResponse;
+import com.marketplace.auth.exception.ExceptionType;
 import com.marketplace.main.exception.MainExceptionHandler;
 import com.marketplace.auth.repository.UserRepository;
 import com.marketplace.auth.security.JwtService;
@@ -55,24 +55,27 @@ class AuthenticationControllerIntegrationTest {
     }
 
     @Test
-    public void signUp_shouldReturnSuccessfulResponse() throws Exception {
+    public void signUp_shouldCreateUser() throws Exception {
         AuthRequest authRequest = AuthRequestDataBuilder.withAllFields().build();
 
-        String contentAsString = mockMvc.perform(post("/auth/sign-up")
+         mockMvc.perform(post("/auth/sign-up")
                         .content(objectMapper.writeValueAsString(authRequest))
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString();
-
-        assertThat(contentAsString).isEqualTo("User successfully created!");
+                .andExpect(status().isOk());
 
         Optional<User> optionalUser = userRepository.findByEmail(authRequest.getEmail());
 
         assertThat(optionalUser).isPresent();
-        assertThat(optionalUser.get().getEmail()).isEqualTo(authRequest.getEmail());
+        User user = optionalUser.get();
+        assertThat(user.getEmail()).isEqualTo(authRequest.getEmail());
 
-        boolean matches = passwordEncoder.matches(authRequest.getPassword(), optionalUser.get().getPassword());
+        boolean matches = passwordEncoder.matches(authRequest.getPassword(), user.getPassword());
+
         assertThat(matches).isTrue();
+        assertThat(user.getEmail()).isEqualTo(authRequest.getEmail());
+        assertThat(user.getCreatedAt()).isNotNull();
+        assertThat(user.getUpdatedAt()).isNotNull();
+        assertThat(user.getCreatedAt()).isEqualToIgnoringNanos(user.getUpdatedAt());
     }
 
     @Test
@@ -91,32 +94,7 @@ class AuthenticationControllerIntegrationTest {
         assertThat(exceptionResponse.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
         assertThat(exceptionResponse.getType()).isEqualTo(ExceptionType.WEB);
         assertThat(exceptionResponse.getMessage()).isEqualTo("User already exists!");
-    }
-
-    @Test
-    public void signUp_shouldReturnSuccessfulResponseWithAuditing() throws Exception {
-        AuthRequest authRequest = AuthRequestDataBuilder.withAllFields().build();
-
-        String contentAsString = mockMvc.perform(post("/auth/sign-up")
-                        .content(objectMapper.writeValueAsString(authRequest))
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString();
-
-        assertThat(contentAsString).isEqualTo("User successfully created!");
-
-        Optional<User> optionalUser = userRepository.findByEmail(authRequest.getEmail());
-
-        assertThat(optionalUser).isPresent();
-
-        User user = optionalUser.get();
-        assertThat(user.getEmail()).isEqualTo(authRequest.getEmail());
-
-        boolean matches = passwordEncoder.matches(authRequest.getPassword(), user.getPassword());
-        assertThat(matches).isTrue();
-        assertThat(user.getCreatedAt()).isNotNull();
-        assertThat(user.getUpdatedAt()).isNotNull();
-        assertThat(user.getCreatedAt()).isEqualToIgnoringNanos(user.getUpdatedAt());
+        assertThat(exceptionResponse.getPath()).isEqualTo("/auth/sign-up");
     }
 
     @Test
@@ -157,6 +135,7 @@ class AuthenticationControllerIntegrationTest {
         assertThat(exceptionResponse.getStatus()).isEqualTo(HttpStatus.UNAUTHORIZED.value());
         assertThat(exceptionResponse.getType()).isEqualTo(ExceptionType.AUTHORIZATION);
         assertThat(exceptionResponse.getMessage()).isEqualTo("Wrong credentials!");
+        assertThat(exceptionResponse.getPath()).isEqualTo("/auth/sign-in");
     }
 
     @Test
@@ -180,6 +159,7 @@ class AuthenticationControllerIntegrationTest {
         assertThat(exceptionResponse.getStatus()).isEqualTo(HttpStatus.UNAUTHORIZED.value());
         assertThat(exceptionResponse.getType()).isEqualTo(ExceptionType.AUTHORIZATION);
         assertThat(exceptionResponse.getMessage()).isEqualTo("Wrong credentials!");
+        assertThat(exceptionResponse.getPath()).isEqualTo("/auth/sign-in");
     }
 
     @Test
@@ -206,6 +186,29 @@ class AuthenticationControllerIntegrationTest {
     }
 
     @Test
+    public void refreshToken_shouldThrowException_WhenUserDoesNotExist() throws Exception {
+        User user = UserDataBuilder.buildUserWithAllFields().build();
+
+        String refreshToken = jwtService.generateRefreshToken(user);
+        AuthRefreshRequest authRefreshRequest = AuthRefreshRequest.builder().refreshToken(refreshToken).build();
+
+
+        String contentAsString = mockMvc.perform(post("/auth/refresh-token")
+                        .content(objectMapper.writeValueAsString(authRefreshRequest))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isUnauthorized())
+                .andReturn().getResponse().getContentAsString();
+
+        ExceptionResponse exceptionResponse = objectMapper.readValue(contentAsString, ExceptionResponse.class);
+
+        assertThat(exceptionResponse).isNotNull();
+        assertThat(exceptionResponse.getStatus()).isEqualTo(HttpStatus.UNAUTHORIZED.value());
+        assertThat(exceptionResponse.getType()).isEqualTo(ExceptionType.AUTHORIZATION);
+        assertThat(exceptionResponse.getMessage()).isEqualTo("Authentication required, please sign in");
+        assertThat(exceptionResponse.getPath()).isEqualTo("/auth/refresh-token");
+    }
+
+    @Test
     public void refreshToken_shouldThrowException_WhenRefreshTokenNotValid() throws Exception {
         User user = UserDataBuilder.buildUserWithAllFields().build();
 
@@ -226,5 +229,6 @@ class AuthenticationControllerIntegrationTest {
         assertThat(exceptionResponse.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
         assertThat(exceptionResponse.getType()).isEqualTo(ExceptionType.AUTHORIZATION);
         assertThat(exceptionResponse.getMessage()).isEqualTo("Token not valid!");
+        assertThat(exceptionResponse.getPath()).isEqualTo("/auth/refresh-token");
     }
 }

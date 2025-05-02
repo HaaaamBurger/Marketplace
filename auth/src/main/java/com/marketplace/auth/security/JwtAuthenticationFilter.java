@@ -104,7 +104,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private void validateUserNotBlocked(User user) {
         if (user.getStatus() == UserStatus.BLOCKED) {
-            log.error("[JWT_AUTHENTICATION_FILTER]: User {} cannot access resource, status: BLOCKED", user.getId());
+            log.error("[JWT_AUTHENTICATION_FILTER]: User {} cannot access this resource because status is {}", user.getId(), UserStatus.BLOCKED);
             throw new AccessDeniedException("Forbidden, not enough access!");
         }
     }

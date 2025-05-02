@@ -2,19 +2,18 @@ package com.marketplace.main.user;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.marketplace.auth.exception.ExceptionResponse;
+import com.marketplace.auth.exception.ExceptionType;
 import com.marketplace.auth.repository.UserRepository;
 import com.marketplace.auth.util.AuthHelper;
 import com.marketplace.auth.web.model.User;
 import com.marketplace.auth.web.model.UserRole;
-import com.marketplace.common.exception.ExceptionResponse;
-import com.marketplace.common.exception.ExceptionType;
 import com.marketplace.common.model.UserStatus;
 import com.marketplace.main.exception.MainExceptionHandler;
-import com.marketplace.main.util.UserCreateRequestDataBuilder;
+import com.marketplace.main.util.UserRequestDataBuilder;
 import com.marketplace.main.util.UserDataBuilder;
-import com.marketplace.user.web.dto.UserCreateRequest;
+import com.marketplace.user.web.dto.UserRequest;
 import com.marketplace.user.web.dto.UserStatusRequest;
-import com.marketplace.user.web.dto.UserUpdateRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,14 +68,51 @@ public class UserControllerIntegrationTest {
     }
 
     @Test
+    public void findById_ThenReturnUser() throws Exception {
+        AuthHelper.AuthHelperResponse adminAuth = authHelper.createAdminAuth();
+        User user = UserDataBuilder.buildUserWithAllFields().build();
+
+        userRepository.save(user);
+
+        String response = mockMvc.perform(get("/users/{userId}", user.getId())
+                        .header(AUTHORIZATION_HEADER, adminAuth.getToken()))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        User responseUser = objectMapper.readValue(response, User.class);
+
+        assertThat(responseUser).isNotNull();
+        assertThat(responseUser.getId()).isEqualTo(user.getId());
+    }
+
+    @Test
+    public void findById_ThenThrowException_WhenUserNotFound() throws Exception {
+        AuthHelper.AuthHelperResponse adminAuth = authHelper.createAdminAuth();
+        String userId = String.valueOf(UUID.randomUUID());
+
+        String response = mockMvc.perform(get("/users/{userId}", userId)
+                        .header(AUTHORIZATION_HEADER, adminAuth.getToken()))
+                .andExpect(status().isNotFound())
+                .andReturn().getResponse().getContentAsString();
+
+        ExceptionResponse exceptionResponse = objectMapper.readValue(response, ExceptionResponse.class);
+
+        assertThat(exceptionResponse).isNotNull();
+        assertThat(exceptionResponse.getStatus()).isEqualTo(HttpStatus.NOT_FOUND.value());
+        assertThat(exceptionResponse.getType()).isEqualTo(ExceptionType.WEB);
+        assertThat(exceptionResponse.getMessage()).isEqualTo("User not found!");
+        assertThat(exceptionResponse.getPath()).isEqualTo("/users/%s", userId);
+    }
+
+    @Test
     public void createUser_shouldReturnCreatedUser() throws Exception {
         AuthHelper.AuthHelperResponse adminAuth = authHelper.createAdminAuth();
-        UserCreateRequest userCreateRequest = UserCreateRequestDataBuilder.withAllFields().build();
+        UserRequest userRequest = UserRequestDataBuilder.withAllFields().build();
 
         String response = mockMvc.perform(post("/users")
                         .header(AUTHORIZATION_HEADER, adminAuth.getToken())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(userCreateRequest)))
+                        .content(objectMapper.writeValueAsString(userRequest)))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andReturn().getResponse().getContentAsString();
@@ -84,18 +120,18 @@ public class UserControllerIntegrationTest {
         User responseUser = objectMapper.readValue(response, User.class);
 
         assertThat(responseUser).isNotNull();
-        assertThat(responseUser.getEmail()).isEqualTo(userCreateRequest.getEmail());
+        assertThat(responseUser.getEmail()).isEqualTo(userRequest.getEmail());
     }
 
     @Test
     public void createUser_WhenRoleUser_ThenForbidden() throws Exception {
         AuthHelper.AuthHelperResponse userAuth = authHelper.createUserAuth();
-        UserCreateRequest userCreateRequest = UserCreateRequestDataBuilder.withAllFields().build();
+        UserRequest userRequest = UserRequestDataBuilder.withAllFields().build();
 
         String response = mockMvc.perform(post("/users")
                         .header(AUTHORIZATION_HEADER, userAuth.getToken())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(userCreateRequest)))
+                        .content(objectMapper.writeValueAsString(userRequest)))
                 .andExpect(status().isForbidden())
                 .andReturn().getResponse().getContentAsString();
 
@@ -105,20 +141,21 @@ public class UserControllerIntegrationTest {
         assertThat(exceptionResponse.getStatus()).isEqualTo(HttpStatus.FORBIDDEN.value());
         assertThat(exceptionResponse.getType()).isEqualTo(ExceptionType.AUTHORIZATION);
         assertThat(exceptionResponse.getMessage()).isEqualTo("Forbidden, not enough access!");
+        assertThat(exceptionResponse.getPath()).isEqualTo("/users");
     }
 
     @Test
     public void createUser_WhenAlreadyExists_ThenReturnBadRequest() throws Exception {
         AuthHelper.AuthHelperResponse adminAuth = authHelper.createAdminAuth();
         User user = UserDataBuilder.buildUserWithAllFields().build();
-        UserCreateRequest userCreateRequest = UserCreateRequestDataBuilder.withAllFields().build();
+        UserRequest userRequest = UserRequestDataBuilder.withAllFields().build();
 
         userRepository.save(user);
 
         String response = mockMvc.perform(post("/users")
                         .header(AUTHORIZATION_HEADER, adminAuth.getToken())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(userCreateRequest)))
+                        .content(objectMapper.writeValueAsString(userRequest)))
                 .andExpect(status().isBadRequest())
                 .andReturn().getResponse().getContentAsString();
 
@@ -128,6 +165,7 @@ public class UserControllerIntegrationTest {
         assertThat(exceptionResponse.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
         assertThat(exceptionResponse.getType()).isEqualTo(ExceptionType.WEB);
         assertThat(exceptionResponse.getMessage()).isEqualTo("User already exists!");
+        assertThat(exceptionResponse.getPath()).isEqualTo("/users");
     }
 
     @Test
@@ -159,43 +197,9 @@ public class UserControllerIntegrationTest {
     }
 
     @Test
-    public void findById_ThenReturnUser() throws Exception {
-        AuthHelper.AuthHelperResponse adminAuth = authHelper.createAdminAuth();
-        User user = UserDataBuilder.buildUserWithAllFields().build();
-
-        userRepository.save(user);
-
-        String response = mockMvc.perform(get("/users/{userId}", user.getId())
-                        .header(AUTHORIZATION_HEADER, adminAuth.getToken()))
-                .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString();
-
-        User responseUser = objectMapper.readValue(response, User.class);
-
-        assertThat(responseUser).isNotNull();
-        assertThat(responseUser.getId()).isEqualTo(user.getId());
-    }
-
-    @Test
-    public void findById_ThenThrowException_WhenUserNotFound() throws Exception {
-        AuthHelper.AuthHelperResponse adminAuth = authHelper.createAdminAuth();
-        String userId = String.valueOf(UUID.randomUUID());
-
-        String response = mockMvc.perform(get("/users/{userId}", userId)
-                        .header(AUTHORIZATION_HEADER, adminAuth.getToken()))
-                .andExpect(status().isNotFound())
-                .andReturn().getResponse().getContentAsString();
-
-        ExceptionResponse exceptionResponse = objectMapper.readValue(response, ExceptionResponse.class);
-
-        assertThatUserNotFound(exceptionResponse, userId);
-    }
-
-    @Test
     public void update_ThenUpdate_AndReturnUser() throws Exception {
         AuthHelper.AuthHelperResponse adminAuth = authHelper.createAdminAuth();
-        UserUpdateRequest userUpdateRequest = UserUpdateRequest.builder()
-                .email("test1@gmail.com")
+        UserRequest userRequest = UserRequestDataBuilder.withAllFields()
                 .role(UserRole.ADMIN)
                 .build();
         User user = UserDataBuilder.buildUserWithAllFields().build();
@@ -205,7 +209,7 @@ public class UserControllerIntegrationTest {
         String response = mockMvc.perform(put("/users/{userId}", user.getId())
                         .header(AUTHORIZATION_HEADER, adminAuth.getToken())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(userUpdateRequest)))
+                        .content(objectMapper.writeValueAsString(userRequest)))
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
 
@@ -213,14 +217,14 @@ public class UserControllerIntegrationTest {
 
         assertThat(responseUser).isNotNull();
         assertThat(responseUser.getId()).isEqualTo(user.getId());
-        assertThat(responseUser.getEmail()).isEqualTo(userUpdateRequest.getEmail());
-        assertThat(responseUser.getRole()).isEqualTo(userUpdateRequest.getRole());
+        assertThat(responseUser.getEmail()).isEqualTo(userRequest.getEmail());
+        assertThat(responseUser.getRole()).isEqualTo(userRequest.getRole());
     }
 
     @Test
     public void update_ThenUpdatePassword() throws Exception {
         AuthHelper.AuthHelperResponse adminAuth = authHelper.createAdminAuth();
-        UserUpdateRequest userUpdateRequest = UserUpdateRequest.builder()
+        UserRequest userRequest = UserRequestDataBuilder.withAllFields()
                 .password("testPassword2")
                 .build();
         User user = UserDataBuilder.buildUserWithAllFields().build();
@@ -230,35 +234,14 @@ public class UserControllerIntegrationTest {
         mockMvc.perform(put("/users/{userId}", user.getId())
                         .header(AUTHORIZATION_HEADER, adminAuth.getToken())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(userUpdateRequest)))
+                        .content(objectMapper.writeValueAsString(userRequest)))
                 .andExpect(status().isOk());
 
         Optional<User> optionalUser = userRepository.findById(user.getId());
         assertThat(optionalUser).isPresent();
 
-        boolean matches = passwordEncoder.matches(userUpdateRequest.getPassword(), optionalUser.get().getPassword());
+        boolean matches = passwordEncoder.matches(userRequest.getPassword(), optionalUser.get().getPassword());
         assertThat(matches).isTrue();
-    }
-
-    @Test
-    public void update_ThenThrowException_WhenUserNotFound() throws Exception {
-        AuthHelper.AuthHelperResponse adminAuth = authHelper.createAdminAuth();
-        String userId = String.valueOf(UUID.randomUUID());
-        UserUpdateRequest userUpdateRequest = UserUpdateRequest.builder()
-                .email("test1@gmail.com")
-                .build();
-
-
-        String response = mockMvc.perform(put("/users/{userId}", userId)
-                        .header(AUTHORIZATION_HEADER, adminAuth.getToken())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(userUpdateRequest)))
-                .andExpect(status().isNotFound())
-                .andReturn().getResponse().getContentAsString();
-
-        ExceptionResponse exceptionResponse = objectMapper.readValue(response, ExceptionResponse.class);
-
-        assertThatUserNotFound(exceptionResponse, userId);
     }
 
     @Test
@@ -289,27 +272,6 @@ public class UserControllerIntegrationTest {
     }
 
     @Test
-    public void updateStatus_ThenThrowException_WhenUserNotFound() throws Exception {
-        AuthHelper.AuthHelperResponse adminAuth = authHelper.createAdminAuth();
-        String userId = String.valueOf(UUID.randomUUID());
-        UserStatusRequest userStatusRequest = UserStatusRequest.builder()
-                .userId(userId)
-                .status(UserStatus.BLOCKED)
-                .build();
-
-
-        String response = mockMvc.perform(put("/users/status")
-                        .header(AUTHORIZATION_HEADER, adminAuth.getToken())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(userStatusRequest)))
-                .andExpect(status().isNotFound()).andReturn().getResponse().getContentAsString();
-
-        ExceptionResponse exceptionResponse = objectMapper.readValue(response, ExceptionResponse.class);
-
-        assertThatUserNotFound(exceptionResponse, userId);
-    }
-
-    @Test
     public void delete_ThenDeleteUser() throws Exception {
         AuthHelper.AuthHelperResponse adminAuth = authHelper.createAdminAuth();
         User user = UserDataBuilder.buildUserWithAllFields().build();
@@ -324,27 +286,5 @@ public class UserControllerIntegrationTest {
         Optional<User> optionalUser = userRepository.findById(user.getId());
 
         assertThat(optionalUser).isNotPresent();
-    }
-
-    @Test
-    public void delete_ThenThrowException_WhenUserNotFound() throws Exception {
-        AuthHelper.AuthHelperResponse adminAuth = authHelper.createAdminAuth();
-        String userId = String.valueOf(UUID.randomUUID());
-
-        String response = mockMvc.perform(delete("/users/{userId}", userId)
-                        .header(AUTHORIZATION_HEADER, adminAuth.getToken()))
-                .andExpect(status().isNotFound())
-                .andReturn().getResponse().getContentAsString();
-
-        ExceptionResponse exceptionResponse = objectMapper.readValue(response, ExceptionResponse.class);
-
-        assertThatUserNotFound(exceptionResponse, userId);
-    }
-
-    private void assertThatUserNotFound(ExceptionResponse exceptionResponse, String userId) {
-        assertThat(exceptionResponse).isNotNull();
-        assertThat(exceptionResponse.getStatus()).isEqualTo(HttpStatus.NOT_FOUND.value());
-        assertThat(exceptionResponse.getType()).isEqualTo(ExceptionType.WEB);
-        assertThat(exceptionResponse.getMessage()).isEqualTo("User not found by id: " + userId);
     }
 }

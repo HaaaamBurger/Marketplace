@@ -1,14 +1,16 @@
 package com.marketplace.product.service;
 
+import com.marketplace.auth.exception.EntityNotFoundException;
 import com.marketplace.auth.web.model.User;
-import com.marketplace.common.exception.EntityNotFoundException;
 import com.marketplace.product.util.UserDataBuilder;
+import com.marketplace.product.web.dto.ProductRequest;
 import com.marketplace.product.web.model.Product;
 import com.marketplace.product.util.ProductDataBuilder;
 import com.marketplace.product.repository.ProductRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -31,7 +33,61 @@ class ProductServiceTest {
     private ProductService productService;
 
     @Test
-    void shouldReturnAllProducts() {
+    public void findById_shouldReturnProductById() {
+        Product product = ProductDataBuilder.buildProductWithAllFields().build();
+
+        when(productRepository.findById(product.getId())).thenReturn(Optional.of(product));
+
+        Product result = productService.findById(product.getId());
+        assertEquals(product, result);
+    }
+
+    @Test
+    public void findById_shouldThrowExceptionIfProductNotFound() {
+        String id = UUID.randomUUID().toString();
+
+        when(productRepository.findById(id)).thenReturn(Optional.empty());
+
+        Exception exception = assertThrows(EntityNotFoundException.class, () -> productService.findById(id));
+        assertThat(exception.getMessage()).isEqualTo("Product not found!");
+    }
+
+    @Test
+    public void create_shouldCreateProduct() {
+        User user = UserDataBuilder.buildUserWithAllFields().build();
+        Product product = ProductDataBuilder.buildProductWithAllFields().build();
+        ProductRequest productRequest = ProductRequest.builder()
+                .name(product.getName())
+                .description(product.getDescription())
+                .price(product.getPrice())
+                .build();
+
+        mockAuthenticationAndSetContext(user);
+        
+        when(productRepository.save(any(Product.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        Product responseProduct = productService.create(productRequest);
+
+        assertThat(product.getName()).isEqualTo(responseProduct.getName());
+        assertThat(product.getDescription()).isEqualTo(responseProduct.getDescription());
+        assertThat(product.getPrice()).isEqualTo(responseProduct.getPrice());
+    }
+
+    @Test
+    public void create_shouldThrowException_WhenNoSecurity() {
+        Product product = ProductDataBuilder.buildProductWithAllFields().build();
+        ProductRequest productRequest = ProductRequest.builder()
+                .name(product.getName())
+                .description(product.getDescription())
+                .price(product.getPrice())
+                .build();
+
+        when(productRepository.save(any(Product.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        AuthenticationCredentialsNotFoundException exception = assertThrows(AuthenticationCredentialsNotFoundException.class, () -> productService.create(productRequest));
+        assertThat(exception.getMessage()).isEqualTo("Authentication is unavailable!");
+    }
+
+    @Test
+    public void findAll_shouldReturnAllProducts() {
         Product product = ProductDataBuilder.buildProductWithAllFields().build();
 
         when(productRepository.findAll()).thenReturn(List.of(product));
@@ -43,90 +99,50 @@ class ProductServiceTest {
     }
 
     @Test
-    void shouldReturnProductById() {
-        Product product = ProductDataBuilder.buildProductWithAllFields().build();
-
-        when(productRepository.findById(product.getId())).thenReturn(Optional.of(product));
-
-        Product result = productService.findById(product.getId());
-        assertEquals(product, result);
-    }
-
-    @Test
-    void shouldThrowExceptionIfProductNotFound() {
-        String id = UUID.randomUUID().toString();
-
-        when(productRepository.findById(id)).thenReturn(Optional.empty());
-
-        Exception exception = assertThrows(EntityNotFoundException.class, () -> productService.findById(id));
-        assertThat(exception.getMessage()).isEqualTo("Product not found with id: " + id);
-    }
-
-    @Test
-    void shouldCreateProduct() {
-        User user = UserDataBuilder.buildUserWithAllFields().build();
-        Product product = ProductDataBuilder.buildProductWithAllFields().build();
-
-        SecurityContext mockSecurityContext = mock(SecurityContext.class);
-        Authentication mockAuthentication = mock(Authentication.class);
-        when(mockSecurityContext.getAuthentication()).thenReturn(mockAuthentication);
-        when(mockAuthentication.getPrincipal()).thenReturn(user);
-
-        SecurityContextHolder.setContext(mockSecurityContext);
-
-        when(productRepository.save(product)).thenReturn(product);
-
-        Product resultProduct = productService.create(product);
-
-        assertEquals(product, resultProduct);
-        verify(productRepository, times(1)).save(product);
-    }
-
-    @Test
-    void shouldUpdateProduct() {
+    public void update_shouldUpdateProduct() {
         User user = UserDataBuilder.buildUserWithAllFields().build();
         Product product = ProductDataBuilder.buildProductWithAllFields()
                 .ownerId(user.getId())
                 .build();
-        Product updatedProduct = ProductDataBuilder.buildProductWithAllFields()
-                .id(product.getId())
+        ProductRequest productRequest = ProductRequest.builder()
                 .name("Updated Name")
                 .description("Updated Description")
                 .price(BigDecimal.valueOf(199.99))
                 .build();
 
-        SecurityContext mockSecurityContext = mock(SecurityContext.class);
-        Authentication mockAuthentication = mock(Authentication.class);
-        when(mockSecurityContext.getAuthentication()).thenReturn(mockAuthentication);
-        when(mockAuthentication.getPrincipal()).thenReturn(user);
-
-        SecurityContextHolder.setContext(mockSecurityContext);
+        mockAuthenticationAndSetContext(user);
 
         when(productRepository.findById(product.getId())).thenReturn(Optional.of(product));
-        when(productRepository.save(any(Product.class))).thenReturn(updatedProduct);
+        when(productRepository.save(any(Product.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        Product resultProduct = productService.update(product.getId(), updatedProduct);
+        Product resultProduct = productService.update(product.getId(), productRequest);
 
-        assertEquals("Updated Name", resultProduct.getName());
-        assertEquals("Updated Description", resultProduct.getDescription());
-        assertEquals(BigDecimal.valueOf(199.99), resultProduct.getPrice());
+        assertThat(productRequest.getName()).isEqualTo(resultProduct.getName());
+        assertThat(productRequest.getDescription()).isEqualTo(resultProduct.getDescription());
+        assertThat(productRequest.getPrice()).isEqualTo(resultProduct.getPrice());
     }
 
     @Test
-    void shouldDeleteProduct() {
+    public void delete_shouldDeleteProduct() {
         Product product = ProductDataBuilder.buildProductWithAllFields().build();
         User user = UserDataBuilder.buildUserWithAllFields().build();
         product.setOwnerId(user.getId());
 
+        mockAuthenticationAndSetContext(user);
+
+        when(productRepository.findById(product.getId())).thenReturn(Optional.of(product));
+        productService.delete(product.getId());
+
+        verify(productRepository, times(1)).delete(product);
+    }
+
+    private void mockAuthenticationAndSetContext(User user) {
         SecurityContext mockSecurityContext = mock(SecurityContext.class);
         Authentication mockAuthentication = mock(Authentication.class);
+
         when(mockSecurityContext.getAuthentication()).thenReturn(mockAuthentication);
         when(mockAuthentication.getPrincipal()).thenReturn(user);
 
         SecurityContextHolder.setContext(mockSecurityContext);
-
-        when(productRepository.findById(product.getId())).thenReturn(Optional.of(product));
-        productService.delete(product.getId());
-        verify(productRepository, times(1)).delete(product);
     }
 }

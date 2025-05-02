@@ -52,6 +52,10 @@ public class JwtService {
         return buildToken(userDetails, claims, jwtRefreshExpirationTime);
     }
 
+    public String generateAccessTokenWithExpiration(UserDetails userDetails, long expiration) {
+        return buildToken(userDetails, new HashMap<>(), expiration);
+    }
+
     public String generateRefreshTokenWithExpiration(UserDetails userDetails, long expiration) {
         return buildToken(userDetails, new HashMap<>(), expiration);
     }
@@ -86,9 +90,14 @@ public class JwtService {
         }
     }
 
-    private  <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
+    private <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
         Claims claims = extractAllClaims(token);
         return claimsResolver.apply(claims);
+    }
+
+    protected Object extractClaim(String token, String claim) {
+        Claims claims = extractAllClaims(token);
+        return claims.get(claim);
     }
 
     private Claims extractAllClaims(String token) {

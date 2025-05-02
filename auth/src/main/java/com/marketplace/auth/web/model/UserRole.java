@@ -3,6 +3,7 @@ package com.marketplace.auth.web.model;
 import org.springframework.security.core.GrantedAuthority;
 
 public enum UserRole implements GrantedAuthority {
+
     USER,
     ADMIN;
 
@@ -10,4 +11,5 @@ public enum UserRole implements GrantedAuthority {
     public String getAuthority() {
         return this.name();
     }
+
 }

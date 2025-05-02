@@ -1,8 +1,11 @@
 package com.marketplace.product.web.rest;
 
 import com.marketplace.product.service.ProductService;
+import com.marketplace.product.web.dto.ProductResponse;
+import com.marketplace.product.web.dto.ProductRequest;
 import com.marketplace.product.web.model.Product;
 
+import com.marketplace.product.web.util.ProductEntityMapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -17,29 +20,33 @@ public class ProductController {
 
     private final ProductService productService;
 
+    private final ProductEntityMapper productEntityMapper;
+
     @GetMapping
-    public ResponseEntity<List<Product>> getAllProducts() {
+    public ResponseEntity<List<ProductResponse>> getAllProducts() {
         List<Product> products = productService.findAll();
-        return ResponseEntity.ok(products);
+        return ResponseEntity.ok(productEntityMapper.mapEntitiesToResponseDtos(products));
     }
 
     @GetMapping("/{productId}")
-    public ResponseEntity<Product> getProductById(@PathVariable String productId) {
+    public ResponseEntity<ProductResponse> getProductById(@PathVariable String productId) {
         Product product = productService.findById(productId);
-        return ResponseEntity.ok(product);
+        return ResponseEntity.ok(productEntityMapper.mapEntityToResponseDto(product));
     }
 
     @PostMapping
-    public ResponseEntity<Product> createProduct(@Valid @RequestBody Product product) {
-        return ResponseEntity.ok(productService.create(product));
+    public ResponseEntity<ProductResponse> createProduct(@Valid @RequestBody ProductRequest productRequest) {
+        Product product = productService.create(productRequest);
+        return ResponseEntity.ok(productEntityMapper.mapEntityToResponseDto(product));
     }
 
     @PutMapping("/{productId}")
-    public ResponseEntity<Product> updateProduct(
+    public ResponseEntity<ProductResponse> updateProduct(
              @PathVariable String productId,
-             @Valid @RequestBody Product updatedProduct
+             @Valid @RequestBody ProductRequest productRequest
     ) {
-        return ResponseEntity.ok(productService.update(productId, updatedProduct));
+        Product product = productService.update(productId, productRequest);
+        return ResponseEntity.ok(productEntityMapper.mapEntityToResponseDto(product));
     }
 
     @DeleteMapping("/{productId}")
