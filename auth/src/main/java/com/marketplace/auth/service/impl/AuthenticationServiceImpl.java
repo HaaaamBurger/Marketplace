@@ -40,7 +40,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         User user = userRepository.findByEmail(authRequest.getEmail())
                 .orElseThrow(() ->  {
-                    logAuthenticationError("User does not exist with email: " + authRequest.getEmail());
+                    log.error("[AUTHENTICATION_SERVICE_IMPL]:User does not exist with email: {}", authRequest.getEmail());
                     return new CredentialException("Wrong credentials!");
                 });
 
@@ -50,7 +50,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         );
 
         if (!isPasswordValid) {
-            logAuthenticationError("User password " + authRequest.getPassword() + " is not matching");
+            log.error("[AUTHENTICATION_SERVICE_IMPL]: User password {} is not matching", authRequest.getPassword());
             throw new CredentialException("Wrong credentials!");
         }
 
@@ -80,7 +80,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             return generateAuthResponse(userDetails);
 
         } catch (JwtException exception) {
-            logAuthenticationError(exception.getMessage());
+            log.error("[AUTHENTICATION_SERVICE_IMPL]: {}", exception.getMessage());
             throw new TokenNotValidException("Token not valid!");
         }
     }
@@ -113,12 +113,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         Optional<User> userOptional = userRepository.findByEmail(email);
 
         if (userOptional.isPresent()) {
-            logAuthenticationError("User by email " + email + " already exists!");
+            log.error("[AUTHENTICATION_SERVICE_IMPL]: User by email {} already exists!", email);
             throw new EntityExistsException("User already exists!");
         }
-    }
-
-    private void logAuthenticationError(String message) {
-        log.error("[AUTHENTICATION_SERVICE_IMPL]: {}", message);
     }
 }
