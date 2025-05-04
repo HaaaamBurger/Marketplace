@@ -9,17 +9,15 @@ import lombok.*;
 import java.util.List;
 
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 @Builder
 public class OrderRequest {
 
     @NotEmpty(message = "Product list must not be empty")
     private List<String> productIds;
 
-    @NotBlank(message = "Address must not be blank")
+    @NotBlank(message = "Address is required")
     private String address;
 
-    @NotNull(message = "Status must not be null")
+    @NotNull(message = "Status is required")
     OrderStatus status;
 }

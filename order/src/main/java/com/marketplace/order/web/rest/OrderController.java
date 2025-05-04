@@ -27,7 +27,7 @@ public class OrderController {
         return ResponseEntity.ok(orderEntityMapper.mapEntitiesToResponseDtos(orders));
     }
 
-    @PostMapping
+    @PostMapping("/products")
     public ResponseEntity<OrderResponse> createOrder(@Valid @RequestBody OrderRequest orderRequest) {
         Order order = orderService.create(orderRequest);
         return ResponseEntity.ok(orderEntityMapper.mapEntityToResponseDto(order));

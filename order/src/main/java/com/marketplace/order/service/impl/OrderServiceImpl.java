@@ -8,6 +8,7 @@ import com.marketplace.order.repository.OrderRepository;
 import com.marketplace.order.service.OrderService;
 import com.marketplace.order.web.model.Order;
 import com.marketplace.order.web.rest.dto.OrderRequest;
+import com.marketplace.product.repository.ProductRepository;
 import com.marketplace.product.web.model.Product;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +26,8 @@ public class OrderServiceImpl implements OrderService {
 
     private final OrderRepository orderRepository;
 
+    private final ProductRepository productRepository;
+
     private final AuthHelper authHelper;
 
     @Override
@@ -35,6 +38,9 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public Order create(OrderRequest request) {
         User authenticatedUser = authHelper.getAuthenticatedUser();
+
+        List<String> productIds = request.getProductIds();
+        productIds.forEach(this::findProductOrThrow);
 
         return orderRepository.save(Order.builder()
                 .userId(authenticatedUser.getId())
@@ -68,8 +74,16 @@ public class OrderServiceImpl implements OrderService {
     private Order findOrderOrThrow(String orderId) {
         return orderRepository.findById(orderId)
                 .orElseThrow(() -> {
-                    log.error("[PRODUCT_SERVICE_IMPL]: Order not found by ID {}", orderId);
+                    log.error("[ORDER_SERVICE_IMPL]: Order not found by ID {}", orderId);
                     return new EntityNotFoundException("Order not found!");
+                });
+    }
+
+    private Product findProductOrThrow(String productId) {
+        return productRepository.findById(productId)
+                .orElseThrow(() -> {
+                    log.error("[ORDER_SERVICE_IMPL]: Product not found by ID {}", productId);
+                    return new EntityNotFoundException("Product not found!");
                 });
     }
 
@@ -81,7 +95,7 @@ public class OrderServiceImpl implements OrderService {
             return product;
         }
 
-        log.error("[PRODUCT_SERVICE_IMPL]: User {} is not owner of the order: {} or not ADMIN", authenticatedUser.getId(), productId);
+        log.error("[ORDER_SERVICE_IMPL]: User {} is not owner of the order: {} or not ADMIN", authenticatedUser.getId(), productId);
         throw new AccessDeniedException("Access denied!");
     }
 
