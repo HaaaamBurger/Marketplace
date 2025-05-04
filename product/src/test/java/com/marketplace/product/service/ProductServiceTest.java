@@ -2,18 +2,18 @@ package com.marketplace.product.service;
 
 import com.marketplace.auth.exception.EntityNotFoundException;
 import com.marketplace.auth.web.model.User;
-import com.marketplace.product.util.UserDataBuilder;
+import com.marketplace.product.util.MockHelper;
 import com.marketplace.product.web.dto.ProductRequest;
 import com.marketplace.product.web.model.Product;
 import com.marketplace.product.util.ProductDataBuilder;
 import com.marketplace.product.repository.ProductRepository;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.math.BigDecimal;
@@ -23,6 +23,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+@ActiveProfiles("test")
 @SpringBootTest
 class ProductServiceTest {
 
@@ -31,6 +32,14 @@ class ProductServiceTest {
 
     @Autowired
     private ProductService productService;
+
+    @Autowired
+    private MockHelper mockHelper;
+
+    @AfterEach
+    public void clearSecurityContext() {
+        SecurityContextHolder.clearContext();
+    }
 
     @Test
     public void findById_shouldReturnProductById() {
@@ -54,7 +63,6 @@ class ProductServiceTest {
 
     @Test
     public void create_shouldCreateProduct() {
-        User user = UserDataBuilder.buildUserWithAllFields().build();
         Product product = ProductDataBuilder.buildProductWithAllFields().build();
         ProductRequest productRequest = ProductRequest.builder()
                 .name(product.getName())
@@ -62,8 +70,8 @@ class ProductServiceTest {
                 .price(product.getPrice())
                 .build();
 
-        mockAuthenticationAndSetContext(user);
-        
+        mockHelper.mockAuthenticationAndSetContext();
+
         when(productRepository.save(any(Product.class))).thenAnswer(invocation -> invocation.getArgument(0));
         Product responseProduct = productService.create(productRequest);
 
@@ -100,17 +108,15 @@ class ProductServiceTest {
 
     @Test
     public void update_shouldUpdateProduct() {
-        User user = UserDataBuilder.buildUserWithAllFields().build();
+        User user = mockHelper.mockAuthenticationAndSetContext();
         Product product = ProductDataBuilder.buildProductWithAllFields()
-                .ownerId(user.getId())
+                .userId(user.getId())
                 .build();
         ProductRequest productRequest = ProductRequest.builder()
                 .name("Updated Name")
                 .description("Updated Description")
                 .price(BigDecimal.valueOf(199.99))
                 .build();
-
-        mockAuthenticationAndSetContext(user);
 
         when(productRepository.findById(product.getId())).thenReturn(Optional.of(product));
         when(productRepository.save(any(Product.class))).thenAnswer(invocation -> invocation.getArgument(0));
@@ -125,24 +131,12 @@ class ProductServiceTest {
     @Test
     public void delete_shouldDeleteProduct() {
         Product product = ProductDataBuilder.buildProductWithAllFields().build();
-        User user = UserDataBuilder.buildUserWithAllFields().build();
-        product.setOwnerId(user.getId());
-
-        mockAuthenticationAndSetContext(user);
+        User user = mockHelper.mockAuthenticationAndSetContext();
+        product.setUserId(user.getId());
 
         when(productRepository.findById(product.getId())).thenReturn(Optional.of(product));
         productService.delete(product.getId());
 
         verify(productRepository, times(1)).delete(product);
-    }
-
-    private void mockAuthenticationAndSetContext(User user) {
-        SecurityContext mockSecurityContext = mock(SecurityContext.class);
-        Authentication mockAuthentication = mock(Authentication.class);
-
-        when(mockSecurityContext.getAuthentication()).thenReturn(mockAuthentication);
-        when(mockAuthentication.getPrincipal()).thenReturn(user);
-
-        SecurityContextHolder.setContext(mockSecurityContext);
     }
 }

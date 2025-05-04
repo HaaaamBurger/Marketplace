@@ -1,19 +1,19 @@
 package com.marketplace.order.service;
 
+import com.marketplace.order.web.model.Order;
 import com.marketplace.order.web.rest.dto.OrderRequest;
-import com.marketplace.order.web.rest.dto.OrderResponse;
 
 import java.util.List;
 
 public interface OrderService {
 
-    List<OrderResponse> getAllOrders();
+    Order create(OrderRequest request);
 
-    OrderResponse createOrder(OrderRequest request);
+    List<Order> findAll();
 
-    OrderResponse getOrderById(String id);
+    Order findById(String orderId);
 
-    OrderResponse updateOrder(String id, OrderRequest request);
+    Order update(String orderId, OrderRequest request);
 
-    void deleteOrder(String id);
+    void delete(String orderId);
 }

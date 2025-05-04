@@ -32,7 +32,7 @@ public class OrderTest {
 
         Set<ConstraintViolation<Order>> violations = validator.validate(order);
 
-        assertTrue(violations.isEmpty(), "Order should be valid");
+        assertTrue(violations.isEmpty());
     }
 
     @Test
@@ -47,7 +47,7 @@ public class OrderTest {
 
         assertThat(matchedViolation).isNotNull();
         assertThat(matchedViolation.getPropertyPath().toString()).isEqualTo("userId");
-         assertThat(matchedViolation.getMessage()).isEqualTo("User ID cannot be null");
+         assertThat(matchedViolation.getMessage()).isEqualTo("User ID is required");
     }
 
     @Test
@@ -62,7 +62,7 @@ public class OrderTest {
 
         assertThat(matchedViolation).isNotNull();
         assertThat(matchedViolation.getPropertyPath().toString()).isEqualTo("productIds");
-         assertThat(matchedViolation.getMessage()).isEqualTo("Order must contain at least one product");
+         assertThat(matchedViolation.getMessage()).isEqualTo("Order must contain at least 1 product and maximum 50");
     }
 
     private ConstraintViolation<Order> getMatchedViolationByField(Set<ConstraintViolation<Order>> violations, String field) {

@@ -1,9 +1,10 @@
 package com.marketplace.order.web.model;
 
 import com.marketplace.common.model.AuditableEntity;
-import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -12,23 +13,24 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder(toBuilder = true)
-@Document(collection = "Order")
+@SuperBuilder(toBuilder = true)
+@Document(collection = "orders")
+@EqualsAndHashCode(callSuper = true)
 public class Order extends AuditableEntity {
 
     @Id
     private String id;
 
-    @NotNull(message = "User ID cannot be null")
+    @NotNull(message = "User ID is required")
     private String userId;
 
-    @NotEmpty(message = "Order must contain at least one product")
+    @Size(min = 1, max = 50, message = "Order must contain at least 1 product and maximum 50")
     private List<String> productIds;
 
-    @NotNull(message = "Address cannot be null")
+    @NotNull(message = "Address is required")
     private String address;
 
-    @NotNull(message = "Order status must not be null")
+    @NotNull(message = "Order is required")
     private OrderStatus status;
 
 }
