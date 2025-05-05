@@ -48,8 +48,15 @@ public class OrderController {
         return ResponseEntity.ok(orderEntityMapper.mapEntityToResponseDto(order));
     }
 
+    @PutMapping("/products/{productId}")
+    public ResponseEntity<OrderResponse> addProductToOrder(@PathVariable String productId) {
+        Order order = orderService.addProductToOrder(productId);
+        return ResponseEntity.ok(orderEntityMapper.mapEntityToResponseDto(order));
+    }
+
     @DeleteMapping("/{orderId}")
     public void deleteOrder(@PathVariable String orderId) {
         orderService.delete(orderId);
     }
+
 }

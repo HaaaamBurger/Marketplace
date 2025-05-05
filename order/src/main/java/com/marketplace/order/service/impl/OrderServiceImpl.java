@@ -1,22 +1,19 @@
 package com.marketplace.order.service.impl;
 
-import com.marketplace.auth.exception.EntityNotFoundException;
 import com.marketplace.auth.util.AuthHelper;
 import com.marketplace.auth.web.model.User;
-import com.marketplace.auth.web.model.UserRole;
 import com.marketplace.order.repository.OrderRepository;
 import com.marketplace.order.service.OrderService;
 import com.marketplace.order.web.model.Order;
+import com.marketplace.order.web.model.OrderStatus;
 import com.marketplace.order.web.rest.dto.OrderRequest;
-import com.marketplace.product.repository.ProductRepository;
-import com.marketplace.product.web.model.Product;
+import com.marketplace.order.web.rest.util.OrderServiceUtil;
+import com.marketplace.product.web.rest.util.ProductServiceUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 @Slf4j
@@ -26,9 +23,11 @@ public class OrderServiceImpl implements OrderService {
 
     private final OrderRepository orderRepository;
 
-    private final ProductRepository productRepository;
-
     private final AuthHelper authHelper;
+
+    private final OrderServiceUtil orderServiceUtil;
+
+    private final ProductServiceUtil productServiceUtil;
 
     @Override
     public List<Order> findAll() {
@@ -40,24 +39,24 @@ public class OrderServiceImpl implements OrderService {
         User authenticatedUser = authHelper.getAuthenticatedUser();
 
         List<String> productIds = request.getProductIds();
-        productIds.forEach(this::findProductOrThrow);
+        productIds.forEach(productServiceUtil::findProductOrThrow);
 
         return orderRepository.save(Order.builder()
                 .userId(authenticatedUser.getId())
                 .productIds(request.getProductIds())
                 .address(request.getAddress())
-                .status(request.getStatus())
+                .status(OrderStatus.CREATED)
                 .build());
     }
 
     @Override
     public Order findById(String orderId) {
-        return validateOrderAccessOrThrow(orderId);
+        return orderServiceUtil.validateOrderAccessOrThrow(orderId);
     }
 
     @Override
     public Order update(String orderId, OrderRequest request) {
-        Order order = findOrderOrThrow(orderId);
+        Order order = orderServiceUtil.findOrderOrThrow(orderId);
 
         Optional.ofNullable(request.getProductIds()).ifPresent(order::setProductIds);
         Optional.ofNullable(request.getAddress()).ifPresent(order::setAddress);
@@ -68,39 +67,19 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public void delete(String orderId) {
-        orderRepository.delete(findOrderOrThrow(orderId));
+        Order order = orderServiceUtil.validateOrderAccessOrThrow(orderId);
+        orderRepository.delete(order);
     }
 
-    private Order findOrderOrThrow(String orderId) {
-        return orderRepository.findById(orderId)
-                .orElseThrow(() -> {
-                    log.error("[ORDER_SERVICE_IMPL]: Order not found by ID {}", orderId);
-                    return new EntityNotFoundException("Order not found!");
-                });
-    }
+    @Override
+    public Order addProductToOrder(String productId) {
+        productServiceUtil.findProductOrThrow(productId);
+        Order order = orderServiceUtil.findOrderOrCreate();
 
-    private Product findProductOrThrow(String productId) {
-        return productRepository.findById(productId)
-                .orElseThrow(() -> {
-                    log.error("[ORDER_SERVICE_IMPL]: Product not found by ID {}", productId);
-                    return new EntityNotFoundException("Product not found!");
-                });
-    }
+        order.getProductIds().add(productId);
+        order.setStatus(OrderStatus.IN_PROGRESS);
 
-    private Order validateOrderAccessOrThrow(String productId) {
-        User authenticatedUser = authHelper.getAuthenticatedUser();
-        Order product = findOrderOrThrow(productId);
-
-        if (checkUserOwnerOrAdmin(authenticatedUser, product.getUserId())) {
-            return product;
-        }
-
-        log.error("[ORDER_SERVICE_IMPL]: User {} is not owner of the order: {} or not ADMIN", authenticatedUser.getId(), productId);
-        throw new AccessDeniedException("Access denied!");
-    }
-
-    private boolean checkUserOwnerOrAdmin(User user, String productUserId) {
-        return Objects.equals(user.getId(), productUserId) || user.getRole() == UserRole.ADMIN;
+        return orderRepository.save(order);
     }
 
 }

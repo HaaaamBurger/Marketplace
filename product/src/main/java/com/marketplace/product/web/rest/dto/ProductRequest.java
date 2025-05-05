@@ -1,4 +1,4 @@
-package com.marketplace.product.web.dto;
+package com.marketplace.product.web.rest.dto;
 
 import jakarta.validation.constraints.*;
 import lombok.Builder;

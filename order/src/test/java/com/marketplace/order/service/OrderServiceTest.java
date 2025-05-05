@@ -8,8 +8,10 @@ import com.marketplace.order.repository.OrderRepository;
 import com.marketplace.order.util.MockHelper;
 
 import com.marketplace.order.util.OrderDataBuilder;
+import com.marketplace.order.util.ProductDataBuilder;
 import com.marketplace.order.util.UserDataBuilder;
 import com.marketplace.order.web.model.Order;
+import com.marketplace.order.web.model.OrderStatus;
 import com.marketplace.order.web.rest.dto.OrderRequest;
 import com.marketplace.product.repository.ProductRepository;
 import com.marketplace.product.web.model.Product;
@@ -27,8 +29,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
+import static org.assertj.core.api.AssertionsForClassTypes.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
@@ -73,7 +75,7 @@ class OrderServiceTest {
     }
 
     @Test
-    public void findById_shouldThrowException() {
+    public void findById_shouldThrowException_WhenOrderNotFound() {
         mockHelper.mockAuthenticationAndSetContext();
         String orderId = String.valueOf(UUID.randomUUID());
 
@@ -147,18 +149,17 @@ class OrderServiceTest {
         assertThat(responseOrder).isNotNull();
         assertThat(responseOrder.getUserId()).isEqualTo(user.getId());
         assertThat(responseOrder.getProductIds().get(0)).isEqualTo(mockProductId);
+
+        verify(productRepository, times(1)).findById(mockProductId);
+        verify(orderRepository, times(1)).save(any(Order.class));
     }
 
     @Test
     public void create_shouldThrowException_WhenNoSecurity() {
         String mockProductId = "mockProductId";
-        Product mockedProduct = mock(Product.class);
         OrderRequest orderRequest = OrderRequest.builder()
                 .productIds(List.of(mockProductId))
                 .build();
-
-        when(productRepository.findById(mockProductId)).thenReturn(Optional.of(mockedProduct));
-        when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         AuthenticationCredentialsNotFoundException exception = assertThrows(AuthenticationCredentialsNotFoundException.class, () -> orderService.create(orderRequest));
         assertThat(exception.getMessage()).isEqualTo("Authentication is unavailable!");
@@ -178,6 +179,172 @@ class OrderServiceTest {
         EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> orderService.create(orderRequest));
         assertThat(exception.getMessage()).isEqualTo("Product not found!");
 
+        verify(productRepository, times(1)).findById(mockProductId);
+    }
+
+    @Test
+    public void findAll_shouldReturnAllOrders() {
+        Order order = OrderDataBuilder.buildOrderWithAllFields().build();
+
+        when(orderRepository.findAll()).thenReturn(List.of(order));
+
+        List<Order> orders = orderService.findAll();
+
+        assertEquals(1, orders.size());
+        assertEquals(orders.get(0).getId(), orders.get(0).getId());
+
+        verify(orderRepository, times(1)).findAll();
+    }
+
+    @Test
+    public void update_shouldUpdateOrder() {
+        Order order = OrderDataBuilder.buildOrderWithAllFields().build();
+        OrderRequest orderRequest = OrderRequest.builder()
+                .status(OrderStatus.IN_PROGRESS)
+                .build();
+
+        when(orderRepository.findById(order.getId())).thenReturn(Optional.of(order));
+        when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Order responseOrder = orderService.update(order.getId(), orderRequest);
+
+        assertThat(responseOrder).isNotNull();
+        assertThat(responseOrder.getId()).isEqualTo(order.getId());
+        assertThat(responseOrder.getStatus()).isEqualTo(orderRequest.getStatus());
+
+        verify(orderRepository, times(1)).findById(order.getId());
+        verify(orderRepository, times(1)).save(any(Order.class));
+    }
+
+    @Test
+    public void update_shouldThrowException_WhenOrderNotFound() {
+        String orderId = String.valueOf(UUID.randomUUID());
+        OrderRequest orderRequest = OrderRequest.builder()
+                .status(OrderStatus.IN_PROGRESS)
+                .build();
+
+        when(orderRepository.findById(orderId)).thenReturn(Optional.empty());
+
+        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> orderService.update(orderId, orderRequest));
+        assertThat(exception.getMessage()).isEqualTo("Order not found!");
+
+        verify(orderRepository, times(1)).findById(orderId);
+    }
+
+    @Test
+    public void delete_shouldDeleteOrder() {
+        User user = mockHelper.mockAuthenticationAndSetContext();
+        Order order = OrderDataBuilder.buildOrderWithAllFields()
+                .userId(user.getId())
+                .build();
+
+        when(orderRepository.findById(order.getId())).thenReturn(Optional.of(order));
+        orderService.delete(order.getId());
+
+        verify(orderRepository, times(1)).delete(order);
+    }
+
+    @Test
+    public void delete_shouldThrowException_WhenOrderNotFound() {
+        mockHelper.mockAuthenticationAndSetContext();
+        String orderId = String.valueOf(UUID.randomUUID());
+
+        when(orderRepository.findById(orderId)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> orderService.delete(orderId))
+                .isInstanceOf(EntityNotFoundException.class)
+                .hasMessage("Order not found!");
+
+        verify(orderRepository).findById(orderId);
+    }
+
+    @Test
+    public void delete_shouldThrowException_WhenNoSecurity() {
+        String userId = String.valueOf(UUID.randomUUID());
+        Order order = OrderDataBuilder.buildOrderWithAllFields()
+                .userId(userId)
+                .build();
+
+        AuthenticationCredentialsNotFoundException exception = assertThrows(AuthenticationCredentialsNotFoundException.class, () -> orderService.delete(order.getId()));
+        assertThat(exception.getMessage()).isEqualTo("Authentication is unavailable!");
+    }
+
+    @Test
+    public void delete_shouldReturnOrder_WhenUserNotMatchingButAdmin() {
+        User user = UserDataBuilder.buildUserWithAllFields()
+                .role(UserRole.ADMIN)
+                .build();
+        mockHelper.mockAuthenticationAndSetContext(user);
+        Order order = OrderDataBuilder.buildOrderWithAllFields().build();
+
+        when(orderRepository.findById(order.getId())).thenReturn(Optional.of(order));
+
+        orderService.delete(order.getId());
+
+        verify(orderRepository, times(1)).delete(order);
+    }
+
+    @Test
+    public void addProductToOrder_shouldAddProductToExistingOrder() {
+        User user = mockHelper.mockAuthenticationAndSetContext();
+        Order order = OrderDataBuilder.buildOrderWithAllFields()
+                .userId(user.getId())
+                .build();
+        Product product = ProductDataBuilder.buildProductWithAllFields().build();
+
+        when(productRepository.findById(product.getId())).thenReturn(Optional.of(product));
+        when(orderRepository.findOrderByUserId(order.getId())).thenReturn(Optional.of(order));
+        when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Order responseOrder = orderService.addProductToOrder(product.getId());
+
+        assertThat(responseOrder).isNotNull();
+        assertThat(responseOrder.getUserId()).isEqualTo(user.getId());
+        assertThat(responseOrder.getProductIds()).isNotNull();
+        assertThat(responseOrder.getProductIds().size()).isEqualTo(1);
+        assertThat(responseOrder.getProductIds().get(0)).isEqualTo(product.getId());
+        assertThat(responseOrder.getStatus()).isEqualTo(OrderStatus.IN_PROGRESS);
+
+        verify(productRepository, times(1)).findById(product.getId());
+        verify(orderRepository, times(1)).findOrderByUserId(user.getId());
+        verify(orderRepository, times(1)).save(any(Order.class));
+    }
+
+    @Test
+    public void addProductToOrder_shouldCreateOrderAndAddProductToOrder() {
+        User user = mockHelper.mockAuthenticationAndSetContext();
+        Product product = ProductDataBuilder.buildProductWithAllFields().build();
+
+        when(productRepository.findById(product.getId())).thenReturn(Optional.of(product));
+        when(orderRepository.findOrderByUserId(user.getId())).thenReturn(Optional.empty());
+        when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Order responseOrder = orderService.addProductToOrder(product.getId());
+
+        assertThat(responseOrder).isNotNull();
+        assertThat(responseOrder.getUserId()).isEqualTo(user.getId());
+        assertThat(responseOrder.getProductIds()).isNotNull();
+        assertThat(responseOrder.getProductIds().size()).isEqualTo(1);
+        assertThat(responseOrder.getProductIds().get(0)).isEqualTo(product.getId());
+        assertThat(responseOrder.getStatus()).isEqualTo(OrderStatus.IN_PROGRESS);
+
+        verify(productRepository, times(1)).findById(product.getId());
+        verify(orderRepository, times(1)).findOrderByUserId(user.getId());
+        verify(orderRepository, times(1)).save(any(Order.class));
+    }
+
+    @Test
+    public void addProductToOrder_shouldThrowException_WhenProductNotExists() {
+        mockHelper.mockAuthenticationAndSetContext();
+        Product product = ProductDataBuilder.buildProductWithAllFields().build();
+
+        when(productRepository.findById(product.getId())).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> orderService.addProductToOrder(product.getId()))
+                .isInstanceOf(EntityNotFoundException.class)
+                .hasMessage("Product not found!");
+
+        verify(productRepository, times(1)).findById(product.getId());
     }
 
 }

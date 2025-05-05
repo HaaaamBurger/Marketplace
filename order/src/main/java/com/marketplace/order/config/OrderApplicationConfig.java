@@ -9,8 +9,5 @@ import org.springframework.data.mongodb.repository.config.EnableMongoRepositorie
         "com.marketplace.auth",
         "com.marketplace.product"
 })
-@EnableMongoRepositories(basePackages = {
-        "com.marketplace.product.repository"
-})
 public class OrderApplicationConfig {
 }

@@ -40,6 +40,7 @@ public class SecurityConfig {
                     ).permitAll()
                     .requestMatchers("/users/**").hasAuthority(UserRole.ADMIN.name())
                     .requestMatchers(HttpMethod.GET,"/orders").hasAuthority(UserRole.ADMIN.name())
+                    .requestMatchers(HttpMethod.PUT,"/orders").hasAuthority(UserRole.ADMIN.name())
                     .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 

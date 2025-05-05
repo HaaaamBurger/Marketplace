@@ -27,7 +27,6 @@ public class Order extends AuditableEntity {
     @Size(min = 1, max = 50, message = "Order must contain at least 1 product and maximum 50")
     private List<String> productIds;
 
-    @NotNull(message = "Address is required")
     private String address;
 
     @NotNull(message = "Order is required")

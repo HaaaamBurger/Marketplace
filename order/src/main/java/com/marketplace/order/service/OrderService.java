@@ -16,4 +16,6 @@ public interface OrderService {
     Order update(String orderId, OrderRequest request);
 
     void delete(String orderId);
+
+    Order addProductToOrder(String productId);
 }
