@@ -10,6 +10,12 @@ jobs:
   build_test:
     runs-on: ubuntu-latest
 
+    env:
+      MONGO_DB_URI: ${{ secrets.MONGO_DB_URI }}
+      JWT_ACCESS_EXPIRATION_TIME: ${{ secrets.JWT_ACCESS_EXPIRATION_TIME }}
+      JWT_REFRESH_EXPIRATION_TIME: ${{ secrets.JWT_REFRESH_EXPIRATION_TIME }}
+      JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
+
     steps:
       - uses: actions/checkout@v3
       - name: Set up JDK 17
