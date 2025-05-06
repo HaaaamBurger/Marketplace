@@ -37,6 +37,11 @@
 		</dependency>
 		<dependency>
 			<groupId>com.marketplace</groupId>
+			<artifactId>order</artifactId>
+			<version>0.0.1</version>
+		</dependency>
+		<dependency>
+			<groupId>com.marketplace</groupId>
 			<artifactId>user</artifactId>
 			<version>0.0.1</version>
 		</dependency>

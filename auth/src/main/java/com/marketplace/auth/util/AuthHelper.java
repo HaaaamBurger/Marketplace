@@ -7,11 +7,17 @@ import com.marketplace.auth.web.model.UserRole;
 import lombok.Builder;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
+import org.springframework.security.authentication.AuthenticationServiceException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import static com.marketplace.auth.security.JwtService.BEARER_PREFIX;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AuthHelper {
@@ -56,6 +62,25 @@ public class AuthHelper {
                 .token(createAuth(authUser))
                 .authUser(authUser)
                 .build();
+    }
+
+    public User getAuthenticatedUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null) {
+            log.error("[AUTH_HELPER]: Authentication is null");
+            throw new AuthenticationCredentialsNotFoundException("Authentication is unavailable!");
+        }
+
+        Object principal = authentication.getPrincipal();
+
+        if (principal instanceof User user) {
+            return user;
+        } else {
+            log.error("[AUTH_HELPER]: {} is not instance of UserDetails", principal);
+            throw new AuthenticationServiceException("User is not authenticated");
+        }
+
     }
 
     private String createAuth(UserDetails userDetails) {

@@ -47,12 +47,12 @@ public final class UserServiceImpl implements UserService {
 
     @Override
     public User findById(String userId) {
-        return findUserByIdOrThrowException(userId);
+        return findUserOrThrow(userId);
     }
 
     @Override
     public User update(String userId, UserRequest userRequest) {
-        User user = findUserByIdOrThrowException(userId);
+        User user = findUserOrThrow(userId);
 
         Optional.ofNullable(userRequest.getEmail()).ifPresent(user::setEmail);
         Optional.ofNullable(userRequest.getRole()).ifPresent(user::setRole);
@@ -63,7 +63,7 @@ public final class UserServiceImpl implements UserService {
 
     @Override
     public void updateStatus(String userId, UserStatus status) {
-        User user = findUserByIdOrThrowException(userId);
+        User user = findUserOrThrow(userId);
         user.setStatus(status);
 
         userRepository.save(user);
@@ -71,7 +71,7 @@ public final class UserServiceImpl implements UserService {
 
     @Override
     public void delete(String userId) {
-        findUserByIdOrThrowException(userId);
+        findUserOrThrow(userId);
         userRepository.deleteById(userId);
     }
 
@@ -84,7 +84,7 @@ public final class UserServiceImpl implements UserService {
         }
     }
 
-    private User findUserByIdOrThrowException(String userId) {
+    private User findUserOrThrow(String userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> {
                     log.error("[USER_SERVICE_IMPL]: User not found by id: {}", userId);
