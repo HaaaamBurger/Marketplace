@@ -11,7 +11,7 @@ import com.marketplace.auth.web.model.UserRole;
 import com.marketplace.auth.web.rest.dto.AuthRefreshRequest;
 import com.marketplace.auth.web.rest.dto.AuthRequest;
 import com.marketplace.auth.web.rest.dto.AuthResponse;
-import com.marketplace.common.model.UserStatus;
+import com.marketplace.auth.web.model.UserStatus;
 import io.jsonwebtoken.JwtException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

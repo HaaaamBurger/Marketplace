@@ -5,7 +5,7 @@ import com.marketplace.auth.exception.EntityNotFoundException;
 import com.marketplace.auth.repository.UserRepository;
 import com.marketplace.auth.web.model.User;
 import com.marketplace.auth.web.model.UserRole;
-import com.marketplace.common.model.UserStatus;
+import com.marketplace.auth.web.model.UserStatus;
 import com.marketplace.user.config.UserApplicationConfig;
 import com.marketplace.user.util.UserDataBuilder;
 import com.marketplace.user.web.dto.UserRequest;

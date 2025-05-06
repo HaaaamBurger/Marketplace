@@ -1,4 +1,4 @@
-package com.marketplace.common.model;
+package com.marketplace.auth.web.model;
 
 public enum UserStatus {
 

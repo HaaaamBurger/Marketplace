@@ -1,6 +1,6 @@
 package com.marketplace.user.web.dto;
 
-import com.marketplace.common.model.UserStatus;
+import com.marketplace.auth.web.model.UserStatus;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;

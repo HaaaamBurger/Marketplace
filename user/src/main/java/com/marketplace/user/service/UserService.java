@@ -1,7 +1,7 @@
 package com.marketplace.user.service;
 
 import com.marketplace.auth.web.model.User;
-import com.marketplace.common.model.UserStatus;
+import com.marketplace.auth.web.model.UserStatus;
 import com.marketplace.user.web.dto.UserRequest;
 
 import java.util.List;

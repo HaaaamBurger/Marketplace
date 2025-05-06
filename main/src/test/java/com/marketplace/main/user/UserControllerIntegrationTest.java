@@ -8,7 +8,7 @@ import com.marketplace.auth.repository.UserRepository;
 import com.marketplace.auth.util.AuthHelper;
 import com.marketplace.auth.web.model.User;
 import com.marketplace.auth.web.model.UserRole;
-import com.marketplace.common.model.UserStatus;
+import com.marketplace.auth.web.model.UserStatus;
 import com.marketplace.main.exception.MainExceptionHandler;
 import com.marketplace.main.util.UserRequestDataBuilder;
 import com.marketplace.main.util.UserDataBuilder;

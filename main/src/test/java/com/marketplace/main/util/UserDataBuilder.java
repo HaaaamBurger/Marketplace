@@ -2,7 +2,7 @@ package com.marketplace.main.util;
 
 import com.marketplace.auth.web.model.User;
 import com.marketplace.auth.web.model.UserRole;
-import com.marketplace.common.model.UserStatus;
+import com.marketplace.auth.web.model.UserStatus;
 
 public class UserDataBuilder {
 
