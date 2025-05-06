@@ -1,5 +1,6 @@
 package com.marketplace.auth.service;
 
+import com.marketplace.auth.config.AuthApplicationConfig;
 import com.marketplace.auth.exception.CredentialException;
 import com.marketplace.auth.exception.EntityExistsException;
 import com.marketplace.auth.exception.EntityNotFoundException;
@@ -28,7 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
-@SpringBootTest
+@SpringBootTest(classes = AuthApplicationConfig.class)
 public class AuthenticationServiceTest {
 
     @MockitoBean

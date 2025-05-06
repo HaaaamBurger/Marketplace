@@ -1,18 +1,18 @@
 package com.marketplace.auth.security;
 
+import com.marketplace.auth.config.AuthApplicationConfig;
 import com.marketplace.auth.web.model.User;
 import com.marketplace.auth.web.util.UserDataBuilder;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import java.util.List;
 import java.util.Map;
 
 import static com.marketplace.auth.security.JwtService.ROLES_CLAIM;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
-@SpringBootTest
+@SpringBootTest(classes = AuthApplicationConfig.class)
 public class JwtSecurityTest {
 
     @Autowired
