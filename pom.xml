@@ -16,12 +16,12 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>main</module>
         <module>common</module>
         <module>auth</module>
 		<module>product</module>
 		<module>order</module>
 		<module>user</module>
+        <module>main</module>
 	</modules>
 
 	<properties>
