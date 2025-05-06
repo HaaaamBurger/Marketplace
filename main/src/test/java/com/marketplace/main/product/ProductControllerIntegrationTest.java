@@ -138,7 +138,7 @@ class ProductControllerIntegrationTest {
     public void updateProduct_ShouldUpdateAndReturnProduct() throws Exception {
         AuthHelper.AuthHelperResponse userAuth = authHelper.createUserAuth();
         Product product = ProductDataBuilder.buildProductWithAllFields()
-                .userId(userAuth.getAuthUser().getId())
+                .ownerId(userAuth.getAuthUser().getId())
                 .build();
         Product updatedProduct = ProductDataBuilder.buildProductWithAllFields()
                 .name("Updated Product")
@@ -213,7 +213,7 @@ class ProductControllerIntegrationTest {
     public void deleteProduct_ShouldRemoveProduct() throws Exception {
         AuthHelper.AuthHelperResponse userAuth = authHelper.createUserAuth();
         Product product = ProductDataBuilder.buildProductWithAllFields()
-                .userId(userAuth.getAuthUser().getId())
+                .ownerId(userAuth.getAuthUser().getId())
                 .build();
 
         product = productRepository.save(product);

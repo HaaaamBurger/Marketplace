@@ -36,18 +36,17 @@ public class OrderTest {
     }
 
     @Test
-    public void testOrderWithNullUserId() {
+    public void testOrderWithNullOwnerId() {
         Order order = OrderDataBuilder.buildOrderWithAllFields()
-                .userId(null)
+                .ownerId(null)
                 .build();
 
         Set<ConstraintViolation<Order>> violations = validator.validate(order);
-
-        ConstraintViolation<Order> matchedViolation = getMatchedViolationByField(violations, "userId");
+        ConstraintViolation<Order> matchedViolation = getMatchedViolationByField(violations, "ownerId");
 
         assertThat(matchedViolation).isNotNull();
-        assertThat(matchedViolation.getPropertyPath().toString()).isEqualTo("userId");
-         assertThat(matchedViolation.getMessage()).isEqualTo("User ID is required");
+        assertThat(matchedViolation.getPropertyPath().toString()).isEqualTo("ownerId");
+        assertThat(matchedViolation.getMessage()).isEqualTo("Owner ID is required");
     }
 
     @Test
@@ -57,12 +56,25 @@ public class OrderTest {
                 .build();
 
         Set<ConstraintViolation<Order>> violations = validator.validate(order);
-
         ConstraintViolation<Order> matchedViolation = getMatchedViolationByField(violations, "productIds");
 
         assertThat(matchedViolation).isNotNull();
         assertThat(matchedViolation.getPropertyPath().toString()).isEqualTo("productIds");
-         assertThat(matchedViolation.getMessage()).isEqualTo("Order must contain at least 1 product and maximum 50");
+        assertThat(matchedViolation.getMessage()).isEqualTo("Order must contain at least 1 product and maximum 50");
+    }
+
+    @Test
+    public void testOrderWithNullStatus() {
+        Order order = OrderDataBuilder.buildOrderWithAllFields()
+                .status(null)
+                .build();
+
+        Set<ConstraintViolation<Order>> violations = validator.validate(order);
+        ConstraintViolation<Order> matchedViolation = getMatchedViolationByField(violations, "status");
+
+        assertThat(matchedViolation).isNotNull();
+        assertThat(matchedViolation.getPropertyPath().toString()).isEqualTo("status");
+        assertThat(matchedViolation.getMessage()).isEqualTo("Status is required");
     }
 
     private ConstraintViolation<Order> getMatchedViolationByField(Set<ConstraintViolation<Order>> violations, String field) {

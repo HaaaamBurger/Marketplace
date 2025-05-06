@@ -110,7 +110,7 @@ class ProductServiceTest {
     public void update_shouldUpdateProduct() {
         User user = mockHelper.mockAuthenticationAndSetContext();
         Product product = ProductDataBuilder.buildProductWithAllFields()
-                .userId(user.getId())
+                .ownerId(user.getId())
                 .build();
         ProductRequest productRequest = ProductRequest.builder()
                 .name("Updated Name")
@@ -132,7 +132,7 @@ class ProductServiceTest {
     public void delete_shouldDeleteProduct() {
         Product product = ProductDataBuilder.buildProductWithAllFields().build();
         User user = mockHelper.mockAuthenticationAndSetContext();
-        product.setUserId(user.getId());
+        product.setOwnerId(user.getId());
 
         when(productRepository.findById(product.getId())).thenReturn(Optional.of(product));
         productService.delete(product.getId());

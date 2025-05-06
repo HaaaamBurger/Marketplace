@@ -33,7 +33,7 @@ public final class ProductServiceImpl implements ProductService {
         User authenticatedUser = authHelper.getAuthenticatedUser();
 
         Product product = productEntityMapper.mapRequestDtoToEntity(productRequest).toBuilder()
-                .userId(authenticatedUser.getId())
+                .ownerId(authenticatedUser.getId())
                 .build();
 
         return productRepository.save(product);

@@ -25,7 +25,8 @@ public class Product extends AuditableEntity {
     @Size(min = 2, max = 100, message = "Name must be between 2 and 100 characters")
     private String name;
 
-    private String userId;
+    @NotBlank(message = "Owner ID is required")
+    private String ownerId;
 
     @NotBlank(message = "Description is required")
     @Size(min = 5, max = 250, message = "Description must be between 5 and 250 characters")

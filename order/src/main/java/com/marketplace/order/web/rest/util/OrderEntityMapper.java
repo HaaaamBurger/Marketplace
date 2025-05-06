@@ -15,7 +15,7 @@ public class OrderEntityMapper implements EntityMapper<Order, OrderRequest, Orde
     public OrderResponse mapEntityToResponseDto(Order order) {
         return OrderResponse.builder()
                 .id(order.getId())
-                .userId(order.getUserId())
+                .ownerId(order.getOwnerId())
                 .productIds(order.getProductIds())
                 .address(order.getAddress())
                 .status(order.getStatus())

@@ -11,7 +11,7 @@ public class OrderDataBuilder {
     public static Order.OrderBuilder buildOrderWithAllFields() {
         return Order.builder()
                 .id(String.valueOf(UUID.randomUUID()))
-                .userId(String.valueOf(UUID.randomUUID()))
+                .ownerId(String.valueOf(UUID.randomUUID()))
                 .productIds(List.of(String.valueOf(UUID.randomUUID())))
                 .address(String.valueOf(UUID.randomUUID()))
                 .status(OrderStatus.CREATED);

@@ -62,7 +62,7 @@ class OrderServiceTest {
     public void findById_ShouldReturnOrder() {
         User user = mockHelper.mockAuthenticationAndSetContext();
         Order order = OrderDataBuilder.buildOrderWithAllFields()
-                .userId(user.getId())
+                .ownerId(user.getId())
                 .build();
 
         when(orderRepository.findById(order.getId())).thenReturn(Optional.of(order));
@@ -104,9 +104,9 @@ class OrderServiceTest {
 
     @Test
     public void findById_ShouldThrowException_WhenNoSecurity() {
-        String userId = String.valueOf(UUID.randomUUID());
+        String ownerId = String.valueOf(UUID.randomUUID());
         Order order = OrderDataBuilder.buildOrderWithAllFields()
-                .userId(userId)
+                .ownerId(ownerId)
                 .build();
 
         when(orderRepository.findById(order.getId())).thenReturn(Optional.of(order));
@@ -147,7 +147,7 @@ class OrderServiceTest {
         Order responseOrder = orderService.create(orderRequest);
 
         assertThat(responseOrder).isNotNull();
-        assertThat(responseOrder.getUserId()).isEqualTo(user.getId());
+        assertThat(responseOrder.getOwnerId()).isEqualTo(user.getId());
         assertThat(responseOrder.getProductIds().get(0)).isEqualTo(mockProductId);
 
         verify(productRepository, times(1)).findById(mockProductId);
@@ -235,7 +235,7 @@ class OrderServiceTest {
     public void delete_ShouldDeleteOrder() {
         User user = mockHelper.mockAuthenticationAndSetContext();
         Order order = OrderDataBuilder.buildOrderWithAllFields()
-                .userId(user.getId())
+                .ownerId(user.getId())
                 .build();
 
         when(orderRepository.findById(order.getId())).thenReturn(Optional.of(order));
@@ -260,9 +260,9 @@ class OrderServiceTest {
 
     @Test
     public void delete_ShouldThrowException_WhenNoSecurity() {
-        String userId = String.valueOf(UUID.randomUUID());
+        String ownerId = String.valueOf(UUID.randomUUID());
         Order order = OrderDataBuilder.buildOrderWithAllFields()
-                .userId(userId)
+                .ownerId(ownerId)
                 .build();
 
         AuthenticationCredentialsNotFoundException exception = assertThrows(AuthenticationCredentialsNotFoundException.class, () -> orderService.delete(order.getId()));
@@ -288,25 +288,25 @@ class OrderServiceTest {
     public void addProductToOrder_ShouldAddProductToExistingOrder() {
         User user = mockHelper.mockAuthenticationAndSetContext();
         Order order = OrderDataBuilder.buildOrderWithAllFields()
-                .userId(user.getId())
+                .ownerId(user.getId())
                 .build();
         Product product = ProductDataBuilder.buildProductWithAllFields().build();
 
         when(productRepository.findById(product.getId())).thenReturn(Optional.of(product));
-        when(orderRepository.findOrderByUserId(order.getId())).thenReturn(Optional.of(order));
+        when(orderRepository.findOrderByOwnerId(order.getId())).thenReturn(Optional.of(order));
         when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         Order responseOrder = orderService.addProductToOrder(product.getId());
 
         assertThat(responseOrder).isNotNull();
-        assertThat(responseOrder.getUserId()).isEqualTo(user.getId());
+        assertThat(responseOrder.getOwnerId()).isEqualTo(user.getId());
         assertThat(responseOrder.getProductIds()).isNotNull();
         assertThat(responseOrder.getProductIds().size()).isEqualTo(1);
         assertThat(responseOrder.getProductIds().get(0)).isEqualTo(product.getId());
         assertThat(responseOrder.getStatus()).isEqualTo(OrderStatus.IN_PROGRESS);
 
         verify(productRepository, times(1)).findById(product.getId());
-        verify(orderRepository, times(1)).findOrderByUserId(user.getId());
+        verify(orderRepository, times(1)).findOrderByOwnerId(user.getId());
         verify(orderRepository, times(1)).save(any(Order.class));
     }
 
@@ -316,20 +316,20 @@ class OrderServiceTest {
         Product product = ProductDataBuilder.buildProductWithAllFields().build();
 
         when(productRepository.findById(product.getId())).thenReturn(Optional.of(product));
-        when(orderRepository.findOrderByUserId(user.getId())).thenReturn(Optional.empty());
+        when(orderRepository.findOrderByOwnerId(user.getId())).thenReturn(Optional.empty());
         when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         Order responseOrder = orderService.addProductToOrder(product.getId());
 
         assertThat(responseOrder).isNotNull();
-        assertThat(responseOrder.getUserId()).isEqualTo(user.getId());
+        assertThat(responseOrder.getOwnerId()).isEqualTo(user.getId());
         assertThat(responseOrder.getProductIds()).isNotNull();
         assertThat(responseOrder.getProductIds().size()).isEqualTo(1);
         assertThat(responseOrder.getProductIds().get(0)).isEqualTo(product.getId());
         assertThat(responseOrder.getStatus()).isEqualTo(OrderStatus.IN_PROGRESS);
 
         verify(productRepository, times(1)).findById(product.getId());
-        verify(orderRepository, times(1)).findOrderByUserId(user.getId());
+        verify(orderRepository, times(1)).findOrderByOwnerId(user.getId());
         verify(orderRepository, times(1)).save(any(Order.class));
     }
 

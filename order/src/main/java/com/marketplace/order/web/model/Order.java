@@ -21,15 +21,15 @@ public class Order extends AuditableEntity {
     @Id
     private String id;
 
-    @NotNull(message = "User ID is required")
-    private String userId;
+    @NotNull(message = "Owner ID is required")
+    private String ownerId;
 
     @Size(min = 1, max = 50, message = "Order must contain at least 1 product and maximum 50")
     private List<String> productIds;
 
     private String address;
 
-    @NotNull(message = "Order is required")
+    @NotNull(message = "Status is required")
     private OrderStatus status;
 
 }

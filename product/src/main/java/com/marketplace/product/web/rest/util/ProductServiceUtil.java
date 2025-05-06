@@ -34,7 +34,7 @@ public class ProductServiceUtil {
         User authenticatedUser = authHelper.getAuthenticatedUser();
         Product product = findProductOrThrow(productId);
 
-        if (checkUserOwnerOrAdmin(authenticatedUser, product.getUserId())) {
+        if (checkUserOwnerOrAdmin(authenticatedUser, product.getOwnerId())) {
             return product;
         }
 
@@ -42,8 +42,8 @@ public class ProductServiceUtil {
         throw new AccessDeniedException("Access denied!");
     }
 
-    public boolean checkUserOwnerOrAdmin(User user, String productUserId) {
-        return Objects.equals(user.getId(), productUserId) || user.getRole() == UserRole.ADMIN;
+    public boolean checkUserOwnerOrAdmin(User user, String ownerId) {
+        return Objects.equals(user.getId(), ownerId) || user.getRole() == UserRole.ADMIN;
     }
 
 }

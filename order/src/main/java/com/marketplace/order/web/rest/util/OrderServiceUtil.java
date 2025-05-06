@@ -29,7 +29,7 @@ public class OrderServiceUtil {
         User authenticatedUser = authHelper.getAuthenticatedUser();
         Order order = findOrderOrThrow(orderId);
 
-        if (checkUserOwnerOrAdmin(authenticatedUser, order.getUserId())) {
+        if (checkUserOwnerOrAdmin(authenticatedUser, order.getOwnerId())) {
             return order;
         }
 
@@ -39,9 +39,9 @@ public class OrderServiceUtil {
 
     public Order findOrderOrCreate() {
         User authenticatedUser = authHelper.getAuthenticatedUser();
-        return orderRepository.findOrderByUserId(authenticatedUser.getId())
+        return orderRepository.findOrderByOwnerId(authenticatedUser.getId())
                 .orElse(Order.builder()
-                        .userId(authenticatedUser.getId())
+                        .ownerId(authenticatedUser.getId())
                         .productIds(new ArrayList<>())
                         .status(OrderStatus.CREATED)
                         .build());
@@ -55,8 +55,8 @@ public class OrderServiceUtil {
                 });
     }
 
-    private boolean checkUserOwnerOrAdmin(User user, String productUserId) {
-        return Objects.equals(user.getId(), productUserId) || user.getRole() == UserRole.ADMIN;
+    private boolean checkUserOwnerOrAdmin(User user, String ownerId) {
+        return Objects.equals(user.getId(), ownerId) || user.getRole() == UserRole.ADMIN;
     }
 
 }

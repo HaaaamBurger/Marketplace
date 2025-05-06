@@ -14,7 +14,7 @@ public class OrderResponse {
 
     private String id;
 
-    private String userId;
+    private String ownerId;
 
     private List<String> productIds;
 

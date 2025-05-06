@@ -107,7 +107,7 @@ class OrderControllerIntegrationTest {
     public void getOrderById_ShouldReturnOrder() throws Exception {
         AuthHelper.AuthHelperResponse userAuth = authHelper.createUserAuth();
         Order order = OrderDataBuilder.buildOrderWithAllFields()
-                .userId(userAuth.getAuthUser().getId())
+                .ownerId(userAuth.getAuthUser().getId())
                 .build();
 
         orderRepository.save(order);
@@ -121,7 +121,7 @@ class OrderControllerIntegrationTest {
 
         assertThat(responseOrder).isNotNull();
         assertThat(responseOrder.getId()).isEqualTo(order.getId());
-        assertThat(responseOrder.getUserId()).isEqualTo(userAuth.getAuthUser().getId());
+        assertThat(responseOrder.getOwnerId()).isEqualTo(userAuth.getAuthUser().getId());
     }
 
     @Test
@@ -296,7 +296,7 @@ class OrderControllerIntegrationTest {
     public void addProductToOrder_ShouldAddProductToOrder() throws Exception {
         AuthHelper.AuthHelperResponse userAuth = authHelper.createUserAuth();
         Product product = ProductDataBuilder.buildProductWithAllFields()
-                .userId(userAuth.getAuthUser().getId())
+                .ownerId(userAuth.getAuthUser().getId())
                 .build();
 
         productRepository.save(product);
@@ -321,14 +321,14 @@ class OrderControllerIntegrationTest {
     public void addProductToOrder_ShouldAddProductToExistingOrder() throws Exception {
         AuthHelper.AuthHelperResponse userAuth = authHelper.createUserAuth();
         Product product = ProductDataBuilder.buildProductWithAllFields()
-                .userId(userAuth.getAuthUser().getId())
+                .ownerId(userAuth.getAuthUser().getId())
                 .build();
         Product product1 = ProductDataBuilder.buildProductWithAllFields()
-                .userId(userAuth.getAuthUser().getId())
+                .ownerId(userAuth.getAuthUser().getId())
                 .build();
         Product product2 = ProductDataBuilder.buildProductWithAllFields().build();
         Order order = OrderDataBuilder.buildOrderWithAllFields()
-                .userId(userAuth.getAuthUser().getId())
+                .ownerId(userAuth.getAuthUser().getId())
                 .productIds(List.of(product.getId()))
                 .build();
 
@@ -355,7 +355,7 @@ class OrderControllerIntegrationTest {
     public void addProductToOrder_ShouldThrowException_WhenProductNotFound() throws Exception {
         AuthHelper.AuthHelperResponse userAuth = authHelper.createUserAuth();
         Product product = ProductDataBuilder.buildProductWithAllFields()
-                .userId(userAuth.getAuthUser().getId())
+                .ownerId(userAuth.getAuthUser().getId())
                 .build();
 
         String response = mockMvc.perform(put("/orders/products/{productId}", product.getId())
@@ -377,7 +377,7 @@ class OrderControllerIntegrationTest {
     public void deleteOrder_ShouldDeleteOrder() throws Exception {
         AuthHelper.AuthHelperResponse adminAuth = authHelper.createAdminAuth();
         Order order = OrderDataBuilder.buildOrderWithAllFields()
-                .userId(adminAuth.getAuthUser().getId())
+                .ownerId(adminAuth.getAuthUser().getId())
                 .build();
 
         orderRepository.save(order);
@@ -394,7 +394,7 @@ class OrderControllerIntegrationTest {
     public void deleteOrder_ShouldThrowException_WhenUserAuthentication() throws Exception {
         AuthHelper.AuthHelperResponse userAuth = authHelper.createUserAuth();
         Order order = OrderDataBuilder.buildOrderWithAllFields()
-                .userId(userAuth.getAuthUser().getId())
+                .ownerId(userAuth.getAuthUser().getId())
                 .build();
 
         orderRepository.save(order);
@@ -418,7 +418,7 @@ class OrderControllerIntegrationTest {
     public void deleteOrder_ShouldThrowException_WhenOrderNotFound() throws Exception {
         AuthHelper.AuthHelperResponse adminAuth = authHelper.createAdminAuth();
         Order order = OrderDataBuilder.buildOrderWithAllFields()
-                .userId(adminAuth.getAuthUser().getId())
+                .ownerId(adminAuth.getAuthUser().getId())
                 .build();
 
         String response = mockMvc.perform(delete("/orders/{orderId}", order.getId())

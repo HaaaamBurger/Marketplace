@@ -42,7 +42,7 @@ public class OrderServiceImpl implements OrderService {
         productIds.forEach(productServiceUtil::findProductOrThrow);
 
         return orderRepository.save(Order.builder()
-                .userId(authenticatedUser.getId())
+                .ownerId(authenticatedUser.getId())
                 .productIds(request.getProductIds())
                 .address(request.getAddress())
                 .status(request.getStatus())
