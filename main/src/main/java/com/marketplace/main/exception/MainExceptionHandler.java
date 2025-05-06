@@ -81,7 +81,7 @@ public class MainExceptionHandler {
                 .getFieldErrors()
                 .stream()
                 .map(fieldError -> fieldError.getField() + COLON_DELIMITER + fieldError.getDefaultMessage())
-                .collect(Collectors.joining(COLON_DELIMITER));
+                .collect(Collectors.joining(COMMA_DELIMITER));
 
         return ResponseEntity.badRequest().body(
                 ExceptionResponse.builder()

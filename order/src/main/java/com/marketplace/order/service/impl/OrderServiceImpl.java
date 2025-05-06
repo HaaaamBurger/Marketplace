@@ -45,7 +45,7 @@ public class OrderServiceImpl implements OrderService {
                 .userId(authenticatedUser.getId())
                 .productIds(request.getProductIds())
                 .address(request.getAddress())
-                .status(OrderStatus.CREATED)
+                .status(request.getStatus())
                 .build());
     }
 

@@ -8,7 +8,7 @@ import lombok.*;
 import java.util.List;
 
 @Data
-@Builder
+@Builder(toBuilder = true)
 public class OrderRequest {
 
     @NotEmpty(message = "Product list must not be empty")

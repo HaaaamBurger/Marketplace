@@ -1,6 +1,6 @@
 spring:
   application:
-    name: main
+    name: order
   data:
     mongodb:
       uri: ${MONGO_DB_URI}

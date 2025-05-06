@@ -59,7 +59,7 @@ class OrderServiceTest {
     }
 
     @Test
-    public void findById_shouldReturnOrder() {
+    public void findById_ShouldReturnOrder() {
         User user = mockHelper.mockAuthenticationAndSetContext();
         Order order = OrderDataBuilder.buildOrderWithAllFields()
                 .userId(user.getId())
@@ -75,7 +75,7 @@ class OrderServiceTest {
     }
 
     @Test
-    public void findById_shouldThrowException_WhenOrderNotFound() {
+    public void findById_ShouldThrowException_WhenOrderNotFound() {
         mockHelper.mockAuthenticationAndSetContext();
         String orderId = String.valueOf(UUID.randomUUID());
 
@@ -89,7 +89,7 @@ class OrderServiceTest {
     }
 
     @Test
-    public void findById_shouldThrowException_WhenUserNotMatching() {
+    public void findById_ShouldThrowException_WhenUserNotMatching() {
         mockHelper.mockAuthenticationAndSetContext();
         Order order = OrderDataBuilder.buildOrderWithAllFields().build();
 
@@ -103,7 +103,7 @@ class OrderServiceTest {
     }
 
     @Test
-    public void findById_shouldThrowException_WhenNoSecurity() {
+    public void findById_ShouldThrowException_WhenNoSecurity() {
         String userId = String.valueOf(UUID.randomUUID());
         Order order = OrderDataBuilder.buildOrderWithAllFields()
                 .userId(userId)
@@ -116,7 +116,7 @@ class OrderServiceTest {
     }
 
     @Test
-    public void findById_shouldReturnOrder_WhenUserNotMatchingButAdmin() {
+    public void findById_ShouldReturnOrder_WhenUserNotMatchingButAdmin() {
         User user = UserDataBuilder.buildUserWithAllFields()
                 .role(UserRole.ADMIN)
                 .build();
@@ -133,7 +133,7 @@ class OrderServiceTest {
     }
 
     @Test
-    public void create_shouldCreateProduct() {
+    public void create_ShouldCreateProduct() {
         String mockProductId = "mockProductId";
         Product mockedProduct = mock(Product.class);
         OrderRequest orderRequest = OrderRequest.builder()
@@ -155,7 +155,7 @@ class OrderServiceTest {
     }
 
     @Test
-    public void create_shouldThrowException_WhenNoSecurity() {
+    public void create_ShouldThrowException_WhenNoSecurity() {
         String mockProductId = "mockProductId";
         OrderRequest orderRequest = OrderRequest.builder()
                 .productIds(List.of(mockProductId))
@@ -166,7 +166,7 @@ class OrderServiceTest {
     }
 
     @Test
-    public void create_shouldThrowException_WhenProductNotExists() {
+    public void create_ShouldThrowException_WhenProductNotExists() {
         String mockProductId = "mockProductId";
         OrderRequest orderRequest = OrderRequest.builder()
                 .productIds(List.of(mockProductId))
@@ -183,7 +183,7 @@ class OrderServiceTest {
     }
 
     @Test
-    public void findAll_shouldReturnAllOrders() {
+    public void findAll_ShouldReturnAllOrders() {
         Order order = OrderDataBuilder.buildOrderWithAllFields().build();
 
         when(orderRepository.findAll()).thenReturn(List.of(order));
@@ -197,7 +197,7 @@ class OrderServiceTest {
     }
 
     @Test
-    public void update_shouldUpdateOrder() {
+    public void update_ShouldUpdateOrder() {
         Order order = OrderDataBuilder.buildOrderWithAllFields().build();
         OrderRequest orderRequest = OrderRequest.builder()
                 .status(OrderStatus.IN_PROGRESS)
@@ -217,7 +217,7 @@ class OrderServiceTest {
     }
 
     @Test
-    public void update_shouldThrowException_WhenOrderNotFound() {
+    public void update_ShouldThrowException_WhenOrderNotFound() {
         String orderId = String.valueOf(UUID.randomUUID());
         OrderRequest orderRequest = OrderRequest.builder()
                 .status(OrderStatus.IN_PROGRESS)
@@ -232,7 +232,7 @@ class OrderServiceTest {
     }
 
     @Test
-    public void delete_shouldDeleteOrder() {
+    public void delete_ShouldDeleteOrder() {
         User user = mockHelper.mockAuthenticationAndSetContext();
         Order order = OrderDataBuilder.buildOrderWithAllFields()
                 .userId(user.getId())
@@ -245,7 +245,7 @@ class OrderServiceTest {
     }
 
     @Test
-    public void delete_shouldThrowException_WhenOrderNotFound() {
+    public void delete_ShouldThrowException_WhenOrderNotFound() {
         mockHelper.mockAuthenticationAndSetContext();
         String orderId = String.valueOf(UUID.randomUUID());
 
@@ -259,7 +259,7 @@ class OrderServiceTest {
     }
 
     @Test
-    public void delete_shouldThrowException_WhenNoSecurity() {
+    public void delete_ShouldThrowException_WhenNoSecurity() {
         String userId = String.valueOf(UUID.randomUUID());
         Order order = OrderDataBuilder.buildOrderWithAllFields()
                 .userId(userId)
@@ -270,7 +270,7 @@ class OrderServiceTest {
     }
 
     @Test
-    public void delete_shouldReturnOrder_WhenUserNotMatchingButAdmin() {
+    public void delete_ShouldReturnOrder_WhenUserNotMatchingButAdmin() {
         User user = UserDataBuilder.buildUserWithAllFields()
                 .role(UserRole.ADMIN)
                 .build();
@@ -285,7 +285,7 @@ class OrderServiceTest {
     }
 
     @Test
-    public void addProductToOrder_shouldAddProductToExistingOrder() {
+    public void addProductToOrder_ShouldAddProductToExistingOrder() {
         User user = mockHelper.mockAuthenticationAndSetContext();
         Order order = OrderDataBuilder.buildOrderWithAllFields()
                 .userId(user.getId())
@@ -311,7 +311,7 @@ class OrderServiceTest {
     }
 
     @Test
-    public void addProductToOrder_shouldCreateOrderAndAddProductToOrder() {
+    public void addProductToOrder_ShouldCreateOrderAndAddProductToOrder() {
         User user = mockHelper.mockAuthenticationAndSetContext();
         Product product = ProductDataBuilder.buildProductWithAllFields().build();
 
@@ -334,7 +334,7 @@ class OrderServiceTest {
     }
 
     @Test
-    public void addProductToOrder_shouldThrowException_WhenProductNotExists() {
+    public void addProductToOrder_ShouldThrowException_WhenProductNotExists() {
         mockHelper.mockAuthenticationAndSetContext();
         Product product = ProductDataBuilder.buildProductWithAllFields().build();
 

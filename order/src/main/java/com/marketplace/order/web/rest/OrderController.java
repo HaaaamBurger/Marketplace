@@ -8,6 +8,7 @@ import com.marketplace.order.web.rest.util.OrderEntityMapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,13 +22,15 @@ public class OrderController {
 
     private final OrderEntityMapper orderEntityMapper;
 
+    @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping
     public ResponseEntity<List<OrderResponse>> getAllOrders() {
         List<Order> orders = orderService.findAll();
         return ResponseEntity.ok(orderEntityMapper.mapEntitiesToResponseDtos(orders));
     }
 
-    @PostMapping("/products")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @PostMapping
     public ResponseEntity<OrderResponse> createOrder(@Valid @RequestBody OrderRequest orderRequest) {
         Order order = orderService.create(orderRequest);
         return ResponseEntity.ok(orderEntityMapper.mapEntityToResponseDto(order));
@@ -39,6 +42,7 @@ public class OrderController {
         return ResponseEntity.ok(orderEntityMapper.mapEntityToResponseDto(order));
     }
 
+    @PreAuthorize("hasAuthority('ADMIN')")
     @PutMapping("/{orderId}")
     public ResponseEntity<OrderResponse> updateOrder(
             @PathVariable String orderId,
@@ -54,6 +58,7 @@ public class OrderController {
         return ResponseEntity.ok(orderEntityMapper.mapEntityToResponseDto(order));
     }
 
+    @PreAuthorize("hasAuthority('ADMIN')")
     @DeleteMapping("/{orderId}")
     public void deleteOrder(@PathVariable String orderId) {
         orderService.delete(orderId);

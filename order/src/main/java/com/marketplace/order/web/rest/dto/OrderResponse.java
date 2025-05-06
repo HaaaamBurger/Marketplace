@@ -7,9 +7,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class OrderResponse {
 
     private String id;
@@ -25,4 +25,5 @@ public class OrderResponse {
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;
+
 }

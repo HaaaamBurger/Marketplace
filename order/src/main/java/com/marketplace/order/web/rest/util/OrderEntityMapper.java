@@ -19,6 +19,8 @@ public class OrderEntityMapper implements EntityMapper<Order, OrderRequest, Orde
                 .productIds(order.getProductIds())
                 .address(order.getAddress())
                 .status(order.getStatus())
+                .createdAt(order.getCreatedAt())
+                .updatedAt(order.getUpdatedAt())
                 .build();
     }
 
