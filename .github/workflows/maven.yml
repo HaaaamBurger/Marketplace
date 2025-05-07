@@ -38,7 +38,7 @@ jobs:
         run: |
           echo "Waiting for MongoDB to be ready..."
           for i in {1..20}; do
-            nc -z mongo 27017 && echo "Mongo is up" && break
+            nc -z localhost 27017 && echo "Mongo is up" && break
             echo "Waiting for Mongo... attempt $i"
             sleep 5
           done
