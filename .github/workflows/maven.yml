@@ -15,9 +15,6 @@ jobs:
         image: mongo:latest
         ports:
           - 27017:27017
-        env:
-          MONGO_INITDB_ROOT_USERNAME: admin
-          MONGO_INITDB_ROOT_PASSWORD: admin
 
     env:
       MONGO_DB_URI: ${{ secrets.MONGO_DB_URI }}
