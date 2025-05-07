@@ -1,0 +1,46 @@
+name: Marketplace Build & Publish Artifact
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build_test:
+    runs-on: ubuntu-latest
+
+    services:
+      mongo:
+        image: mongo:latest
+        ports:
+          - 27017:27017
+
+    env:
+      MONGO_DB_URI: ${{ secrets.MONGO_DB_URI }}
+      JWT_ACCESS_EXPIRATION_TIME: ${{ secrets.JWT_ACCESS_EXPIRATION_TIME }}
+      JWT_REFRESH_EXPIRATION_TIME: ${{ secrets.JWT_REFRESH_EXPIRATION_TIME }}
+      JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Wait for MongoDB to be ready
+        run: |
+          echo "Waiting for MongoDB to be ready..."
+          for i in {1..20}; do
+            nc -z localhost 27017 && echo "Mongo is up" && break
+            echo "Waiting for Mongo... attempt $i"
+            sleep 5
+          done
+
+      - name: Build all modules
+        run: mvn clean verify
+

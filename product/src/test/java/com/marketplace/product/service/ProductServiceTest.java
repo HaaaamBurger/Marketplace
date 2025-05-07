@@ -2,6 +2,7 @@ package com.marketplace.product.service;
 
 import com.marketplace.auth.exception.EntityNotFoundException;
 import com.marketplace.auth.web.model.User;
+import com.marketplace.product.config.ProductApplicationConfig;
 import com.marketplace.product.util.MockHelper;
 import com.marketplace.product.web.rest.dto.ProductRequest;
 import com.marketplace.product.web.model.Product;
@@ -23,8 +24,8 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-@SpringBootTest
 @ActiveProfiles("test")
+@SpringBootTest(classes = ProductApplicationConfig.class)
 class ProductServiceTest {
 
     @MockitoBean

@@ -1,8 +1,8 @@
 package com.marketplace.auth.service;
 
+import com.marketplace.auth.config.AuthApplicationConfig;
 import com.marketplace.auth.exception.CredentialException;
 import com.marketplace.auth.exception.EntityExistsException;
-import com.marketplace.auth.exception.EntityNotFoundException;
 import com.marketplace.auth.exception.TokenNotValidException;
 import com.marketplace.auth.repository.UserRepository;
 import com.marketplace.auth.security.JwtService;
@@ -11,7 +11,7 @@ import com.marketplace.auth.web.rest.dto.AuthRefreshRequest;
 import com.marketplace.auth.web.rest.dto.AuthRequest;
 import com.marketplace.auth.web.rest.dto.AuthResponse;
 import com.marketplace.auth.web.util.AuthRequestDataBuilder;
-import com.marketplace.common.model.UserStatus;
+import com.marketplace.auth.web.model.UserStatus;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
-@SpringBootTest
+@SpringBootTest(classes = AuthApplicationConfig.class)
 public class AuthenticationServiceTest {
 
     @MockitoBean

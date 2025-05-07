@@ -2,7 +2,7 @@ package com.marketplace.auth.security;
 
 import com.marketplace.auth.exception.TokenNotValidException;
 import com.marketplace.auth.web.model.User;
-import com.marketplace.common.model.UserStatus;
+import com.marketplace.auth.web.model.UserStatus;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

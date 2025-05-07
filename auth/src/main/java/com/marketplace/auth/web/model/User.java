@@ -1,7 +1,6 @@
 package com.marketplace.auth.web.model;
 
 import com.marketplace.common.model.AuditableEntity;
-import com.marketplace.common.model.UserStatus;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;

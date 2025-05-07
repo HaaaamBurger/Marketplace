@@ -1,4 +1,4 @@
-package com.marketplace.order.config;
+package com.marketplace.auth.config;
 
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.ComponentScan;
@@ -7,10 +7,7 @@ import org.springframework.data.mongodb.repository.config.EnableMongoRepositorie
 
 @Configuration
 @EnableAutoConfiguration
-@ComponentScan(basePackages = {
-        "com.marketplace.order",
-        "com.marketplace.auth",
-        "com.marketplace.product"
-})
-public class OrderApplicationConfig {
+@EnableMongoRepositories(basePackages = {"com.marketplace.auth.repository"})
+@ComponentScan(basePackages = {"com.marketplace.auth"})
+public class AuthApplicationConfig {
 }

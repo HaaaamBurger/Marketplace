@@ -4,6 +4,7 @@ import com.marketplace.auth.exception.EntityNotFoundException;
 import com.marketplace.auth.repository.UserRepository;
 import com.marketplace.auth.web.model.User;
 import com.marketplace.auth.web.model.UserRole;
+import com.marketplace.order.config.OrderApplicationConfig;
 import com.marketplace.order.repository.OrderRepository;
 import com.marketplace.order.util.MockHelper;
 
@@ -34,8 +35,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
-@SpringBootTest
 @ActiveProfiles("test")
+@SpringBootTest(classes = OrderApplicationConfig.class)
 class OrderServiceTest {
 
     @MockitoBean

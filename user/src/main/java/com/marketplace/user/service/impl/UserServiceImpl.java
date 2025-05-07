@@ -4,7 +4,7 @@ import com.marketplace.auth.exception.EntityExistsException;
 import com.marketplace.auth.exception.EntityNotFoundException;
 import com.marketplace.auth.repository.UserRepository;
 import com.marketplace.auth.web.model.User;
-import com.marketplace.common.model.UserStatus;
+import com.marketplace.auth.web.model.UserStatus;
 import com.marketplace.user.service.UserService;
 import com.marketplace.user.web.dto.UserRequest;
 import com.marketplace.user.web.util.UserEntityMapper;

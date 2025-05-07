@@ -5,7 +5,8 @@ import com.marketplace.auth.exception.EntityNotFoundException;
 import com.marketplace.auth.repository.UserRepository;
 import com.marketplace.auth.web.model.User;
 import com.marketplace.auth.web.model.UserRole;
-import com.marketplace.common.model.UserStatus;
+import com.marketplace.auth.web.model.UserStatus;
+import com.marketplace.user.config.UserApplicationConfig;
 import com.marketplace.user.util.UserDataBuilder;
 import com.marketplace.user.web.dto.UserRequest;
 import org.junit.jupiter.api.Test;
@@ -23,8 +24,8 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
-@SpringBootTest
 @ActiveProfiles("test")
+@SpringBootTest(classes = UserApplicationConfig.class)
 public class UserServiceTest {
 
     @MockitoBean

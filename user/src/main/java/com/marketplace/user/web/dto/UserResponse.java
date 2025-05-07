@@ -1,7 +1,7 @@
 package com.marketplace.user.web.dto;
 
 import com.marketplace.auth.web.model.UserRole;
-import com.marketplace.common.model.UserStatus;
+import com.marketplace.auth.web.model.UserStatus;
 import lombok.Builder;
 import lombok.Data;
 
