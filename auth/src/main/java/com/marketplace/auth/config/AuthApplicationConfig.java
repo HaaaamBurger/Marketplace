@@ -7,7 +7,7 @@ import org.springframework.data.mongodb.repository.config.EnableMongoRepositorie
 
 @Configuration
 @EnableAutoConfiguration
-@EnableMongoRepositories(basePackages = {"com.marketplace.auth.repository"})
 @ComponentScan(basePackages = {"com.marketplace.auth"})
+@EnableMongoRepositories(basePackages = {"com.marketplace.auth.repository"})
 public class AuthApplicationConfig {
 }
