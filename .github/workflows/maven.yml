@@ -15,6 +15,10 @@ jobs:
         image: mongo:latest
         ports:
           - 27017:27017
+        env:
+          MONGO_INITDB_ROOT_USERNAME: ${{ secrets.MONGO_ROOT_USERNAME }}
+          MONGO_INITDB_ROOT_PASSWORD: ${{ secrets.MONGO_ROOT_PASSWORD }}
+          MONGO_INITDB_DATABASE: marketplace
 
     env:
       MONGO_DB_URI: ${{ secrets.MONGO_DB_URI }}
