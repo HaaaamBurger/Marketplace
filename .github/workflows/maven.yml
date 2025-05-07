@@ -20,6 +20,7 @@ jobs:
           MONGO_INITDB_ROOT_PASSWORD: admin
 
     env:
+      MONGO_DB_URI: ${{ secrets.MONGO_DB_URI }}
       JWT_ACCESS_EXPIRATION_TIME: ${{ secrets.JWT_ACCESS_EXPIRATION_TIME }}
       JWT_REFRESH_EXPIRATION_TIME: ${{ secrets.JWT_REFRESH_EXPIRATION_TIME }}
       JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
