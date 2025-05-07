@@ -19,7 +19,7 @@ jobs:
           MONGO_INITDB_ROOT_USERNAME: admin
           MONGO_INITDB_ROOT_PASSWORD: admin
         options: >-
-          --health-cmd mongo
+          --health-cmd="mongo --eval 'db.runCommand({ ping: 1 })'"
           --health-interval=10s
           --health-timeout=5s
           --health-retries=5
@@ -41,19 +41,29 @@ jobs:
 
       - name: Install mongosh
         run: |
-            sudo apt-get install gnupg
-            wget -qO- https://www.mongodb.org/static/pgp/server-7.0.asc | sudo tee /etc/apt/trusted.gpg.d/server-7.0.asc
-            echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu focal/mongodb-org/7.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-7.0.list
-            sudo apt-get update
-            sudo apt-get install -y mongodb-mongosh
-            mongosh --version
+          sudo apt-get install gnupg
+          wget -qO- https://www.mongodb.org/static/pgp/server-7.0.asc | sudo tee /etc/apt/trusted.gpg.d/server-7.0.asc
+          echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu focal/mongodb-org/7.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-7.0.list
+          sudo apt-get update
+          sudo apt-get install -y mongodb-mongosh
+          mongosh --version
 
-      - name: Initalize MongoDB
+      - name: Wait for MongoDB to be ready
         run: |
-          mongosh --host localhost:27017 -u admin -p admin --authenticationDatabase admin <<EOF
-            db = db.getSiblingDB('APP-DB');
-            db.createUser({ user: 'APP-USERNAME', pwd: 'APP-PASSWORD', roles: [{ role: 'readWrite', db: 'APP-DB' }] })
-            db.createCollection('APP-COLLECTION');
+          echo "Waiting for MongoDB to be ready..."
+          for i in {1..20}; do
+            nc -z mongo 27017 && echo "Mongo is up" && break
+            echo "Waiting for Mongo... attempt $i"
+            sleep 5
+          done
+
+      - name: Initialize MongoDB with User and Collection
+        run: |
+          mongosh --host mongo:27017 -u admin -p admin --authenticationDatabase admin <<EOF
+          db = db.getSiblingDB('APP-DB');
+          db.createUser({ user: 'APP-USERNAME', pwd: 'APP-PASSWORD', roles: [{ role: 'readWrite', db: 'APP-DB' }] })
+          db.createCollection('APP-COLLECTION');
+          EOF
 
       - name: Build all modules
         run: mvn clean verify -pl main -am
