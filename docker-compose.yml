@@ -16,17 +16,3 @@ services:
     container_name: mongodb
     ports:
       - "27017:27017"
-
-  mongo-express:
-    image: mongo-express
-    container_name: mongodb-express
-    ports:
-      - "8081:8081"
-    depends_on:
-      - mongo
-    environment:
-      - ME_CONFIG_MONGODB_SERVER=mongo
-      - ME_CONFIG_MONGODB_PORT=27017
-      - ME_CONFIG_MONGODB_AUTH_DATABASE=${MONGODB_AUTH_DATABASE}
-      - ME_CONFIG_BASICAUTH_USERNAME=${MONGO_DB_USERNAME}
-      - ME_CONFIG_BASICAUTH_PASSWORD=${MONGO_DB_PASSWORD}
