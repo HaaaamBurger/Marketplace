@@ -2,7 +2,6 @@ package com.marketplace.main.config;
 
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 
 @Configuration
 @ComponentScan(basePackages = {
@@ -12,9 +11,5 @@ import org.springframework.data.mongodb.repository.config.EnableMongoRepositorie
         "com.marketplace.user",
         "com.marketplace.order"
 })
-@EnableMongoRepositories(basePackages = {
-        "com.marketplace.product.repository",
-        "com.marketplace.order.repository"
-})
-public class ApplicationConfig {
+public class MainApplicationConfig {
 }
