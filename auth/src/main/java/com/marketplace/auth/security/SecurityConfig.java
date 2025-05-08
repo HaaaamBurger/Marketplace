@@ -22,6 +22,19 @@ public class SecurityConfig {
     private final RestAccessDeniedHandler restAccessDeniedHandler;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
+    private static final String[] permittedRoutes = new String[] {
+            "/auth/sign-in",
+            "/auth/sign-up",
+            "/auth/refresh-token",
+            "/swagger-ui/**",
+            "/v3/api-docs*/**",
+            "/home"
+    };
+
+    private static final String[] adminRoutes = new String[] {
+            "/users/**"
+    };
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
@@ -32,14 +45,8 @@ public class SecurityConfig {
                         .accessDeniedHandler(restAccessDeniedHandler)
                 )
                 .authorizeHttpRequests(authorizationManagerRequestMatcherRegistry -> authorizationManagerRequestMatcherRegistry
-                    .requestMatchers(
-                            "/auth/sign-in",
-                            "/auth/sign-up",
-                            "/auth/refresh-token",
-                            "/swagger-ui/**",
-                            "/v3/api-docs*/**"
-                    ).permitAll()
-                    .requestMatchers("/users/**").hasAuthority(UserRole.ADMIN.name())
+                    .requestMatchers(permittedRoutes).permitAll()
+                    .requestMatchers(adminRoutes).hasAuthority(UserRole.ADMIN.name())
                     .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
