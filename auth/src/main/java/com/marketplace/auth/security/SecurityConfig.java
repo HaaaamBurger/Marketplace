@@ -25,10 +25,12 @@ public class SecurityConfig {
     private static final String[] permittedRoutes = new String[] {
             "/auth/sign-in",
             "/auth/sign-up",
+            "/sign-in",
+            "/sign-up",
             "/auth/refresh-token",
             "/swagger-ui/**",
             "/v3/api-docs*/**",
-            "/home"
+            "/home",
     };
 
     private static final String[] adminRoutes = new String[] {
