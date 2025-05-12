@@ -1,41 +1,18 @@
 package com.marketplace.main.user;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.marketplace.auth.exception.ExceptionResponse;
-import com.marketplace.auth.exception.ExceptionType;
-import com.marketplace.auth.repository.UserRepository;
-import com.marketplace.auth.util.AuthHelper;
-import com.marketplace.auth.web.model.User;
-import com.marketplace.auth.web.model.UserRole;
-import com.marketplace.auth.web.model.UserStatus;
+import com.marketplace.auth.service.AuthHelper;
 import com.marketplace.main.exception.MainExceptionHandler;
-import com.marketplace.main.util.UserRequestDataBuilder;
-import com.marketplace.main.util.UserDataBuilder;
-import com.marketplace.user.web.dto.UserRequest;
-import com.marketplace.user.web.dto.UserStatusRequest;
+import com.marketplace.usercore.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.mongodb.repository.MongoRepository;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
-
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-
-import static com.marketplace.auth.security.service.JwtService.AUTHORIZATION_HEADER;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc

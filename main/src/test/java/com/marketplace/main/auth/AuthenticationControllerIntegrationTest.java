@@ -1,34 +1,16 @@
 package com.marketplace.main.auth;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.marketplace.auth.exception.ExceptionResponse;
-import com.marketplace.auth.exception.ExceptionType;
-import com.marketplace.main.MainApplication;
 import com.marketplace.main.exception.MainExceptionHandler;
-import com.marketplace.auth.repository.UserRepository;
 import com.marketplace.auth.security.service.JwtService;
-import com.marketplace.main.util.AuthRequestDataBuilder;
-import com.marketplace.main.util.UserDataBuilder;
-import com.marketplace.auth.web.model.User;
-import com.marketplace.auth.web.rest.dto.AuthRefreshRequest;
-import com.marketplace.auth.web.rest.dto.AuthRequest;
-import com.marketplace.auth.web.rest.dto.AuthResponse;
+import com.marketplace.usercore.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
-
-import java.util.Optional;
-
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc

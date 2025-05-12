@@ -3,7 +3,7 @@ package com.marketplace.auth.security.config;
 import com.marketplace.auth.security.JwtAuthenticationFilter;
 import com.marketplace.auth.security.RestAccessDeniedHandler;
 import com.marketplace.auth.security.RestAuthenticationEntryPoint;
-import com.marketplace.auth.web.model.UserRole;
+import com.marketplace.usercore.model.UserRole;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -28,8 +28,6 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
     public static final String[] PERMITTED_ROUTES = new String[] {
-            "/auth/sign-in",
-            "/auth/sign-up",
             "/sign-in",
             "/sign-up",
             "/home",

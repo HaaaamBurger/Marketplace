@@ -1,10 +1,10 @@
 package com.marketplace.auth.security;
 
-import com.marketplace.auth.exception.TokenNotValidException;
-import com.marketplace.auth.security.cookie.CookiePayload;
 import com.marketplace.auth.security.cookie.CookieService;
 import com.marketplace.auth.security.service.CustomUserDetailsService;
-import com.marketplace.auth.security.service.JwtService;
+import com.marketplace.auth.service.JwtCookieManager;
+import com.marketplace.auth.service.JwtTokenManager;
+import com.marketplace.auth.web.dto.TokenPayload;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -21,7 +21,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Arrays;
 
+import static com.marketplace.auth.security.config.SecurityConfig.PERMITTED_ROUTES;
 import static com.marketplace.auth.security.cookie.CookieService.COOKIE_ACCESS_TOKEN;
 import static com.marketplace.auth.security.cookie.CookieService.COOKIE_REFRESH_TOKEN;
 
@@ -30,15 +32,22 @@ import static com.marketplace.auth.security.cookie.CookieService.COOKIE_REFRESH_
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    private final JwtService jwtService;
-
     private final CustomUserDetailsService customUserDetailsService;
 
     private final CookieService cookieService;
 
+    private final JwtCookieManager jwtCookieManager;
+
+    private final JwtTokenManager jwtTokenManager;
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
+
+        if (validatePermittedRoute(request.getRequestURI())) {
+            filterChain.doFilter(request, response);
+            return;
+        }
 
         Cookie accessTokenCookie = cookieService.extractCookieByName(COOKIE_ACCESS_TOKEN, request);
         if (isAuthenticatedOrNoCookie(accessTokenCookie)) {
@@ -59,7 +68,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
 
             log.error("[JWT_AUTHENTICATION_FILTER]: {}", exception.getMessage());
-            deleteTokensFromCookie(response);
+            jwtCookieManager.deleteTokensFromCookie(response);
 
             filterChain.doFilter(request, response);
             return;
@@ -67,6 +76,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         log.info("[JWT_AUTHENTICATION_FILTER]: Token validated successfully");
         filterChain.doFilter(request, response);
+    }
+
+    private boolean validatePermittedRoute(String requestRoute) {
+        return Arrays.stream(PERMITTED_ROUTES).anyMatch(permittedRoute -> permittedRoute.contains(requestRoute));
     }
 
     private boolean isAuthenticatedOrNoCookie(Cookie cookie) {
@@ -79,7 +92,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     private UserDetails addAuthenticationToContext(String token) {
-        UserDetails userDetails = getUserDetailsIfTokenValidOrThrow(token);
+        UserDetails userDetails = jwtTokenManager.getUserDetailsIfTokenValidOrThrow(token);
         customUserDetailsService.validateUserNotBlockedOrThrow(userDetails);
 
         UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
@@ -92,7 +105,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     private boolean updateTokensIfRefreshValid(HttpServletResponse response, HttpServletRequest request) {
-
         try {
             Cookie refreshTokenCookie = cookieService.extractCookieByName(COOKIE_REFRESH_TOKEN, request);
 
@@ -100,12 +112,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 return false;
             }
 
-            UserDetails userDetails = getUserDetailsIfTokenValidOrThrow(refreshTokenCookie.getValue());
-
-            String accessToken = jwtService.generateAccessToken(userDetails);
-            String refreshToken = jwtService.generateRefreshToken(userDetails);
-
-            addTokensToCookie(accessToken, refreshToken, response);
+            UserDetails userDetails = jwtTokenManager.getUserDetailsIfTokenValidOrThrow(refreshTokenCookie.getValue());
+            TokenPayload tokenPayload = jwtTokenManager.generateTokenPayload(userDetails);
+            jwtCookieManager.addTokensToCookie(tokenPayload, response);
 
             log.info("[JWT_AUTHENTICATION_FILTER]: Tokens refreshed successfully");
 
@@ -113,47 +122,5 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         } catch (JwtException exception) {
             return false;
         }
-
     }
-
-    private UserDetails getUserDetailsIfTokenValidOrThrow(String token) {
-
-        String subject = jwtService.extractSubject(token);
-        UserDetails userDetails =  customUserDetailsService.loadUserByUsername(subject);
-
-        boolean isTokenValid = jwtService.isTokenValid(token, userDetails);
-
-        if (isTokenValid) {
-            return userDetails;
-        }
-
-        log.error("[JWT_AUTHENTICATION_FILTER]: Token validation failed");
-        throw new TokenNotValidException("Token not valid!");
-
-    }
-
-    private void addTokensToCookie(String accessToken, String refreshToken, HttpServletResponse response) {
-
-        CookiePayload accessTokenCookiePayload = CookiePayload.builder()
-                .name(COOKIE_ACCESS_TOKEN)
-                .value(accessToken)
-                .maxAge(jwtService.JWT_ACCESS_EXPIRATION_TIME)
-                .build();
-
-        CookiePayload refreshTokenCookiePayload = CookiePayload.builder()
-                .name(COOKIE_REFRESH_TOKEN)
-                .value(refreshToken)
-                .maxAge(jwtService.JWT_REFRESH_EXPIRATION_TIME)
-                .build();
-
-        cookieService.addValueToCookie(accessTokenCookiePayload, response);
-        cookieService.addValueToCookie(refreshTokenCookiePayload, response);
-
-    }
-
-    private void deleteTokensFromCookie(HttpServletResponse response) {
-        cookieService.deleteCookieByName(COOKIE_ACCESS_TOKEN, response);
-        cookieService.deleteCookieByName(COOKIE_REFRESH_TOKEN, response);
-    }
-
 }

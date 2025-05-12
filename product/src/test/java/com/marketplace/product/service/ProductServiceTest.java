@@ -1,13 +1,13 @@
 package com.marketplace.product.service;
 
-import com.marketplace.auth.exception.EntityNotFoundException;
-import com.marketplace.auth.web.model.User;
+import com.marketplace.common.exception.EntityNotFoundException;
 import com.marketplace.product.config.ProductApplicationConfig;
 import com.marketplace.product.util.MockHelper;
 import com.marketplace.product.web.rest.dto.ProductRequest;
 import com.marketplace.product.web.model.Product;
 import com.marketplace.product.util.ProductDataBuilder;
 import com.marketplace.product.repository.ProductRepository;
+import com.marketplace.usercore.model.User;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,37 +1,18 @@
 package com.marketplace.main.order;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.marketplace.auth.exception.ExceptionResponse;
-import com.marketplace.auth.exception.ExceptionType;
-import com.marketplace.auth.util.AuthHelper;
-import com.marketplace.main.util.OrderDataBuilder;
-import com.marketplace.main.util.OrderRequestDataBuilder;
-import com.marketplace.main.util.ProductDataBuilder;
+import com.marketplace.auth.service.AuthHelper;
 import com.marketplace.order.repository.OrderRepository;
-import com.marketplace.order.web.model.Order;
-import com.marketplace.order.web.model.OrderStatus;
-import com.marketplace.order.web.rest.dto.OrderRequest;
 import com.marketplace.product.repository.ProductRepository;
-import com.marketplace.product.web.model.Product;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.mongodb.repository.MongoRepository;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.List;
-
-import static com.marketplace.auth.security.service.JwtService.AUTHORIZATION_HEADER;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc

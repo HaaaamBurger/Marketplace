@@ -1,8 +1,11 @@
 package com.marketplace.main.exception;
 
 import com.marketplace.auth.exception.*;
+import com.marketplace.common.exception.EntityExistsException;
+import com.marketplace.common.exception.EntityNotFoundException;
+import com.marketplace.common.exception.ExceptionResponse;
+import com.marketplace.common.exception.ExceptionType;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatusCode;
@@ -11,11 +14,8 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import java.io.IOException;
 import java.util.stream.Collectors;
 
-import static com.marketplace.auth.security.cookie.CookieService.COOKIE_ACCESS_TOKEN;
-import static com.marketplace.auth.security.cookie.CookieService.COOKIE_REFRESH_TOKEN;
 import static com.marketplace.common.constants.Delimiters.COMMA_DELIMITER;
 import static com.marketplace.common.constants.Delimiters.COLON_DELIMITER;
 

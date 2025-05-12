@@ -1,8 +1,8 @@
 package com.marketplace.auth.web.util;
 
-import com.marketplace.auth.web.model.User;
-import com.marketplace.auth.web.model.UserRole;
-import com.marketplace.auth.web.model.UserStatus;
+import com.marketplace.usercore.model.User;
+import com.marketplace.usercore.model.UserRole;
+import com.marketplace.usercore.model.UserStatus;
 
 public class UserDataBuilder {
     public static User.UserBuilder buildUserWithAllFields() {

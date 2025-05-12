@@ -1,8 +1,8 @@
 package com.marketplace.auth.service;
 
-import com.marketplace.auth.web.rest.dto.AuthRefreshRequest;
-import com.marketplace.auth.web.rest.dto.AuthRequest;
-import com.marketplace.auth.web.rest.dto.AuthResponse;
+import com.marketplace.auth.web.dto.AuthRefreshRequest;
+import com.marketplace.auth.web.dto.AuthRequest;
+import com.marketplace.auth.web.dto.AuthResponse;
 import jakarta.servlet.http.HttpServletResponse;
 
 public interface AuthenticationService {

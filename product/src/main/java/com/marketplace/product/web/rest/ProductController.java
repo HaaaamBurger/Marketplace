@@ -5,7 +5,7 @@ import com.marketplace.product.web.rest.dto.ProductResponse;
 import com.marketplace.product.web.rest.dto.ProductRequest;
 import com.marketplace.product.web.model.Product;
 
-import com.marketplace.product.web.util.ProductEntityMapper;
+import com.marketplace.product.web.mapper.ProductEntityMapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

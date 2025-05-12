@@ -1,13 +1,13 @@
 package com.marketplace.user.web.rest;
 
-import com.marketplace.auth.web.model.User;
-import com.marketplace.user.service.UserService;
-import com.marketplace.user.web.dto.UserRequest;
-import com.marketplace.user.web.dto.UserResponse;
-import com.marketplace.user.web.dto.UserStatusRequest;
-import com.marketplace.user.web.util.UserEntityMapper;
+import com.marketplace.usercore.model.User;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import com.marketplace.usercore.dto.UserRequest;
+import com.marketplace.usercore.dto.UserResponse;
+import com.marketplace.usercore.dto.UserStatusRequest;
+import com.marketplace.usercore.mapper.UserEntityMapper;
+import com.marketplace.usercore.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

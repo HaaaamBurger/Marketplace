@@ -2,9 +2,9 @@ package com.marketplace.order.web.rest;
 
 import com.marketplace.order.service.OrderService;
 import com.marketplace.order.web.model.Order;
-import com.marketplace.order.web.rest.dto.OrderRequest;
-import com.marketplace.order.web.rest.dto.OrderResponse;
-import com.marketplace.order.web.rest.util.OrderEntityMapper;
+import com.marketplace.order.web.dto.OrderRequest;
+import com.marketplace.order.web.dto.OrderResponse;
+import com.marketplace.order.web.mapper.OrderEntityMapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

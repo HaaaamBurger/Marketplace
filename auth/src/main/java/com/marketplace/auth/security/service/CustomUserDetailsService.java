@@ -1,8 +1,8 @@
 package com.marketplace.auth.security.service;
 
-import com.marketplace.auth.repository.UserRepository;
-import com.marketplace.auth.web.model.User;
-import com.marketplace.auth.web.model.UserStatus;
+import com.marketplace.usercore.model.User;
+import com.marketplace.usercore.model.UserStatus;
+import com.marketplace.usercore.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.AccessDeniedException;
