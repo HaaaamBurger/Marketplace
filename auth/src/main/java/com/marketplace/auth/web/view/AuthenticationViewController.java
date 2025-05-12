@@ -1,8 +1,10 @@
 package com.marketplace.auth.web.view;
 
 import com.marketplace.auth.service.AuthenticationService;
-import com.marketplace.auth.service.impl.AuthenticationValidator;
+import com.marketplace.auth.service.impl.SignInValidator;
+import com.marketplace.auth.service.impl.SignUpValidator;
 import com.marketplace.auth.web.rest.dto.AuthRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -18,7 +20,9 @@ public class AuthenticationViewController {
 
     private final AuthenticationService authenticationService;
 
-    private final AuthenticationValidator authenticationValidator;
+    private final SignUpValidator signUpValidator;
+
+    private final SignInValidator signInValidator;
 
     @GetMapping("/sign-in")
     public String signIn(Model model) {
@@ -27,8 +31,19 @@ public class AuthenticationViewController {
     }
 
     @PostMapping("/sign-in")
-    public String signIn(@Valid @ModelAttribute AuthRequest authRequest, BindingResult bindingResult) {
-        return "sign-in";
+    public String signIn(
+            @Valid @ModelAttribute AuthRequest authRequest,
+            BindingResult bindingResult,
+            HttpServletResponse response
+    ) {
+        signInValidator.validate(authRequest, bindingResult);
+        if (bindingResult.hasErrors()) {
+            return "sign-in";
+        }
+
+        authenticationService.signIn(authRequest, response);
+
+        return "redirect:/home";
     }
 
     @GetMapping("/sign-up")
@@ -40,7 +55,7 @@ public class AuthenticationViewController {
     @PostMapping("/sign-up")
     public String signUp(@Valid @ModelAttribute AuthRequest authRequest, BindingResult bindingResult) {
 
-        authenticationValidator.validate(authRequest, bindingResult);
+        signUpValidator.validate(authRequest, bindingResult);
         if (bindingResult.hasErrors()) {
             return "sign-up";
         }

@@ -1,4 +1,4 @@
-package com.marketplace.auth.security;
+package com.marketplace.auth.security.service;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
@@ -29,10 +29,10 @@ public class JwtService {
     private String jwtSecretKey;
 
     @Value("${security.jwt.access-expiration-time}")
-    private long jwtAccessExpirationTime;
+    public int JWT_ACCESS_EXPIRATION_TIME;
 
     @Value("${security.jwt.refresh-expiration-time}")
-    private long jwtRefreshExpirationTime;
+    public int JWT_REFRESH_EXPIRATION_TIME;
 
     public String generateAccessToken(UserDetails userDetails) {
         List<String> roles = getRoles(userDetails);
@@ -40,7 +40,7 @@ public class JwtService {
     }
 
     public String generateAccessToken(UserDetails userDetails, Map<String, Object> claims) {
-        return buildToken(userDetails, claims, jwtAccessExpirationTime);
+        return buildToken(userDetails, claims, JWT_ACCESS_EXPIRATION_TIME);
     }
 
     public String generateRefreshToken(UserDetails userDetails) {
@@ -49,18 +49,18 @@ public class JwtService {
     }
 
     public String generateRefreshToken(UserDetails userDetails, Map<String, Object> claims) {
-        return buildToken(userDetails, claims, jwtRefreshExpirationTime);
+        return buildToken(userDetails, claims, JWT_REFRESH_EXPIRATION_TIME);
     }
 
-    public String generateAccessTokenWithExpiration(UserDetails userDetails, long expiration) {
+    public String generateAccessTokenWithExpiration(UserDetails userDetails, int expiration) {
         return buildToken(userDetails, new HashMap<>(), expiration);
     }
 
-    public String generateRefreshTokenWithExpiration(UserDetails userDetails, long expiration) {
+    public String generateRefreshTokenWithExpiration(UserDetails userDetails, int expiration) {
         return buildToken(userDetails, new HashMap<>(), expiration);
     }
 
-    private String buildToken(UserDetails userDetails, Map<String, Object> claims, long expiration) {
+    private String buildToken(UserDetails userDetails, Map<String, Object> claims, int expiration) {
         return Jwts.builder()
                 .claims(claims)
                 .subject(userDetails.getUsername())
@@ -75,12 +75,15 @@ public class JwtService {
     }
 
     public boolean isTokenValid(String token, UserDetails userDetails) {
-        String subject = extractClaim(token, Claims::getSubject);
-
-        return (!isTokenExpired(token) && userDetails.getUsername().equals(subject));
+        try {
+            String subject = extractClaim(token, Claims::getSubject);
+            return (!isTokenExpired(token) && userDetails.getUsername().equals(subject));
+        } catch (JwtException exception) {
+            return false;
+        }
     }
 
-    protected boolean isTokenExpired(String token) {
+    public boolean isTokenExpired(String token) {
         try {
             return extractClaim(token, Claims::getExpiration).before(new Date());
         } catch (ExpiredJwtException exception) {
@@ -95,7 +98,7 @@ public class JwtService {
         return claimsResolver.apply(claims);
     }
 
-    protected Object extractClaim(String token, String claim) {
+    public Object extractClaim(String token, String claim) {
         Claims claims = extractAllClaims(token);
         return claims.get(claim);
     }

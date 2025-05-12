@@ -4,7 +4,9 @@ import com.marketplace.auth.exception.CredentialException;
 import com.marketplace.auth.exception.EntityExistsException;
 import com.marketplace.auth.exception.TokenNotValidException;
 import com.marketplace.auth.repository.UserRepository;
-import com.marketplace.auth.security.JwtService;
+import com.marketplace.auth.security.cookie.CookiePayload;
+import com.marketplace.auth.security.cookie.CookieService;
+import com.marketplace.auth.security.service.JwtService;
 import com.marketplace.auth.service.AuthenticationService;
 import com.marketplace.auth.web.model.User;
 import com.marketplace.auth.web.model.UserRole;
@@ -13,6 +15,7 @@ import com.marketplace.auth.web.rest.dto.AuthRequest;
 import com.marketplace.auth.web.rest.dto.AuthResponse;
 import com.marketplace.auth.web.model.UserStatus;
 import io.jsonwebtoken.JwtException;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -21,6 +24,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
+
+import static com.marketplace.auth.security.cookie.CookieService.COOKIE_ACCESS_TOKEN;
+import static com.marketplace.auth.security.cookie.CookieService.COOKIE_REFRESH_TOKEN;
 
 @Slf4j
 @Service
@@ -35,15 +41,12 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     private final UserDetailsService userDetailsService;
 
+    private final CookieService cookieService;
+
     @Override
-    public AuthResponse signIn(AuthRequest authRequest) {
+    public AuthResponse signIn(AuthRequest authRequest, HttpServletResponse response) {
 
-        User user = userRepository.findByEmail(authRequest.getEmail())
-                .orElseThrow(() ->  {
-                    log.error("[AUTHENTICATION_SERVICE_IMPL]:User does not exist with email: {}", authRequest.getEmail());
-                    return new CredentialException("Wrong credentials!");
-                });
-
+        User user = findUserByEmailOrThrow(authRequest.getEmail());
         boolean isPasswordValid = passwordEncoder.matches(
                 authRequest.getPassword(),
                 user.getPassword()
@@ -54,7 +57,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             throw new CredentialException("Wrong credentials!");
         }
 
-        return generateAuthResponse(user);
+        AuthResponse authResponse = generateAuthResponse(user);
+        addTokensToCookie(authResponse, response);
+
+        return authResponse;
     }
 
     @Override
@@ -83,6 +89,22 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             log.error("[AUTHENTICATION_SERVICE_IMPL]: {}", exception.getMessage());
             throw new TokenNotValidException("Token not valid!");
         }
+    }
+
+    private void addTokensToCookie(AuthResponse authResponse, HttpServletResponse httpServletResponse) {
+        CookiePayload accessTokenCookiePayload = CookiePayload.builder()
+                .name(COOKIE_ACCESS_TOKEN)
+                .value(authResponse.getAccessToken())
+                .maxAge(jwtService.JWT_ACCESS_EXPIRATION_TIME)
+                .build();
+        CookiePayload refreshTokenCookiePayload = CookiePayload.builder()
+                .name(COOKIE_REFRESH_TOKEN)
+                .value(authResponse.getRefreshToken())
+                .maxAge(jwtService.JWT_REFRESH_EXPIRATION_TIME)
+                .build();
+
+        cookieService.addValueToCookie(accessTokenCookiePayload, httpServletResponse);
+        cookieService.addValueToCookie(refreshTokenCookiePayload, httpServletResponse);
     }
 
     private AuthResponse generateAuthResponse(UserDetails userDetails) {
@@ -116,5 +138,13 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             log.error("[AUTHENTICATION_SERVICE_IMPL]: User by email {} already exists!", email);
             throw new EntityExistsException("User already exists!");
         }
+    }
+
+    private User findUserByEmailOrThrow(String email) {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() ->  {
+                    log.error("[AUTHENTICATION_SERVICE_IMPL]:User does not exist with email: {}", email);
+                    return new CredentialException("Wrong credentials!");
+                });
     }
 }

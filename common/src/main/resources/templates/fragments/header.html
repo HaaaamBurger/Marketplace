@@ -11,7 +11,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 <body>
-
     <div th:fragment="header">
         <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
             <div class="container-fluid">
@@ -27,7 +26,7 @@
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                         <li class="nav-item">
-                            <a class="nav-link [[${request.getRequestURI().startsWith('/api/home') ? active : null}]]"
+                            <a class="nav-link [[${request.getRequestURI().startsWith('/home') ? active : null}]]"
                                style="cursor: pointer" th:href="@{/home}">Main</a>
                         </li>
                         <li class="nav-item" style="cursor: pointer">

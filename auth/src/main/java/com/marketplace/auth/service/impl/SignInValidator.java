@@ -9,7 +9,7 @@ import org.springframework.validation.Validator;
 
 @Service
 @RequiredArgsConstructor
-public class AuthenticationValidator implements Validator {
+public class SignInValidator implements Validator {
 
     private final UserRepository userRepository;
 
@@ -24,13 +24,12 @@ public class AuthenticationValidator implements Validator {
         validateUserExistence(authRequest, errors);
     }
 
-
     private void validateUserExistence(AuthRequest authRequest, Errors errors) {
-        if (userRepository.existsByEmail(authRequest.getEmail())) {
+        if (!userRepository.existsByEmail(authRequest.getEmail())) {
             errors.rejectValue(
                     "email",
                     "error.email",
-                    "This email already in use");
+                    "Email not found");
         }
     }
 }

@@ -1,5 +1,8 @@
-package com.marketplace.auth.security;
+package com.marketplace.auth.security.config;
 
+import com.marketplace.auth.security.JwtAuthenticationFilter;
+import com.marketplace.auth.security.RestAccessDeniedHandler;
+import com.marketplace.auth.security.RestAuthenticationEntryPoint;
 import com.marketplace.auth.web.model.UserRole;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -19,21 +22,25 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     private final RestAuthenticationEntryPoint restAuthenticationEntryPoint;
+
     private final RestAccessDeniedHandler restAccessDeniedHandler;
+
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
-    private static final String[] permittedRoutes = new String[] {
+    public static final String[] PERMITTED_ROUTES = new String[] {
             "/auth/sign-in",
             "/auth/sign-up",
             "/sign-in",
             "/sign-up",
-            "/auth/refresh-token",
+            "/home",
+            "/error",
             "/swagger-ui/**",
             "/v3/api-docs*/**",
-            "/home",
+            "/favicon.ico",
+            "/.well-known/appspecific/com.chrome.devtools.json"
     };
 
-    private static final String[] adminRoutes = new String[] {
+    private static final String[] ADMIN_ROUTES = new String[] {
             "/users/**"
     };
 
@@ -47,8 +54,8 @@ public class SecurityConfig {
                         .accessDeniedHandler(restAccessDeniedHandler)
                 )
                 .authorizeHttpRequests(authorizationManagerRequestMatcherRegistry -> authorizationManagerRequestMatcherRegistry
-                    .requestMatchers(permittedRoutes).permitAll()
-                    .requestMatchers(adminRoutes).hasAuthority(UserRole.ADMIN.name())
+                    .requestMatchers(PERMITTED_ROUTES).permitAll()
+                    .requestMatchers(ADMIN_ROUTES).hasAuthority(UserRole.ADMIN.name())
                     .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 

@@ -4,6 +4,7 @@ import com.marketplace.auth.service.AuthenticationService;
 import com.marketplace.auth.web.rest.dto.AuthRefreshRequest;
 import com.marketplace.auth.web.rest.dto.AuthRequest;
 import com.marketplace.auth.web.rest.dto.AuthResponse;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -20,8 +21,8 @@ public class AuthenticationController {
     private final AuthenticationService authenticationService;
 
     @PostMapping("/sign-in")
-    public ResponseEntity<AuthResponse> signIn(@RequestBody @Valid AuthRequest authRequest) {
-        AuthResponse authResponse = authenticationService.signIn(authRequest);
+    public ResponseEntity<AuthResponse> signIn(@RequestBody @Valid AuthRequest authRequest, HttpServletResponse httpServletResponse) {
+        AuthResponse authResponse = authenticationService.signIn(authRequest, httpServletResponse);
         return ResponseEntity.ok(authResponse);
     }
 
