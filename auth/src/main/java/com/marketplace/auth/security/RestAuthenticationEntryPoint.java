@@ -1,8 +1,6 @@
 package com.marketplace.auth.security;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.marketplace.auth.exception.ExceptionResponse;
-import com.marketplace.auth.exception.ExceptionType;
+import com.marketplace.auth.security.cookie.CookieService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -13,25 +11,23 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 
+import static com.marketplace.auth.security.cookie.CookieService.COOKIE_ACCESS_TOKEN;
+import static com.marketplace.auth.security.cookie.CookieService.COOKIE_REFRESH_TOKEN;
+
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class RestAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
-    private final ObjectMapper objectMapper;
+    private final CookieService cookieService;
 
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException {
         log.error("[REST_AUTHENTICATION_ENTRY_POINT]: {}", authException.getMessage());
 
-        ExceptionResponse exceptionResponse = ExceptionResponse.builder()
-                .status(HttpServletResponse.SC_UNAUTHORIZED)
-                .type(ExceptionType.AUTHORIZATION)
-                .path(request.getRequestURI())
-                .message("Authentication required, please sign in")
-                .build();
+        cookieService.deleteCookieByName(COOKIE_ACCESS_TOKEN, response);
+        cookieService.deleteCookieByName(COOKIE_REFRESH_TOKEN, response);
 
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-        response.getWriter().write(objectMapper.writeValueAsString(exceptionResponse));
+        response.sendRedirect("/sign-in?error=true");
     }
 }

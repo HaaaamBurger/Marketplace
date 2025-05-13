@@ -1,9 +1,6 @@
 package com.marketplace.order.service;
 
-import com.marketplace.auth.exception.EntityNotFoundException;
-import com.marketplace.auth.repository.UserRepository;
-import com.marketplace.auth.web.model.User;
-import com.marketplace.auth.web.model.UserRole;
+import com.marketplace.common.exception.EntityNotFoundException;
 import com.marketplace.order.config.OrderApplicationConfig;
 import com.marketplace.order.repository.OrderRepository;
 import com.marketplace.order.util.MockHelper;
@@ -13,9 +10,12 @@ import com.marketplace.order.util.ProductDataBuilder;
 import com.marketplace.order.util.UserDataBuilder;
 import com.marketplace.order.web.model.Order;
 import com.marketplace.order.web.model.OrderStatus;
-import com.marketplace.order.web.rest.dto.OrderRequest;
+import com.marketplace.order.web.dto.OrderRequest;
 import com.marketplace.product.repository.ProductRepository;
 import com.marketplace.product.web.model.Product;
+import com.marketplace.usercore.model.User;
+import com.marketplace.usercore.model.UserRole;
+import com.marketplace.usercore.repository.UserRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

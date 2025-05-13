@@ -1,14 +1,15 @@
 package com.marketplace.user.service;
 
-import com.marketplace.auth.exception.EntityExistsException;
-import com.marketplace.auth.exception.EntityNotFoundException;
-import com.marketplace.auth.repository.UserRepository;
-import com.marketplace.auth.web.model.User;
-import com.marketplace.auth.web.model.UserRole;
-import com.marketplace.auth.web.model.UserStatus;
-import com.marketplace.user.config.UserApplicationConfig;
+import com.marketplace.usercore.dto.UserRequest;
+import com.marketplace.usercore.model.User;
+import com.marketplace.common.exception.EntityExistsException;
+import com.marketplace.common.exception.EntityNotFoundException;
 import com.marketplace.user.util.UserDataBuilder;
-import com.marketplace.user.web.dto.UserRequest;
+import com.marketplace.usercore.config.UserCoreApplicationConfig;
+import com.marketplace.usercore.model.UserRole;
+import com.marketplace.usercore.model.UserStatus;
+import com.marketplace.usercore.repository.UserRepository;
+import com.marketplace.usercore.service.UserService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -25,7 +26,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
 @ActiveProfiles("test")
-@SpringBootTest(classes = UserApplicationConfig.class)
+@SpringBootTest(classes = UserCoreApplicationConfig.class)
 public class UserServiceTest {
 
     @MockitoBean

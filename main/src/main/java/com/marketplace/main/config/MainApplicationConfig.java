@@ -7,6 +7,7 @@ import org.springframework.data.mongodb.repository.config.EnableMongoRepositorie
 @Configuration
 @ComponentScan(basePackages = {
         "com.marketplace.main",
+        "com.marketplace.usercore",
         "com.marketplace.common",
         "com.marketplace.product",
         "com.marketplace.user",

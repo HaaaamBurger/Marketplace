@@ -1,6 +1,6 @@
 package com.marketplace.main.util;
 
-import com.marketplace.auth.web.rest.dto.AuthRequest;
+import com.marketplace.auth.web.dto.AuthRequest;
 
 public class AuthRequestDataBuilder {
 

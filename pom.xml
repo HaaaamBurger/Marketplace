@@ -21,6 +21,7 @@
 		<module>product</module>
 		<module>order</module>
 		<module>user</module>
+		<module>user-core</module>
         <module>main</module>
 	</modules>
 

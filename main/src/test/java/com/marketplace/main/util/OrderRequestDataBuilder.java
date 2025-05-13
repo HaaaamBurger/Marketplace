@@ -1,7 +1,7 @@
 package com.marketplace.main.util;
 
 import com.marketplace.order.web.model.OrderStatus;
-import com.marketplace.order.web.rest.dto.OrderRequest;
+import com.marketplace.order.web.dto.OrderRequest;
 
 import java.util.List;
 import java.util.UUID;

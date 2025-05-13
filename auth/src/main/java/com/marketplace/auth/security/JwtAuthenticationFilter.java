@@ -1,111 +1,126 @@
 package com.marketplace.auth.security;
 
-import com.marketplace.auth.exception.TokenNotValidException;
-import com.marketplace.auth.web.model.User;
-import com.marketplace.auth.web.model.UserStatus;
+import com.marketplace.auth.security.cookie.CookieService;
+import com.marketplace.auth.security.service.CustomUserDetailsService;
+import com.marketplace.auth.service.JwtCookieManager;
+import com.marketplace.auth.service.JwtTokenManager;
+import com.marketplace.auth.web.dto.TokenPayload;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Arrays;
 
-import static com.marketplace.auth.security.JwtService.AUTHORIZATION_HEADER;
-import static com.marketplace.auth.security.JwtService.BEARER_PREFIX;
+import static com.marketplace.auth.security.config.SecurityConfig.PERMITTED_ROUTES;
+import static com.marketplace.auth.security.cookie.CookieService.COOKIE_ACCESS_TOKEN;
+import static com.marketplace.auth.security.cookie.CookieService.COOKIE_REFRESH_TOKEN;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    private final JwtService jwtService;
+    private final CustomUserDetailsService customUserDetailsService;
 
-    private final UserDetailsService userDetailsService;
+    private final CookieService cookieService;
+
+    private final JwtCookieManager jwtCookieManager;
+
+    private final JwtTokenManager jwtTokenManager;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
-        String token = getTokenFromRequest(request);
-
-        if (isAuthenticatedOrNoToken(token)) {
+        if (validatePermittedRoute(request.getRequestURI())) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        try {
-            addAuthenticationToContext(token);
-        } catch (JwtException exception) {
-            log.error("[JWT_AUTHENTICATION_FILTER]: {}", exception.getMessage());
-            throw new TokenNotValidException("Token not valid!");
+        Cookie accessTokenCookie = cookieService.extractCookieByName(COOKIE_ACCESS_TOKEN, request);
+        if (isAuthenticatedOrNoCookie(accessTokenCookie)) {
+            filterChain.doFilter(request, response);
+            return;
         }
 
+        String accessToken = accessTokenCookie.getValue();
+        try {
+            addAuthenticationToContext(accessToken);
+        } catch (JwtException exception) {
+
+            boolean refreshValid = updateTokensIfRefreshValid(response, request);
+
+            if (refreshValid) {
+                filterChain.doFilter(request, response);
+                return;
+            }
+
+            log.error("[JWT_AUTHENTICATION_FILTER]: {}", exception.getMessage());
+            jwtCookieManager.deleteTokensFromCookie(response);
+
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        log.info("[JWT_AUTHENTICATION_FILTER]: Token validated successfully");
         filterChain.doFilter(request, response);
     }
 
-    private String getTokenFromRequest(HttpServletRequest request) {
-        String bearerToken = request.getHeader(AUTHORIZATION_HEADER);
+    private boolean validatePermittedRoute(String requestRoute) {
+        return Arrays.stream(PERMITTED_ROUTES).anyMatch(permittedRoute -> permittedRoute.contains(requestRoute));
+    }
 
-        if (isBearerTokenValid(bearerToken)) {
-            return bearerToken.substring(BEARER_PREFIX.length());
+    private boolean isAuthenticatedOrNoCookie(Cookie cookie) {
+        if (cookie == null) {
+            return true;
         }
 
-        return null;
-    }
-
-    private boolean isBearerTokenValid(String bearerToken) {
-        return bearerToken != null && bearerToken.startsWith(BEARER_PREFIX);
-    }
-
-    private boolean isAuthenticatedOrNoToken(String token) {
         SecurityContext securityContext = SecurityContextHolder.getContext();
-
-        return securityContext.getAuthentication() != null || token == null;
+        return securityContext.getAuthentication() != null || cookie.getValue() == null;
     }
 
-    private void addAuthenticationToContext(String token) {
-        UserDetails userDetails = getUserDetailsIfTokenValid(token);
-
-        validateUserNotBlocked((User) userDetails);
+    private UserDetails addAuthenticationToContext(String token) {
+        UserDetails userDetails = jwtTokenManager.getUserDetailsIfTokenValidOrThrow(token);
+        customUserDetailsService.validateUserNotBlockedOrThrow(userDetails);
 
         UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                 userDetails,
                 null,
                 userDetails.getAuthorities());
-
         SecurityContextHolder.getContext().setAuthentication(authToken);
-        log.info("[JWT_AUTHENTICATION_FILTER]: Token validated successfully");
+
+        return userDetails;
     }
 
-    private UserDetails getUserDetailsIfTokenValid(String token) {
-        String subject = jwtService.extractSubject(token);
-        UserDetails userDetails = userDetailsService.loadUserByUsername(subject);
+    private boolean updateTokensIfRefreshValid(HttpServletResponse response, HttpServletRequest request) {
+        try {
+            Cookie refreshTokenCookie = cookieService.extractCookieByName(COOKIE_REFRESH_TOKEN, request);
 
-        boolean isTokenValid = jwtService.isTokenValid(token, userDetails);
+            if (refreshTokenCookie == null) {
+                return false;
+            }
 
-        if (isTokenValid) {
-            return userDetails;
-        }
+            UserDetails userDetails = jwtTokenManager.getUserDetailsIfTokenValidOrThrow(refreshTokenCookie.getValue());
+            TokenPayload tokenPayload = jwtTokenManager.generateTokenPayload(userDetails);
+            jwtCookieManager.addTokensToCookie(tokenPayload, response);
 
-        log.error("[JWT_AUTHENTICATION_FILTER]: Token validation failed");
-        throw new TokenNotValidException("Token not valid!");
-    }
+            log.info("[JWT_AUTHENTICATION_FILTER]: Tokens refreshed successfully");
 
-    private void validateUserNotBlocked(User user) {
-        if (user.getStatus() == UserStatus.BLOCKED) {
-            log.error("[JWT_AUTHENTICATION_FILTER]: User {} cannot access this resource because status is {}", user.getId(), UserStatus.BLOCKED);
-            throw new AccessDeniedException("Forbidden, not enough access!");
+            return true;
+        } catch (JwtException exception) {
+            return false;
         }
     }
 }
