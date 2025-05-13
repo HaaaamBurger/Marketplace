@@ -12,11 +12,17 @@
   <div class="bg-light d-flex justify-content-center align-items-center vh-100">
     <div class="card shadow-lg p-4" style="max-width: 550px; width: 100%;">
       <div class="card-body text-center">
-        <h1 class="text-dark fw-bold mb-4" style="font-size: 2.5rem;">401! Something went wrong</h1>
 
-        <div class="list-unstyled text-start text-secondary fs-5 mb-4 text-center">
-          <span th:text="${message}"></span>
+        <h1 class="text-dark fw-bold mb-4" style="font-size: 2.5rem;">
+          <span th:text="${status}">401</span>!
+          <span th:text="${message} ?: 'Something went wrong'">Something went wrong</span>
+        </h1>
+
+        <div class="list-unstyled text-secondary fs-5 mb-4 text-center">
+          <div th:if="${type}"><strong>Type:</strong> <span th:text="${type}"></span></div>
+          <div th:if="${path}"><strong>Path:</strong> <span th:text="${path}"></span></div>
         </div>
+
 
         <a th:href="@{/home}" class="btn btn-outline-primary px-4">← Back to Home</a>
       </div>
