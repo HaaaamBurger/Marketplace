@@ -1,6 +1,7 @@
 package com.marketplace.user.service;
 
 import com.marketplace.usercore.dto.UserRequest;
+import com.marketplace.usercore.dto.UserUpdateRequest;
 import com.marketplace.usercore.model.User;
 import com.marketplace.common.exception.EntityExistsException;
 import com.marketplace.common.exception.EntityNotFoundException;
@@ -139,19 +140,19 @@ public class UserServiceTest {
     public void update_shouldReturnUpdatedUser() {
         String userId = String.valueOf(UUID.randomUUID());
         User user = UserDataBuilder.buildUserWithAllFields().build();
-        UserRequest userRequest = UserRequest.builder()
+        UserUpdateRequest userUpdateRequest = UserUpdateRequest.builder()
                 .email("test1@gmail.com")
                 .role(UserRole.ADMIN)
-                .password("testPassword2")
+                .status(UserStatus.ACTIVE)
                 .build();
 
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
         when(userRepository.save(user)).thenAnswer(invocation -> invocation.getArgument(0));
 
-        User responseUser = userService.update(userId, userRequest);
+        User responseUser = userService.update(userId, userUpdateRequest);
         assertThat(responseUser).isNotNull();
-        assertThat(responseUser.getEmail()).isEqualTo(userRequest.getEmail());
-        assertThat(responseUser.getRole()).isEqualTo(userRequest.getRole());
+        assertThat(responseUser.getEmail()).isEqualTo(userUpdateRequest.getEmail());
+        assertThat(responseUser.getRole()).isEqualTo(userUpdateRequest.getRole());
 
         verify(userRepository).findById(userId);
         verify(userRepository).save(user);
