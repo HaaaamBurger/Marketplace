@@ -1,14 +1,16 @@
 package com.marketplace.user.service;
 
-import com.marketplace.auth.exception.EntityExistsException;
-import com.marketplace.auth.exception.EntityNotFoundException;
-import com.marketplace.auth.repository.UserRepository;
-import com.marketplace.auth.web.model.User;
-import com.marketplace.auth.web.model.UserRole;
-import com.marketplace.auth.web.model.UserStatus;
-import com.marketplace.user.config.UserApplicationConfig;
+import com.marketplace.usercore.dto.UserRequest;
+import com.marketplace.usercore.dto.UserUpdateRequest;
+import com.marketplace.usercore.model.User;
+import com.marketplace.common.exception.EntityExistsException;
+import com.marketplace.common.exception.EntityNotFoundException;
 import com.marketplace.user.util.UserDataBuilder;
-import com.marketplace.user.web.dto.UserRequest;
+import com.marketplace.usercore.config.UserCoreApplicationConfig;
+import com.marketplace.usercore.model.UserRole;
+import com.marketplace.usercore.model.UserStatus;
+import com.marketplace.usercore.repository.UserRepository;
+import com.marketplace.usercore.service.UserService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -25,7 +27,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
 @ActiveProfiles("test")
-@SpringBootTest(classes = UserApplicationConfig.class)
+@SpringBootTest(classes = UserCoreApplicationConfig.class)
 public class UserServiceTest {
 
     @MockitoBean
@@ -138,19 +140,19 @@ public class UserServiceTest {
     public void update_shouldReturnUpdatedUser() {
         String userId = String.valueOf(UUID.randomUUID());
         User user = UserDataBuilder.buildUserWithAllFields().build();
-        UserRequest userRequest = UserRequest.builder()
+        UserUpdateRequest userUpdateRequest = UserUpdateRequest.builder()
                 .email("test1@gmail.com")
                 .role(UserRole.ADMIN)
-                .password("testPassword2")
+                .status(UserStatus.ACTIVE)
                 .build();
 
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
         when(userRepository.save(user)).thenAnswer(invocation -> invocation.getArgument(0));
 
-        User responseUser = userService.update(userId, userRequest);
+        User responseUser = userService.update(userId, userUpdateRequest);
         assertThat(responseUser).isNotNull();
-        assertThat(responseUser.getEmail()).isEqualTo(userRequest.getEmail());
-        assertThat(responseUser.getRole()).isEqualTo(userRequest.getRole());
+        assertThat(responseUser.getEmail()).isEqualTo(userUpdateRequest.getEmail());
+        assertThat(responseUser.getRole()).isEqualTo(userUpdateRequest.getRole());
 
         verify(userRepository).findById(userId);
         verify(userRepository).save(user);

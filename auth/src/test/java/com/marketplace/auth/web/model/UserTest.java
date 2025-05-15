@@ -1,6 +1,7 @@
 package com.marketplace.auth.web.model;
 
 import com.marketplace.auth.web.util.UserDataBuilder;
+import com.marketplace.usercore.model.User;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
