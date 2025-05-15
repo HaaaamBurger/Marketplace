@@ -1,6 +1,5 @@
 package com.marketplace.auth.security;
 
-import com.marketplace.auth.service.JwtCookieManager;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -16,13 +15,10 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class RestAccessDeniedHandler implements AccessDeniedHandler {
 
-    private final JwtCookieManager jwtCookieManager;
-
     @Override
     public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException accessDeniedException) throws IOException {
         log.error("[REST_ACCESS_DENIED_HANDLER]: {}", accessDeniedException.getMessage());
-        jwtCookieManager.deleteTokensFromCookie(response);
-        response.sendRedirect("/sign-in?error=true");
+        response.sendRedirect("/home");
     }
 
 }

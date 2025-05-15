@@ -34,7 +34,7 @@ public final class MongoUserService implements UserService {
         throwIfUserExistsByEmail(userRequest.getEmail());
 
         String encodedPassword = passwordEncoder.encode(userRequest.getPassword());
-        User user = userEntityMapper.mapRequestDtoToEntity(userRequest).toBuilder()
+        User user = userEntityMapper.mapUserRequestDtoToUser(userRequest).toBuilder()
                 .status(UserStatus.ACTIVE)
                 .password(encodedPassword)
                 .build();

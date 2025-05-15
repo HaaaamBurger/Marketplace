@@ -1,6 +1,5 @@
-package com.marketplace.product.web.mapper;
+package com.marketplace.product.mapper;
 
-import com.marketplace.common.mapper.EntityMapper;
 import com.marketplace.product.web.rest.dto.ProductRequest;
 import com.marketplace.product.web.rest.dto.ProductResponse;
 import com.marketplace.product.web.model.Product;
@@ -9,10 +8,9 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
-public class ProductEntityMapper implements EntityMapper<Product, ProductRequest,ProductResponse> {
+public class ProductEntityMapper {
 
-    @Override
-    public ProductResponse mapEntityToResponseDto(Product product) {
+    public ProductResponse mapProductToProductResponseDto(Product product) {
         return ProductResponse.builder()
                 .id(product.getId())
                 .name(product.getName())
@@ -23,8 +21,7 @@ public class ProductEntityMapper implements EntityMapper<Product, ProductRequest
                 .build();
     }
 
-    @Override
-    public Product mapRequestDtoToEntity(ProductRequest productRequest) {
+    public Product mapProductRequestDtoToProduct(ProductRequest productRequest) {
         return Product.builder()
                 .name(productRequest.getName())
                 .price(productRequest.getPrice())
@@ -32,9 +29,9 @@ public class ProductEntityMapper implements EntityMapper<Product, ProductRequest
                 .build();
     }
 
-    public List<ProductResponse> mapEntitiesToResponseDtos(List<Product> products) {
+    public List<ProductResponse> mapProductsToProductResponseDtos(List<Product> products) {
         return products.stream()
-                .map(this::mapEntityToResponseDto)
+                .map(this::mapProductToProductResponseDto)
                 .toList();
     }
 

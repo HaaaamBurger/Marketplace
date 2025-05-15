@@ -58,8 +58,8 @@ public class SecurityConfig {
                 .logout(logout -> logout.deleteCookies(COOKIE_ACCESS_TOKEN, COOKIE_REFRESH_TOKEN).logoutSuccessUrl("/home"))
                 .authorizeHttpRequests(authorizationManagerRequestMatcherRegistry -> authorizationManagerRequestMatcherRegistry
                         .requestMatchers(PERMITTED_ROUTES).permitAll()
-                    .requestMatchers(ADMIN_ROUTES).hasAuthority(UserRole.ADMIN.name())
-                    .anyRequest().authenticated())
+                        .requestMatchers(ADMIN_ROUTES).hasAuthority(UserRole.ADMIN.name())
+                        .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

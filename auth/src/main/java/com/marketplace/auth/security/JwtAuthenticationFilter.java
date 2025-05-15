@@ -1,7 +1,6 @@
 package com.marketplace.auth.security;
 
 import com.marketplace.auth.security.cookie.CookieService;
-import com.marketplace.auth.security.service.CustomUserDetailsService;
 import com.marketplace.auth.service.JwtCookieManager;
 import com.marketplace.auth.service.JwtTokenManager;
 import com.marketplace.auth.web.dto.TokenPayload;
@@ -33,8 +32,6 @@ import static com.marketplace.auth.security.cookie.CookieService.COOKIE_REFRESH_
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    private final CustomUserDetailsService customUserDetailsService;
-
     private final CookieService cookieService;
 
     private final JwtCookieManager jwtCookieManager;
@@ -47,13 +44,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         try {
             Cookie accessTokenCookie = cookieService.extractCookieByName(COOKIE_ACCESS_TOKEN, request);
-            if (isAuthenticatedOrNoCookie(accessTokenCookie)) {
+            SecurityContext securityContext = SecurityContextHolder.getContext();
+
+            if (isAuthenticatedOrNoCookie(securityContext, accessTokenCookie)) {
                 filterChain.doFilter(request, response);
                 return;
             }
 
             String accessToken = accessTokenCookie.getValue();
-
             UserDetails userDetails = validateUserNotBlocked(accessToken);
             if (userDetails == null) {
                 jwtCookieManager.deleteTokensFromCookie(response);
@@ -63,9 +61,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             addAuthenticationToContext(userDetails);
         } catch (JwtException exception) {
-
             boolean refreshValid = updateTokensIfRefreshValid(response, request);
-
             if (refreshValid) {
                 filterChain.doFilter(request, response);
                 return;
@@ -73,14 +69,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             log.error("[JWT_AUTHENTICATION_FILTER]: {}", exception.getMessage());
             jwtCookieManager.deleteTokensFromCookie(response);
-
             filterChain.doFilter(request, response);
             return;
         } catch (UsernameNotFoundException exception) {
-
             jwtCookieManager.deleteTokensFromCookie(response);
             response.sendRedirect("/sign-in?error=true");
-
             return;
         }
 
@@ -88,13 +81,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
-    private boolean isAuthenticatedOrNoCookie(Cookie cookie) {
+    private boolean isAuthenticatedOrNoCookie(SecurityContext securityContext, Cookie cookie) {
         if (cookie == null) {
             return true;
         }
 
-        SecurityContext securityContext = SecurityContextHolder.getContext();
-        return securityContext.getAuthentication() != null || cookie.getValue() == null;
+        return cookie.getValue() == null || securityContext.getAuthentication() != null;
     }
 
     private UserDetails addAuthenticationToContext(UserDetails userDetails) {

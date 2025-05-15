@@ -5,7 +5,7 @@ import com.marketplace.product.web.rest.dto.ProductResponse;
 import com.marketplace.product.web.rest.dto.ProductRequest;
 import com.marketplace.product.web.model.Product;
 
-import com.marketplace.product.web.mapper.ProductEntityMapper;
+import com.marketplace.product.mapper.ProductEntityMapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -25,19 +25,19 @@ public class ProductController {
     @GetMapping
     public ResponseEntity<List<ProductResponse>> getAllProducts() {
         List<Product> products = productService.findAll();
-        return ResponseEntity.ok(productEntityMapper.mapEntitiesToResponseDtos(products));
+        return ResponseEntity.ok(productEntityMapper.mapProductsToProductResponseDtos(products));
     }
 
     @GetMapping("/{productId}")
     public ResponseEntity<ProductResponse> getProductById(@PathVariable String productId) {
         Product product = productService.findById(productId);
-        return ResponseEntity.ok(productEntityMapper.mapEntityToResponseDto(product));
+        return ResponseEntity.ok(productEntityMapper.mapProductToProductResponseDto(product));
     }
 
     @PostMapping
     public ResponseEntity<ProductResponse> createProduct(@Valid @RequestBody ProductRequest productRequest) {
         Product product = productService.create(productRequest);
-        return ResponseEntity.ok(productEntityMapper.mapEntityToResponseDto(product));
+        return ResponseEntity.ok(productEntityMapper.mapProductToProductResponseDto(product));
     }
 
     @PutMapping("/{productId}")
@@ -46,7 +46,7 @@ public class ProductController {
              @Valid @RequestBody ProductRequest productRequest
     ) {
         Product product = productService.update(productId, productRequest);
-        return ResponseEntity.ok(productEntityMapper.mapEntityToResponseDto(product));
+        return ResponseEntity.ok(productEntityMapper.mapProductToProductResponseDto(product));
     }
 
     @DeleteMapping("/{productId}")

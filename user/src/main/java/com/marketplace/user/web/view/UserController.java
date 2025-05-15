@@ -29,7 +29,7 @@ public class UserController {
 
     @GetMapping
     public String getAll(Model model) {
-        List<UserResponse> userResponses = userEntityMapper.mapEntitiesToResponseDtos(userService.findAll());
+        List<UserResponse> userResponses = userEntityMapper.mapUsersToUserResponseDtos(userService.findAll());
         model.addAttribute("users", userResponses);
         model.addAttribute("userRequest", UserRequest.builder().build());
 
@@ -50,11 +50,7 @@ public class UserController {
     @GetMapping("/update/{userId}")
     public String getUpdateUser(Model model, @PathVariable String userId) {
         User user = userService.findById(userId);
-        model.addAttribute("userUpdateRequest", UserUpdateRequest.builder()
-                        .email(user.getEmail())
-                        .status(user.getStatus())
-                        .role(user.getRole())
-                .build());
+        model.addAttribute("userUpdateRequest", userEntityMapper.mapUserEntityToUserUpdateRequestDto(user));
 
         return "user-edit";
     }
