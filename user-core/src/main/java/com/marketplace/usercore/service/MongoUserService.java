@@ -56,6 +56,8 @@ public final class MongoUserService implements UserService {
     public User update(String userId, UserUpdateRequest userUpdateRequest) {
         User user = throwIfUserNotFoundById(userId);
 
+        throwIfUserWithSameEmailExists(userUpdateRequest.getEmail());
+
         Optional.ofNullable(userUpdateRequest.getEmail()).ifPresent(user::setEmail);
         Optional.ofNullable(userUpdateRequest.getStatus()).ifPresent(user::setStatus);
         Optional.ofNullable(userUpdateRequest.getRole()).ifPresent(user::setRole);
@@ -97,5 +99,11 @@ public final class MongoUserService implements UserService {
                     log.error("[MONGO_USER_SERVICE]: User not found by id: {}", userId);
                     return new EntityNotFoundException("User not found!");
                 });
+    }
+
+    public void throwIfUserWithSameEmailExists(String email) {
+        if (userRepository.existsByEmail(email)) {
+            throw new EntityExistsException("User with this email already exists");
+        }
     }
 }

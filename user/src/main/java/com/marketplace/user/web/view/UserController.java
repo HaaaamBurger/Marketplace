@@ -1,5 +1,6 @@
 package com.marketplace.user.web.view;
 
+import com.marketplace.user.service.validator.UserUpdateValidator;
 import com.marketplace.usercore.dto.UserRequest;
 import com.marketplace.usercore.dto.UserResponse;
 import com.marketplace.usercore.dto.UserUpdateRequest;
@@ -10,6 +11,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,6 +22,8 @@ import java.util.List;
 public class UserController {
 
     private final UserService userService;
+
+    private final UserUpdateValidator userUpdateValidator;
 
     private final UserEntityMapper userEntityMapper;
 
@@ -57,10 +61,16 @@ public class UserController {
 
     @PutMapping("/update/{userId}")
     public String updateUser(
-            Model model,
+            @Valid @ModelAttribute UserUpdateRequest userUpdateRequest,
             @PathVariable String userId,
-            @Valid @ModelAttribute UserUpdateRequest userUpdateRequest
+            BindingResult bindingResult,
+            Model model
     ) {
+        userUpdateValidator.validate(userUpdateRequest, bindingResult);
+        if (bindingResult.hasErrors()) {
+            return "user-edit";
+        }
+
         model.addAttribute("userId", userId);
         userService.update(userId, userUpdateRequest);
         return "redirect:/users";

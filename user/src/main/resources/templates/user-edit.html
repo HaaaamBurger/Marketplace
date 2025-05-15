@@ -13,6 +13,11 @@
         <div class="mb-3">
             <label for="email" class="form-label">Email</label>
             <input type="email" id="email" class="form-control" th:field="*{email}" required />
+
+            <div th:if="${#fields.hasErrors('email')}">
+                <a th:errors="*{email}" class="text-danger"></a>
+            </div>
+
         </div>
 
         <div class="mb-3">

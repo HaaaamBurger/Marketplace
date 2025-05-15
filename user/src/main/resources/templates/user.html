@@ -16,18 +16,27 @@
   </a>
 
   <div class="card">
-    <div class="card-header">
-      <h4>User Information</h4>
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <h4 class="mb-0">User Information</h4>
+      <a th:href="@{/users/update/{id}(id=${authUser.id})}" class="btn btn-primary btn-sm text-white">
+        Edit
+      </a>
     </div>
     <div class="card-body">
       <div class="d-flex align-items-center mb-3">
         <img src="https://cdn-icons-png.flaticon.com/512/847/847969.png" alt="User Icon" width="50" height="50" class="rounded-circle me-3">
       </div>
       <p><strong>Email:</strong> <span th:text="${authUser.email}">Email here</span></p>
-      <p><strong>Role:</strong> <span th:text="${authUser.role}">Role here</span></p>
-      <p><strong>Status:</strong> <span th:text="${authUser.status}">Status here</span></p>
+      <p><strong>Role:</strong>
+        <span class="badge bg-primary" th:text="${authUser.role}">ROLE</span>
+      </p>
+      <p><strong>Status:</strong>
+        <span th:class="'badge ' + (${authUser.status.name()} == 'ACTIVE' ? 'bg-success' : 'bg-secondary')"
+              th:text="${authUser.status}">STATUS</span>
+      </p>
     </div>
   </div>
+
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js"
