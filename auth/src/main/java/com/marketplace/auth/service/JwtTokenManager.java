@@ -31,6 +31,7 @@ public class JwtTokenManager {
 
     public UserDetails getUserDetailsIfTokenValidOrThrow(String token) {
         String subject = jwtService.extractSubject(token);
+
         UserDetails userDetails = userDetailsService.loadUserByUsername(subject);
 
         boolean isTokenValid = jwtService.isTokenValid(token, userDetails);

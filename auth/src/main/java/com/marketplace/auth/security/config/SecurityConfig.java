@@ -15,6 +15,9 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import static com.marketplace.auth.security.cookie.CookieService.COOKIE_ACCESS_TOKEN;
+import static com.marketplace.auth.security.cookie.CookieService.COOKIE_REFRESH_TOKEN;
+
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
@@ -30,6 +33,7 @@ public class SecurityConfig {
     public static final String[] PERMITTED_ROUTES = new String[] {
             "/sign-in",
             "/sign-up",
+            "/logout",
             "/home",
             "/error",
             "/swagger-ui/**",
@@ -51,10 +55,11 @@ public class SecurityConfig {
                         .authenticationEntryPoint(restAuthenticationEntryPoint)
                         .accessDeniedHandler(restAccessDeniedHandler)
                 )
+                .logout(logout -> logout.deleteCookies(COOKIE_ACCESS_TOKEN, COOKIE_REFRESH_TOKEN).logoutSuccessUrl("/home"))
                 .authorizeHttpRequests(authorizationManagerRequestMatcherRegistry -> authorizationManagerRequestMatcherRegistry
-                    .requestMatchers(PERMITTED_ROUTES).permitAll()
-                    .requestMatchers(ADMIN_ROUTES).hasAuthority(UserRole.ADMIN.name())
-                    .anyRequest().authenticated())
+                        .requestMatchers(PERMITTED_ROUTES).permitAll()
+                        .requestMatchers(ADMIN_ROUTES).hasAuthority(UserRole.ADMIN.name())
+                        .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

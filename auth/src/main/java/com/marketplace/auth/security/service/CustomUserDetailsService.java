@@ -1,11 +1,8 @@
 package com.marketplace.auth.security.service;
 
-import com.marketplace.usercore.model.User;
-import com.marketplace.usercore.model.UserStatus;
 import com.marketplace.usercore.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -27,14 +24,4 @@ public class CustomUserDetailsService implements UserDetailsService {
                     return new UsernameNotFoundException("User does not exist!");
                 });
     }
-
-    public void validateUserNotBlockedOrThrow(UserDetails userDetails) {
-        User user = (User) userDetails;
-
-        if (user.getStatus() == UserStatus.BLOCKED) {
-            log.error("[CUSTOM_USER_DETAILS_SERVICE]: User {} cannot access this resource. Status is {}", user.getId(), UserStatus.BLOCKED);
-            throw new AccessDeniedException("Forbidden, not enough access!");
-        }
-    }
-
 }

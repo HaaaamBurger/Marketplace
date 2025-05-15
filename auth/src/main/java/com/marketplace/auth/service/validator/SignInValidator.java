@@ -2,6 +2,7 @@ package com.marketplace.auth.service.validator;
 
 import com.marketplace.auth.web.dto.AuthRequest;
 import com.marketplace.usercore.model.User;
+import com.marketplace.usercore.model.UserStatus;
 import com.marketplace.usercore.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -29,7 +30,13 @@ public class SignInValidator implements Validator {
         AuthRequest authRequest = (AuthRequest) target;
 
         Optional<User> userOptional = findUserOrRejectByEmail(authRequest.getEmail(), errors);
-        userOptional.ifPresent(user -> validatePasswordMatching(authRequest.getPassword(), user, errors));
+
+        userOptional.ifPresent(user -> {
+            if (validateUserBlocked(user, errors)) {
+                return;
+            }
+            validatePasswordMatching(authRequest.getPassword(), user, errors);
+        });
     }
 
     private Optional<User> findUserOrRejectByEmail(String email, Errors errors) {
@@ -46,7 +53,7 @@ public class SignInValidator implements Validator {
         return user;
     }
 
-    private void validatePasswordMatching(String rawPassword, User user, Errors errors) {
+    private boolean validatePasswordMatching(String rawPassword, User user, Errors errors) {
         boolean matches = passwordEncoder.matches(rawPassword, user.getPassword());
 
         if (!matches) {
@@ -54,7 +61,24 @@ public class SignInValidator implements Validator {
                     "password",
                     "error.password",
                     "Passwords not matching");
+
+            return false;
         }
+
+        return true;
     }
+
+    private boolean validateUserBlocked(User user, Errors errors) {
+        if (user.getStatus() == UserStatus.BLOCKED) {
+            errors.reject(
+                    "error.status",
+                    "User is blocked");
+
+            return true;
+        }
+
+        return false;
+    }
+
 
 }

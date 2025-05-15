@@ -64,7 +64,7 @@ public class JwtAuthenticationService implements AuthenticationService {
     @Override
     public void signUp(AuthRequest authRequest) {
 
-        mongoUserService.ifUserExistsByEmailThrow(authRequest.getEmail());
+        mongoUserService.throwIfUserExistsByEmail(authRequest.getEmail());
         String encodedPassword = passwordEncoder.encode(authRequest.getPassword());
 
         userRepository.save(User.builder()

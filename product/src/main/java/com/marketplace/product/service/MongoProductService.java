@@ -5,7 +5,7 @@ import com.marketplace.common.exception.EntityNotFoundException;
 import com.marketplace.product.web.rest.dto.ProductRequest;
 import com.marketplace.product.web.model.Product;
 import com.marketplace.product.repository.ProductRepository;
-import com.marketplace.product.web.mapper.ProductEntityMapper;
+import com.marketplace.product.mapper.ProductEntityMapper;
 import com.marketplace.usercore.model.User;
 import com.marketplace.usercore.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -33,7 +33,7 @@ public final class MongoProductService implements ProductService {
     public Product create(ProductRequest productRequest) {
         User authenticatedUser = authHelper.getAuthenticatedUser();
 
-        Product product = productEntityMapper.mapRequestDtoToEntity(productRequest).toBuilder()
+        Product product = productEntityMapper.mapProductRequestDtoToProduct(productRequest).toBuilder()
                 .ownerId(authenticatedUser.getId())
                 .build();
 

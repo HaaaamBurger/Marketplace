@@ -4,7 +4,7 @@ import com.marketplace.order.service.OrderService;
 import com.marketplace.order.web.model.Order;
 import com.marketplace.order.web.dto.OrderRequest;
 import com.marketplace.order.web.dto.OrderResponse;
-import com.marketplace.order.web.mapper.OrderEntityMapper;
+import com.marketplace.order.mapper.OrderEntityMapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -26,20 +26,20 @@ public class OrderController {
     @GetMapping
     public ResponseEntity<List<OrderResponse>> getAllOrders() {
         List<Order> orders = orderService.findAll();
-        return ResponseEntity.ok(orderEntityMapper.mapEntitiesToResponseDtos(orders));
+        return ResponseEntity.ok(orderEntityMapper.mapOrdersToOrderResponseDtos(orders));
     }
 
     @PreAuthorize("hasAuthority('ADMIN')")
     @PostMapping
     public ResponseEntity<OrderResponse> createOrder(@Valid @RequestBody OrderRequest orderRequest) {
         Order order = orderService.create(orderRequest);
-        return ResponseEntity.ok(orderEntityMapper.mapEntityToResponseDto(order));
+        return ResponseEntity.ok(orderEntityMapper.mapOrderToOrderResponseDto(order));
     }
 
     @GetMapping("/{orderId}")
     public ResponseEntity<OrderResponse> getOrderById(@PathVariable String orderId) {
         Order order = orderService.findById(orderId);
-        return ResponseEntity.ok(orderEntityMapper.mapEntityToResponseDto(order));
+        return ResponseEntity.ok(orderEntityMapper.mapOrderToOrderResponseDto(order));
     }
 
     @PreAuthorize("hasAuthority('ADMIN')")
@@ -49,13 +49,13 @@ public class OrderController {
             @Valid @RequestBody OrderRequest orderRequest
     ) {
         Order order = orderService.update(orderId, orderRequest);
-        return ResponseEntity.ok(orderEntityMapper.mapEntityToResponseDto(order));
+        return ResponseEntity.ok(orderEntityMapper.mapOrderToOrderResponseDto(order));
     }
 
     @PutMapping("/products/{productId}")
     public ResponseEntity<OrderResponse> addProductToOrder(@PathVariable String productId) {
         Order order = orderService.addProductToOrder(productId);
-        return ResponseEntity.ok(orderEntityMapper.mapEntityToResponseDto(order));
+        return ResponseEntity.ok(orderEntityMapper.mapOrderToOrderResponseDto(order));
     }
 
     @PreAuthorize("hasAuthority('ADMIN')")

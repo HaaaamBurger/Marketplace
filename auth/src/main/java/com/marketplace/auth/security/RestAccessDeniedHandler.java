@@ -18,9 +18,7 @@ public class RestAccessDeniedHandler implements AccessDeniedHandler {
     @Override
     public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException accessDeniedException) throws IOException {
         log.error("[REST_ACCESS_DENIED_HANDLER]: {}", accessDeniedException.getMessage());
-
-        response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-        response.sendRedirect("/sign-in?error=true");
+        response.sendRedirect("/home");
     }
 
 }

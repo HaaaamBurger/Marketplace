@@ -4,6 +4,10 @@ spring:
   data:
     mongodb:
       uri: ${MONGO_DB_URI}
+  mvc:
+    hiddenmethod:
+      filter:
+        enabled: true
 security:
   jwt:
     secret-key: ${JWT_SECRET_KEY}

@@ -96,7 +96,6 @@ public class MainExceptionHandler {
         );
     }
 
-
     private ModelAndView buildErrorResponseModelAndView(int status, String message, ExceptionType exceptionType, String path) {
         log.error("[MAIN_EXCEPTION_HANDLER]: {}", message);
 
