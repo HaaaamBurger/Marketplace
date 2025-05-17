@@ -1,12 +1,12 @@
 package com.marketplace.product.service;
 
-import com.marketplace.auth.service.AuthHelper;
 import com.marketplace.common.exception.EntityNotFoundException;
 import com.marketplace.product.web.rest.dto.ProductRequest;
 import com.marketplace.product.web.model.Product;
 import com.marketplace.product.repository.ProductRepository;
 import com.marketplace.product.mapper.ProductEntityMapper;
 import com.marketplace.usercore.model.User;
+import com.marketplace.usercore.security.ProfileService;
 import com.marketplace.usercore.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,13 +25,13 @@ public final class MongoProductService implements ProductService {
 
     private final ProductEntityMapper productEntityMapper;
 
-    private final AuthHelper authHelper;
+    private final ProfileService profileService;
 
     private final UserService userService;
 
     @Override
     public Product create(ProductRequest productRequest) {
-        User authenticatedUser = authHelper.getAuthenticatedUser();
+        User authenticatedUser = profileService.getAuthenticatedUser();
 
         Product product = productEntityMapper.mapProductRequestDtoToProduct(productRequest).toBuilder()
                 .ownerId(authenticatedUser.getId())
@@ -77,7 +77,7 @@ public final class MongoProductService implements ProductService {
     }
 
     public Product validateProductAccessOrThrow(String productId) {
-        User authenticatedUser = authHelper.getAuthenticatedUser();
+        User authenticatedUser = profileService.getAuthenticatedUser();
         Product product = findProductOrThrow(productId);
 
         if (userService.validateEntityOwnerOrAdmin(authenticatedUser, product.getOwnerId())) {

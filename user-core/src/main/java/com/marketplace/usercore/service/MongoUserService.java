@@ -4,6 +4,7 @@ import com.marketplace.common.exception.EntityExistsException;
 import com.marketplace.common.exception.EntityNotFoundException;
 import com.marketplace.usercore.dto.UserUpdateRequest;
 import com.marketplace.usercore.model.UserRole;
+import com.marketplace.usercore.security.ProfileService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import com.marketplace.usercore.dto.UserRequest;
@@ -26,6 +27,8 @@ public final class MongoUserService implements UserService {
     private final UserRepository userRepository;
 
     private final PasswordEncoder passwordEncoder;
+
+    private final ProfileService profileService;
 
     private final UserEntityMapper userEntityMapper;
 
@@ -54,15 +57,20 @@ public final class MongoUserService implements UserService {
 
     @Override
     public User update(String userId, UserUpdateRequest userUpdateRequest) {
-        User user = throwIfUserNotFoundById(userId);
+        User userForUpdate = throwIfUserNotFoundById(userId);
 
+        User authenticatedUser = profileService.getAuthenticatedUser();
+        validateEntityOwnerOrAdmin(authenticatedUser, userId);
         throwIfUserWithSameEmailExists(userUpdateRequest.getEmail());
 
-        Optional.ofNullable(userUpdateRequest.getEmail()).ifPresent(user::setEmail);
-        Optional.ofNullable(userUpdateRequest.getStatus()).ifPresent(user::setStatus);
-        Optional.ofNullable(userUpdateRequest.getRole()).ifPresent(user::setRole);
+        Optional.ofNullable(userUpdateRequest.getEmail()).ifPresent(userForUpdate::setEmail);
 
-        return userRepository.save(user);
+        if (authenticatedUser.getRole() == UserRole.ADMIN) {
+            Optional.ofNullable(userUpdateRequest.getRole()).ifPresent(userForUpdate::setRole);
+            Optional.ofNullable(userUpdateRequest.getStatus()).ifPresent(userForUpdate::setStatus);
+        }
+
+        return userRepository.save(userForUpdate);
     }
 
     @Override
@@ -80,17 +88,16 @@ public final class MongoUserService implements UserService {
     }
 
     @Override
-    public boolean validateEntityOwnerOrAdmin(User user, String ownerId) {
-        return Objects.equals(user.getId(), ownerId) || user.getRole() == UserRole.ADMIN;
+    public boolean validateEntityOwnerOrAdmin(User authUser, String userId) {
+        return Objects.equals(authUser.getId(), userId) || authUser.getRole() == UserRole.ADMIN;
     }
 
     public void throwIfUserExistsByEmail(String email) {
-        Optional<User> userOptional = userRepository.findByEmail(email);
-
-        if (userOptional.isPresent()) {
+        userRepository.findByEmail(email).ifPresent(user -> {
             log.error("[MONGO_USER_SERVICE]: User already exists by email: {}", email);
             throw new EntityExistsException("User already exists!");
-        }
+        });
+
     }
 
     public User throwIfUserNotFoundById(String userId) {
@@ -102,6 +109,12 @@ public final class MongoUserService implements UserService {
     }
 
     public void throwIfUserWithSameEmailExists(String email) {
+        User authenticatedUser = profileService.getAuthenticatedUser();
+
+        if (authenticatedUser.getEmail().equals(email)) {
+            return;
+        }
+
         if (userRepository.existsByEmail(email)) {
             throw new EntityExistsException("User with this email already exists");
         }

@@ -9,6 +9,7 @@ import com.marketplace.usercore.model.User;
 import com.marketplace.usercore.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -27,6 +28,7 @@ public class UserController {
 
     private final UserEntityMapper userEntityMapper;
 
+    @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping
     public String getAll(Model model) {
         List<UserResponse> userResponses = userEntityMapper.mapUsersToUserResponseDtos(userService.findAll());
@@ -37,10 +39,11 @@ public class UserController {
     }
 
     @GetMapping("/profile")
-    public String getById() {
+    public String getProfile() {
         return "user";
     }
 
+    @PreAuthorize("hasAuthority('ADMIN')")
     @PostMapping
     public String createUser(@Valid @ModelAttribute UserRequest userRequest) {
         userService.create(userRequest);
@@ -72,6 +75,7 @@ public class UserController {
         return "redirect:/users";
     }
 
+    @PreAuthorize("hasAuthority('ADMIN')")
     @DeleteMapping("/{userId}")
     public String deleteUser(@PathVariable String userId) {
         userService.delete(userId);

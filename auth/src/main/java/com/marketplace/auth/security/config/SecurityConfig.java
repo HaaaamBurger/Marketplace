@@ -43,7 +43,6 @@ public class SecurityConfig {
     };
 
     private static final String[] ADMIN_ROUTES = new String[] {
-            "/users/**"
     };
 
     @Bean

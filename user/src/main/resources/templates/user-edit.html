@@ -22,7 +22,10 @@
 
         <div class="mb-3">
             <label for="status" class="form-label">Status</label>
-            <select id="status" class="form-select" th:field="*{status}">
+            <select  id="status"
+                     th:attr="disabled=${authUser.getRole().name() == 'USER'}"
+                     class="form-select"
+                     th:field="*{status}">
                 <option value="ACTIVE">Active</option>
                 <option value="BLOCKED">Blocked</option>
             </select>
@@ -30,7 +33,10 @@
 
         <div class="mb-3">
             <label for="role" class="form-label">Role</label>
-            <select id="role" class="form-select" th:field="*{role}">
+            <select id="role"
+                    th:attr="disabled=${authUser.getRole().name() == 'USER'}"
+                    class="form-select"
+                    th:field="*{role}">
                 <option value="USER">User</option>
                 <option value="ADMIN">Admin</option>
             </select>

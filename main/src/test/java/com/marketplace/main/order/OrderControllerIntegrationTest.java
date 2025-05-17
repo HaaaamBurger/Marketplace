@@ -1,7 +1,6 @@
 package com.marketplace.main.order;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.marketplace.auth.service.AuthHelper;
 import com.marketplace.order.repository.OrderRepository;
 import com.marketplace.product.repository.ProductRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -29,9 +28,6 @@ class OrderControllerIntegrationTest {
 
     @Autowired
     private ApplicationContext applicationContext;
-
-    @Autowired
-    private AuthHelper authHelper;
 
     @Autowired
     private ObjectMapper objectMapper;

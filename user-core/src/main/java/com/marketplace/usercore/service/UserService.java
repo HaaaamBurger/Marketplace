@@ -22,5 +22,5 @@ public interface UserService {
 
     void delete(String userId);
 
-    boolean validateEntityOwnerOrAdmin(User user, String ownerId);
+    boolean validateEntityOwnerOrAdmin(User authUser, String userId);
 }

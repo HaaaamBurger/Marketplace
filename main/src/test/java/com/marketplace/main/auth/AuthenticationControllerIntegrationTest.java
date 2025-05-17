@@ -3,11 +3,12 @@ package com.marketplace.main.auth;
 import com.marketplace.auth.web.dto.AuthRequest;
 import com.marketplace.main.exception.MainExceptionHandler;
 import com.marketplace.auth.security.service.JwtService;
-import com.marketplace.main.util.AuthRequestDataBuilder;
-import com.marketplace.main.util.UserDataBuilder;
+import com.marketplace.main.util.builder.AuthRequestDataBuilder;
+import com.marketplace.main.util.builder.UserDataBuilder;
 import com.marketplace.usercore.model.User;
 import com.marketplace.usercore.repository.UserRepository;
 import jakarta.servlet.http.Cookie;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +21,7 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.servlet.ModelAndView;
 
+import java.util.Map;
 import java.util.Optional;
 
 import static com.marketplace.auth.security.cookie.CookieService.COOKIE_ACCESS_TOKEN;
@@ -103,10 +105,9 @@ class AuthenticationControllerIntegrationTest {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        ModelAndView modelAndView = mvcResult.getModelAndView();
-        assertThat(modelAndView).isNotNull();
-        assertThat(modelAndView.getModel()).isNotNull();
-        BindingResult bindingResult = (BindingResult) modelAndView.getModel().get("org.springframework.validation.BindingResult.authRequest");
+        Map<String, Object> model = requireModel(mvcResult);
+
+        BindingResult bindingResult = (BindingResult) model.get("org.springframework.validation.BindingResult.authRequest");
         assertThat(bindingResult.getFieldError("email")).isNotNull();
     }
 
@@ -129,10 +130,9 @@ class AuthenticationControllerIntegrationTest {
                 .andExpect(model().hasErrors())
                 .andReturn();
 
-        ModelAndView modelAndView = mvcResult.getModelAndView();
-        assertThat(modelAndView).isNotNull();
-        assertThat(modelAndView.getModel()).isNotNull();
-        BindingResult bindingResult = (BindingResult) modelAndView.getModel().get("org.springframework.validation.BindingResult.authRequest");
+        Map<String, Object> model = requireModel(mvcResult);
+
+        BindingResult bindingResult = (BindingResult) model.get("org.springframework.validation.BindingResult.authRequest");
         assertThat(bindingResult.getFieldError("password")).isNotNull();
 
         Cookie accessCookieAccess = mvcResult.getResponse().getCookie(COOKIE_ACCESS_TOKEN);
@@ -179,11 +179,20 @@ class AuthenticationControllerIntegrationTest {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        ModelAndView modelAndView = mvcResult.getModelAndView();
-        assertThat(modelAndView).isNotNull();
-        assertThat(modelAndView.getModel()).isNotNull();
-        BindingResult bindingResult = (BindingResult) modelAndView.getModel().get("org.springframework.validation.BindingResult.authRequest");
+        Map<String, Object> model = requireModel(mvcResult);
+
+        BindingResult bindingResult = (BindingResult) model.get("org.springframework.validation.BindingResult.authRequest");
         assertThat(bindingResult.getFieldError("email")).isNotNull();
+    }
+
+    private Map<String, Object> requireModel(MvcResult mvcResult) {
+        ModelAndView modelAndView = mvcResult.getModelAndView();
+        Assertions.assertThat(modelAndView).isNotNull();
+
+        Map<String, Object> model = modelAndView.getModel();
+        Assertions.assertThat(model).isNotNull();
+
+        return model;
     }
 
 }

@@ -1,10 +1,18 @@
 package com.marketplace.main.user;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.marketplace.auth.service.AuthHelper;
 import com.marketplace.main.exception.MainExceptionHandler;
+import com.marketplace.main.util.AuthHelper;
+import com.marketplace.main.util.builder.UserDataBuilder;
+import com.marketplace.main.util.builder.UserRequestDataBuilder;
+import com.marketplace.usercore.dto.UserRequest;
+import com.marketplace.usercore.dto.UserResponse;
+import com.marketplace.usercore.model.User;
+import com.marketplace.usercore.model.UserRole;
 import com.marketplace.usercore.repository.UserRepository;
+import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -13,6 +21,17 @@ import org.springframework.context.annotation.Import;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+import static org.assertj.core.api.Assertions.as;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -38,67 +57,85 @@ public class UserControllerIntegrationTest {
     private ApplicationContext applicationContext;
 
     @BeforeEach
-    void setUp() {
+    public void setUp() {
         applicationContext.getBeansOfType(MongoRepository.class)
                 .values()
                 .forEach(MongoRepository::deleteAll);
     }
 
-//    @Test
-//    public void findById_ThenReturnUser() throws Exception {
-//        AuthHelper.AuthHelperResponse adminAuth = authHelper.createAdminAuth();
-//        User user = UserDataBuilder.buildUserWithAllFields().build();
-//
-//        userRepository.save(user);
-//
-//        String response = mockMvc.perform(get("/users/{userId}", user.getId())
-//                        .header(AUTHORIZATION_HEADER, adminAuth.getToken()))
-//                .andExpect(status().isOk())
-//                .andReturn().getResponse().getContentAsString();
-//
-//        User responseUser = objectMapper.readValue(response, User.class);
-//
-//        assertThat(responseUser).isNotNull();
-//        assertThat(responseUser.getId()).isEqualTo(user.getId());
-//    }
-//
-//    @Test
-//    public void findById_ThenThrowException_WhenUserNotFound() throws Exception {
-//        AuthHelper.AuthHelperResponse adminAuth = authHelper.createAdminAuth();
-//        String userId = String.valueOf(UUID.randomUUID());
-//
-//        String response = mockMvc.perform(get("/users/{userId}", userId)
-//                        .header(AUTHORIZATION_HEADER, adminAuth.getToken()))
-//                .andExpect(status().isNotFound())
-//                .andReturn().getResponse().getContentAsString();
-//
-//        ExceptionResponse exceptionResponse = objectMapper.readValue(response, ExceptionResponse.class);
-//
-//        assertThat(exceptionResponse).isNotNull();
-//        assertThat(exceptionResponse.getStatus()).isEqualTo(HttpStatus.NOT_FOUND.value());
-//        assertThat(exceptionResponse.getType()).isEqualTo(ExceptionType.WEB);
-//        assertThat(exceptionResponse.getMessage()).isEqualTo("User not found!");
-//        assertThat(exceptionResponse.getPath()).isEqualTo("/users/%s", userId);
-//    }
-//
-//    @Test
-//    public void createUser_shouldReturnCreatedUser() throws Exception {
-//        AuthHelper.AuthHelperResponse adminAuth = authHelper.createAdminAuth();
-//        UserRequest userRequest = UserRequestDataBuilder.withAllFields().build();
-//
-//        String response = mockMvc.perform(post("/users")
-//                        .header(AUTHORIZATION_HEADER, adminAuth.getToken())
-//                        .contentType(MediaType.APPLICATION_JSON)
-//                        .content(objectMapper.writeValueAsString(userRequest)))
-//                .andExpect(status().isOk())
-//                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-//                .andReturn().getResponse().getContentAsString();
-//
-//        User responseUser = objectMapper.readValue(response, User.class);
-//
-//        assertThat(responseUser).isNotNull();
-//        assertThat(responseUser.getEmail()).isEqualTo(userRequest.getEmail());
-//    }
+    @Test
+    public void getProfile_ThenReturnUser() throws Exception {
+        User user = UserDataBuilder.buildUserWithAllFields()
+                .password(passwordEncoder.encode("testPassword1"))
+                .build();
+        User user1 = UserDataBuilder.buildUserWithAllFields()
+                .email("test1@gmail.com")
+                .build();
+        Cookie cookie = authHelper.signIn(user, mockMvc);
+
+        userRepository.save(user1);
+
+        MvcResult mvcResult = mockMvc.perform(get("/users/profile")
+                        .cookie(cookie))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        Map<String, Object> model = authHelper.requireModel(mvcResult);
+
+        User modelUser = (User) model.get("authUser");
+
+        assertThat(modelUser).isNotNull();
+        assertThat(modelUser.getEmail()).isEqualTo(user.getEmail());
+    }
+
+    @Test
+    public void createUser_shouldRedirectToUsers() throws Exception {
+        User user = UserDataBuilder.buildUserWithAllFields()
+                .role(UserRole.ADMIN)
+                .password(passwordEncoder.encode("testPassword1"))
+                .build();
+        UserRequest userRequest = UserRequestDataBuilder.withAllFields()
+                .email("test1@gmail.com")
+                .build();
+
+        Cookie cookie = authHelper.signIn(user, mockMvc);
+
+        mockMvc.perform(post("/users")
+                        .cookie(cookie)
+                        .param("email", userRequest.getEmail())
+                        .param("role", String.valueOf(userRequest.getRole()))
+                        .param("password", String.valueOf(userRequest.getPassword())))
+                .andExpect(status().is3xxRedirection());
+
+        Optional<User> optionalUser = userRepository.findByEmail(userRequest.getEmail());
+
+        assertThat(optionalUser).isPresent();
+        assertThat(optionalUser.get().getEmail()).isEqualTo(userRequest.getEmail());
+    }
+
+    @Test
+    public void createUser_shouldRedirectToHome_WhenNotAdmin() throws Exception {
+        User user = UserDataBuilder.buildUserWithAllFields()
+                .password(passwordEncoder.encode("testPassword1"))
+                .build();
+        UserRequest userRequest = UserRequestDataBuilder.withAllFields()
+                .email("test1@gmail.com")
+                .build();
+
+        Cookie cookie = authHelper.signIn(user, mockMvc);
+
+        MvcResult mvcResult = mockMvc.perform(post("/users")
+                        .cookie(cookie)
+                        .param("email", userRequest.getEmail())
+                        .param("role", String.valueOf(userRequest.getRole()))
+                        .param("password", String.valueOf(userRequest.getPassword())))
+                .andExpect(status().is3xxRedirection()).andReturn();
+
+        String redirectedUrl = mvcResult.getResponse().getRedirectedUrl();
+        assertThat(redirectedUrl).isNotNull();
+        assertThat(redirectedUrl).isEqualTo("/home");
+    }
+
 //
 //    @Test
 //    public void createUser_WhenRoleUser_ThenForbidden() throws Exception {
@@ -145,33 +182,33 @@ public class UserControllerIntegrationTest {
 //        assertThat(exceptionResponse.getPath()).isEqualTo("/users");
 //    }
 //
-//    @Test
-//    public void findAll_ThenReturnAllUsers() throws Exception {
-//        AuthHelper.AuthHelperResponse adminAuth = authHelper.createAdminAuth();
-//        User user1 = UserDataBuilder.buildUserWithAllFields()
-//                .email("test1@gmail.com")
-//                .build();
-//        User user2 = UserDataBuilder.buildUserWithAllFields()
-//                .email("test2@gmail.com")
-//                .build();
-//
-//        userRepository.saveAll(List.of(user1, user2));
-//
-//        String response = mockMvc.perform(get("/users")
-//                        .header(AUTHORIZATION_HEADER, adminAuth.getToken()))
-//                .andExpect(status().isOk())
-//                .andReturn().getResponse().getContentAsString();
-//
-//        List<User> usersResponse = objectMapper.readValue(response, new TypeReference<>() {});
-//
-//        assertThat(usersResponse).isNotNull();
-//        assertThat(usersResponse.size()).isEqualTo(3);
-//        assertThat(usersResponse.get(0).getRole()).isEqualTo(UserRole.ADMIN);
-//        assertThat(usersResponse.get(1).getId()).isEqualTo(user1.getId());
-//        assertThat(usersResponse.get(1).getEmail()).isEqualTo(user1.getEmail());
-//        assertThat(usersResponse.get(2).getId()).isEqualTo(user2.getId());
-//        assertThat(usersResponse.get(2).getEmail()).isEqualTo(user2.getEmail());
-//    }
+    @Test
+    public void findAll_ThenReturnAllUsers() throws Exception {
+        User user = UserDataBuilder.buildUserWithAllFields()
+                .role(UserRole.ADMIN)
+                .password(passwordEncoder.encode("testPassword1"))
+                .build();
+        User user1 = UserDataBuilder.buildUserWithAllFields()
+                .email("test1@gmail.com")
+                .build();
+        User user2 = UserDataBuilder.buildUserWithAllFields()
+                .email("test2@gmail.com")
+                .build();
+        Cookie cookie = authHelper.signIn(user, mockMvc);
+
+        userRepository.saveAll(List.of(user1, user2));
+
+        MvcResult mvcResult = mockMvc.perform(get("/users")
+                        .cookie(cookie))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        Map<String, Object> model = authHelper.requireModel(mvcResult);
+
+        List<UserResponse> userResponses = (List<UserResponse>) model.get("users");
+        assertThat(userResponses.size()).isEqualTo(3);
+        assertThat(userResponses).extracting(UserResponse::getEmail).containsExactlyInAnyOrder(user.getEmail(), user1.getEmail(), user2.getEmail());
+    }
 //
 //    @Test
 //    public void update_ThenUpdate_AndReturnUser() throws Exception {
