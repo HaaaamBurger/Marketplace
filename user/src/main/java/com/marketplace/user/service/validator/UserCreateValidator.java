@@ -1,7 +1,7 @@
 package com.marketplace.user.service.validator;
 
 import com.marketplace.common.exception.EntityExistsException;
-import com.marketplace.usercore.dto.UserUpdateRequest;
+import com.marketplace.usercore.dto.UserRequest;
 import com.marketplace.usercore.service.MongoUserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -10,24 +10,24 @@ import org.springframework.validation.Validator;
 
 @Service
 @RequiredArgsConstructor
-public class UserUpdateValidator implements Validator {
+public class UserCreateValidator implements Validator {
 
     private final MongoUserService mongoUserService;
 
     @Override
     public boolean supports(Class<?> clazz) {
-        return UserUpdateRequest.class.equals(clazz);
+        return UserRequest.class.equals(clazz);
     }
 
     @Override
     public void validate(Object target, Errors errors) {
-        UserUpdateRequest userUpdateRequest = (UserUpdateRequest) target;
-        validateUserExistenceByEmail(userUpdateRequest.getEmail(), errors);
+        UserRequest userRequest = (UserRequest) target;
+        validateUserExistenceByEmail(userRequest.getEmail(), errors);
     }
 
     private void validateUserExistenceByEmail(String email, Errors errors) {
         try {
-            mongoUserService.throwIfUserWithSameEmailExists(email);
+            mongoUserService.throwIfUserExistsByEmail(email);
         } catch (EntityExistsException exception) {
             errors.rejectValue(
                     "email",
@@ -35,4 +35,5 @@ public class UserUpdateValidator implements Validator {
                     "User with this email already exists");
         }
     }
+
 }

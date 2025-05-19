@@ -15,9 +15,7 @@
 <div class="container mt-5">
     <h2 class="mb-4">Users</h2>
 
-    <button type="button" class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#createUserModal">
-        Create User
-    </button>
+    <a th:href="@{/users/create}" class="mb-4 btn btn-primary btn-sm text-white">Create User</a>
 
     <table class="table table-bordered table-hover table-striped">
         <thead class="table-dark">
@@ -55,40 +53,6 @@
 
     <div th:if="${#lists.isEmpty(users)}" class="alert alert-info text-center">
         No users found.
-    </div>
-</div>
-
-<div class="modal fade" id="createUserModal" tabindex="-1" aria-labelledby="createUserModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="createUserModalLabel">New</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form th:action="@{/users}" method="post" th:object="${userRequest}">
-                    <div class="mb-3">
-                        <label for="email" class="form-label">Email</label>
-                        <input type="email" id="email" class="form-control" th:field="*{email}" required />
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="password" class="form-label">Password</label>
-                        <input type="password" id="password" class="form-control" th:field="*{password}" required />
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="role" class="form-label">Role</label>
-                        <select id="role" class="form-select" th:field="*{role}">
-                            <option value="USER">User</option>
-                            <option value="ADMIN">Admin</option>
-                        </select>
-                    </div>
-
-                    <button type="submit" class="btn btn-primary">Create User</button>
-                </form>
-            </div>
-        </div>
     </div>
 </div>
 

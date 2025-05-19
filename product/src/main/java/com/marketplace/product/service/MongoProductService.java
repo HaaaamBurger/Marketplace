@@ -71,7 +71,7 @@ public final class MongoProductService implements ProductService {
     public Product findProductOrThrow(String productId) {
         return productRepository.findById(productId)
                 .orElseThrow(() -> {
-                    log.error("[PRODUCT_SERVICE_IMPL]: Product not found by ID {}", productId);
+                    log.error("[MONGO_PRODUCT_SERVICE]: Product not found by ID {}", productId);
                     return new EntityNotFoundException("Product not found!");
                 });
     }
@@ -84,7 +84,7 @@ public final class MongoProductService implements ProductService {
             return product;
         }
 
-        log.error("[PRODUCT_SERVICE_IMPL]: User {} is not owner of the product: {} or not ADMIN", authenticatedUser.getId(), productId);
+        log.error("[MONGO_PRODUCT_SERVICE]: User {} is not owner of the product: {} or not ADMIN", authenticatedUser.getId(), productId);
         throw new AccessDeniedException("Access denied!");
     }
 

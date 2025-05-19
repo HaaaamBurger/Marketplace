@@ -12,6 +12,7 @@ import com.marketplace.usercore.mapper.UserEntityMapper;
 import com.marketplace.usercore.model.User;
 import com.marketplace.usercore.model.UserStatus;
 import com.marketplace.usercore.repository.UserRepository;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -58,27 +59,22 @@ public final class MongoUserService implements UserService {
     @Override
     public User update(String userId, UserUpdateRequest userUpdateRequest) {
         User userForUpdate = throwIfUserNotFoundById(userId);
-
         User authenticatedUser = profileService.getAuthenticatedUser();
-        validateEntityOwnerOrAdmin(authenticatedUser, userId);
+
+        if (!validateEntityOwnerOrAdmin(authenticatedUser, userId)) {
+            log.error("[MONGO_USER_SERVICE]: User {} is not owner or not ADMIN", authenticatedUser.getId());
+            throw new AccessDeniedException("Access denied!");
+        }
+
         throwIfUserWithSameEmailExists(userUpdateRequest.getEmail());
 
         Optional.ofNullable(userUpdateRequest.getEmail()).ifPresent(userForUpdate::setEmail);
-
         if (authenticatedUser.getRole() == UserRole.ADMIN) {
             Optional.ofNullable(userUpdateRequest.getRole()).ifPresent(userForUpdate::setRole);
             Optional.ofNullable(userUpdateRequest.getStatus()).ifPresent(userForUpdate::setStatus);
         }
 
         return userRepository.save(userForUpdate);
-    }
-
-    @Override
-    public void updateStatus(String userId, UserStatus status) {
-        User user = throwIfUserNotFoundById(userId);
-        user.setStatus(status);
-
-        userRepository.save(user);
     }
 
     @Override

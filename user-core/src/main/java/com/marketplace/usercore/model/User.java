@@ -3,6 +3,7 @@ package com.marketplace.usercore.model;
 import com.marketplace.common.model.AuditableEntity;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -32,8 +33,10 @@ public class User extends AuditableEntity implements UserDetails {
     @Email(message = "Must be a valid e-mail address")
     private String email;
 
+    @NotNull(message = "Role is required")
     private UserRole role;
 
+    @NotNull(message = "Status is required")
     private UserStatus status;
 
     @NotBlank(message = "Password is required")

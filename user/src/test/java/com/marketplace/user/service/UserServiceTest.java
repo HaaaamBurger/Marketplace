@@ -159,20 +159,6 @@ public class UserServiceTest {
     }
 
     @Test
-    public void updateStatus_shouldUpdateStatus() {
-        String userId = String.valueOf(UUID.randomUUID());
-        User user = UserDataBuilder.buildUserWithAllFields().build();
-
-        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-
-        userService.updateStatus(userId, UserStatus.BLOCKED);
-
-        assertThat(user.getStatus()).isEqualTo(UserStatus.BLOCKED);
-
-        verify(userRepository).save(user);
-    }
-
-    @Test
     public void delete_shouldDeleteUserById() {
         String userId = String.valueOf(UUID.randomUUID());
         User user = UserDataBuilder.buildUserWithAllFields().build();

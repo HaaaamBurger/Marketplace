@@ -1,11 +1,14 @@
 package com.marketplace.user.web.view;
 
+import com.marketplace.user.service.validator.UserCreateValidator;
 import com.marketplace.user.service.validator.UserUpdateValidator;
 import com.marketplace.usercore.dto.UserRequest;
 import com.marketplace.usercore.dto.UserResponse;
 import com.marketplace.usercore.dto.UserUpdateRequest;
 import com.marketplace.usercore.mapper.UserEntityMapper;
 import com.marketplace.usercore.model.User;
+import com.marketplace.usercore.model.UserRole;
+import com.marketplace.usercore.security.ProfileService;
 import com.marketplace.usercore.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -22,9 +25,13 @@ import java.util.List;
 @RequiredArgsConstructor
 public class UserController {
 
+    private final ProfileService profileService;
+
     private final UserService userService;
 
     private final UserUpdateValidator userUpdateValidator;
+
+    private final UserCreateValidator userCreateValidator;
 
     private final UserEntityMapper userEntityMapper;
 
@@ -44,9 +51,28 @@ public class UserController {
     }
 
     @PreAuthorize("hasAuthority('ADMIN')")
-    @PostMapping
-    public String createUser(@Valid @ModelAttribute UserRequest userRequest) {
+    @GetMapping("/create")
+    public String getCreateUser(
+            @ModelAttribute UserRequest userRequest,
+            Model model
+    ) {
+        model.addAttribute("userRequest", UserRequest.builder().build());
+        return "/user-create";
+    }
+
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @PostMapping("/create")
+    public String createUser(
+            @Valid @ModelAttribute UserRequest userRequest,
+            BindingResult bindingResult
+    ) {
+        userCreateValidator.validate(userRequest, bindingResult);
+        if (bindingResult.hasErrors()) {
+            return "/user-create";
+        }
+
         userService.create(userRequest);
+
         return "redirect:/users";
     }
 
@@ -60,7 +86,7 @@ public class UserController {
 
     @PutMapping("/update/{userId}")
     public String updateUser(
-            @Valid @ModelAttribute UserUpdateRequest userUpdateRequest,
+            @ModelAttribute UserUpdateRequest userUpdateRequest,
             @PathVariable String userId,
             BindingResult bindingResult,
             Model model
@@ -72,6 +98,12 @@ public class UserController {
 
         model.addAttribute("userId", userId);
         userService.update(userId, userUpdateRequest);
+
+        User authenticatedUser = profileService.getAuthenticatedUser();
+        if (authenticatedUser.getRole() == UserRole.USER) {
+            return "redirect:/home";
+        }
+
         return "redirect:/users";
     }
 

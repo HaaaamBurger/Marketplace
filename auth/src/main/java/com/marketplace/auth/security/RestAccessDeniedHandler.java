@@ -10,6 +10,8 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 
+import static jakarta.servlet.http.HttpServletResponse.SC_FORBIDDEN;
+
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -18,7 +20,11 @@ public class RestAccessDeniedHandler implements AccessDeniedHandler {
     @Override
     public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException accessDeniedException) throws IOException {
         log.error("[REST_ACCESS_DENIED_HANDLER]: {}", accessDeniedException.getMessage());
-        response.sendRedirect("/home");
+
+        request.getSession().setAttribute("message", accessDeniedException.getMessage());
+        request.getSession().setAttribute("status", SC_FORBIDDEN);
+
+        response.sendRedirect("/error");
     }
 
 }

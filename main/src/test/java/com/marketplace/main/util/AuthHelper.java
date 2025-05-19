@@ -6,6 +6,9 @@ import com.marketplace.usercore.model.User;
 import com.marketplace.usercore.repository.UserRepository;
 import jakarta.servlet.http.Cookie;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -24,8 +27,13 @@ public class AuthHelper {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     public Cookie signIn(User user, MockMvc mockMvc) throws Exception {
         AuthRequest authRequest = AuthRequestDataBuilder.withAllFields().build();
+
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
 
         userRepository.save(user);
 
