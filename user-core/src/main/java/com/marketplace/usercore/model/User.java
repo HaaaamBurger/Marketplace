@@ -4,12 +4,12 @@ import com.marketplace.common.model.AuditableEntity;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
-import org.hibernate.validator.constraints.Length;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.security.core.GrantedAuthority;
@@ -29,7 +29,7 @@ public class User extends AuditableEntity implements UserDetails {
     @Id
     private String id;
 
-    @NotBlank(message = "Password is required")
+    @NotBlank(message = "Email is required")
     @Email(message = "Must be a valid e-mail address")
     private String email;
 
@@ -40,7 +40,7 @@ public class User extends AuditableEntity implements UserDetails {
     private UserStatus status;
 
     @NotBlank(message = "Password is required")
-    @Length(min = 8, max = 32, message = "Password length must be between 8 to 32 characters")
+    @Pattern(regexp = "^(?=\\S{8,32}$).*$", message = "Password must be between 8 and 32 characters")
     private String password;
 
     @Override

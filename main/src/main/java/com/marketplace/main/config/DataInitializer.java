@@ -32,7 +32,7 @@ public class DataInitializer implements CommandLineRunner {
 
     private void createUser(User user) {
         if (userRepository.existsByEmail(user.getEmail())) {
-            log.info("[DATA_INITIALIZER]: Admin already exists. Skipping creation.");
+            log.info("[DATA_INITIALIZER]: Admin is already exist. Skipping creation.");
             return;
         }
 

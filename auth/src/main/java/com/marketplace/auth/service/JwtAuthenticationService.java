@@ -2,7 +2,7 @@ package com.marketplace.auth.service;
 
 import com.marketplace.auth.exception.CredentialException;
 import com.marketplace.auth.exception.TokenNotValidException;
-import com.marketplace.auth.web.dto.TokenPayload;
+import com.marketplace.auth.security.TokenPayload;
 import com.marketplace.auth.web.dto.AuthRefreshRequest;
 import com.marketplace.auth.web.dto.AuthRequest;
 import com.marketplace.auth.web.dto.AuthResponse;
@@ -37,21 +37,9 @@ public class JwtAuthenticationService implements AuthenticationService {
     @Override
     public AuthResponse signIn(AuthRequest authRequest, HttpServletResponse response) {
 
-        User user = userRepository.findByEmail(authRequest.getEmail()).orElseThrow(() ->  {
-                    log.error("[JWT_AUTHENTICATION_SERVICE]:User does not exist with email: {}", authRequest.getEmail());
-                    return new CredentialException("Wrong credentials!");
-                });
+        User user = findUserByEmailOrThrow(authRequest.getEmail());
 
-        boolean isPasswordValid = passwordEncoder.matches(
-                authRequest.getPassword(),
-                user.getPassword()
-        );
-
-        if (!isPasswordValid) {
-            log.error("[JWT_AUTHENTICATION_SERVICE]: User password {} is not matching", authRequest.getPassword());
-            throw new CredentialException("Wrong credentials!");
-        }
-
+        matchPasswordsOrThrow(authRequest.getPassword(), user.getPassword());
         TokenPayload tokenPayload = jwtTokenManager.generateTokenPayload(user);
         jwtCookieManager.addTokensToCookie(tokenPayload, response);
 
@@ -93,4 +81,19 @@ public class JwtAuthenticationService implements AuthenticationService {
             throw new TokenNotValidException("Token not valid!");
         }
     }
+
+    private User findUserByEmailOrThrow(String email) {
+        return userRepository.findByEmail(email).orElseThrow(() ->  {
+            log.error("[JWT_AUTHENTICATION_SERVICE]: User does not exist with email: {}",email);
+            return new CredentialException("Wrong credentials!");
+        });
+    }
+
+    private void matchPasswordsOrThrow(String rawPassword, String encodedPassword) throws CredentialException {
+        if (!passwordEncoder.matches(rawPassword, encodedPassword)) {
+            log.error("[JWT_AUTHENTICATION_SERVICE]: User password {} is not matching", rawPassword);
+            throw new CredentialException("Wrong credentials!");
+        }
+    }
+
 }

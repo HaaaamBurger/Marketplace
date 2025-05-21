@@ -1,9 +1,9 @@
 package com.marketplace.auth.security;
 
+import com.marketplace.auth.security.cookie.CookieNotFoundException;
 import com.marketplace.auth.security.cookie.CookieService;
 import com.marketplace.auth.service.JwtCookieManager;
 import com.marketplace.auth.service.JwtTokenManager;
-import com.marketplace.auth.web.dto.TokenPayload;
 import com.marketplace.usercore.model.User;
 import com.marketplace.usercore.model.UserStatus;
 import io.jsonwebtoken.JwtException;
@@ -14,6 +14,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -43,37 +44,36 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         try {
-            Cookie accessTokenCookie = cookieService.extractCookieByName(COOKIE_ACCESS_TOKEN, request);
             SecurityContext securityContext = SecurityContextHolder.getContext();
-
-            if (isAuthenticatedOrNoCookie(securityContext, accessTokenCookie)) {
+            if (securityContext.getAuthentication() != null) {
                 filterChain.doFilter(request, response);
                 return;
             }
 
-            String accessToken = accessTokenCookie.getValue();
-            UserDetails userDetails = validateUserNotBlocked(accessToken);
-            if (userDetails == null) {
-                jwtCookieManager.deleteTokensFromCookie(response);
-                response.sendRedirect("/sign-in?error=true");
-                return;
-            }
-
+            Cookie accessTokenCookie = cookieService.extractCookieByName(COOKIE_ACCESS_TOKEN, request);
+            UserDetails userDetails = validateUserAccessibility(accessTokenCookie.getValue());
             addAuthenticationToContext(userDetails);
+
         } catch (JwtException exception) {
+            log.error("[JWT_AUTHENTICATION_FILTER]: {}", exception.getMessage());
+
             boolean refreshValid = updateTokensIfRefreshValid(response, request);
             if (refreshValid) {
                 filterChain.doFilter(request, response);
                 return;
             }
 
-            log.error("[JWT_AUTHENTICATION_FILTER]: {}", exception.getMessage());
             jwtCookieManager.deleteTokensFromCookie(response);
             filterChain.doFilter(request, response);
             return;
-        } catch (UsernameNotFoundException exception) {
+        } catch (UsernameNotFoundException | AccessDeniedException exception) {
+            log.error("[JWT_AUTHENTICATION_FILTER]: {}", exception.getMessage());
+
             jwtCookieManager.deleteTokensFromCookie(response);
-            response.sendRedirect("/sign-in?error=true");
+            response.sendRedirect("/sign-in");
+            return;
+        } catch (CookieNotFoundException exception) {
+            filterChain.doFilter(request, response);
             return;
         }
 
@@ -81,29 +81,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
-    private boolean isAuthenticatedOrNoCookie(SecurityContext securityContext, Cookie cookie) {
-        if (cookie == null) {
-            return true;
-        }
-
-        return cookie.getValue() == null || securityContext.getAuthentication() != null;
-    }
-
-    private UserDetails addAuthenticationToContext(UserDetails userDetails) {
+    private void addAuthenticationToContext(UserDetails userDetails) {
         UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                 userDetails,
                 null,
                 userDetails.getAuthorities());
-        SecurityContextHolder.getContext().setAuthentication(authToken);
 
-        return userDetails;
+        SecurityContextHolder.getContext().setAuthentication(authToken);
     }
 
-    private UserDetails validateUserNotBlocked(String token) {
+    private UserDetails validateUserAccessibility(String token) {
         UserDetails userDetails = jwtTokenManager.getUserDetailsIfTokenValidOrThrow(token);
 
         if (userDetails instanceof User && ((User) userDetails).getStatus() == UserStatus.BLOCKED) {
-            return null;
+            throw new AccessDeniedException("User is blocked");
         }
 
         return userDetails;
@@ -113,10 +104,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             Cookie refreshTokenCookie = cookieService.extractCookieByName(COOKIE_REFRESH_TOKEN, request);
 
-            if (refreshTokenCookie == null) {
-                return false;
-            }
-
             UserDetails userDetails = jwtTokenManager.getUserDetailsIfTokenValidOrThrow(refreshTokenCookie.getValue());
             TokenPayload tokenPayload = jwtTokenManager.generateTokenPayload(userDetails);
             jwtCookieManager.addTokensToCookie(tokenPayload, response);
@@ -125,6 +112,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             return true;
         } catch (JwtException exception) {
+            log.info("[JWT_AUTHENTICATION_FILTER]: Tokens refresh failed {}", exception.getMessage());
+
             return false;
         }
     }

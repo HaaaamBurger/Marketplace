@@ -1,4 +1,4 @@
-package com.marketplace.main.web.view;
+package com.marketplace.main.web.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.boot.web.servlet.error.ErrorController;

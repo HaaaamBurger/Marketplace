@@ -16,7 +16,7 @@ public class CookieService {
 
     public static final String COOKIE_REFRESH_TOKEN = "refreshToken";
 
-    public void addValueToCookie(CookiePayload cookiePayload, HttpServletResponse response) {
+    public void addPayloadToCookie(CookiePayload cookiePayload, HttpServletResponse response) {
         Cookie cookie = new Cookie(cookiePayload.getName(), cookiePayload.getValue());
         cookie.setMaxAge(cookiePayload.getMaxAge());
         configureCookie(cookie, response);
@@ -26,12 +26,12 @@ public class CookieService {
         Cookie[] cookies = request.getCookies();
 
         if (cookies == null) {
-            return null;
+            throw new CookieNotFoundException("Cookies are not present");
         }
 
         return Arrays.stream(cookies)
-                .filter(cookie -> cookie.getName().equals(name))
-                .findFirst().orElse(null);
+                .filter(cookie -> cookie.getName().equals(name) && cookie.getValue() != null)
+                .findFirst().orElseThrow(() -> new CookieNotFoundException("No cookie present by name: " + name));
     }
 
     public void deleteCookieByName(String name, HttpServletResponse response) {

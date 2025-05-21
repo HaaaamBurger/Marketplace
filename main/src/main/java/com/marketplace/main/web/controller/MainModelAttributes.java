@@ -1,4 +1,4 @@
-package com.marketplace.main.web.view;
+package com.marketplace.main.web.controller;
 
 import com.marketplace.usercore.model.User;
 import jakarta.servlet.http.HttpServletRequest;
