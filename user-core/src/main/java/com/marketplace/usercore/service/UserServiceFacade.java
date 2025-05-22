@@ -23,7 +23,7 @@ import java.util.Optional;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public final class MongoUserService implements UserService {
+public final class UserServiceFacade implements UserService {
 
     private final UserRepository userRepository;
 
@@ -62,7 +62,7 @@ public final class MongoUserService implements UserService {
         User authenticatedUser = profileService.getAuthenticatedUser();
 
         if (!validateEntityOwnerOrAdmin(authenticatedUser, userId)) {
-            log.error("[MONGO_USER_SERVICE]: User {} is not owner or not ADMIN", authenticatedUser.getId());
+            log.error("[USER_SERVICE_FACADE]: User {} is not owner or not ADMIN", authenticatedUser.getId());
             throw new AccessDeniedException("Access denied!");
         }
 
@@ -90,7 +90,7 @@ public final class MongoUserService implements UserService {
 
     public void throwIfUserExistsByEmail(String email) {
         userRepository.findByEmail(email).ifPresent(user -> {
-            log.error("[MONGO_USER_SERVICE]: User already exists by email: {}", email);
+            log.error("[USER_SERVICE_FACADE]: User already exists by email: {}", email);
             throw new EntityExistsException("User already exists!");
         });
 
@@ -99,7 +99,7 @@ public final class MongoUserService implements UserService {
     public User throwIfUserNotFoundById(String userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> {
-                    log.error("[MONGO_USER_SERVICE]: User not found by id: {}", userId);
+                    log.error("[USER_SERVICE_FACADE]: User not found by id: {}", userId);
                     return new EntityNotFoundException("User not found!");
                 });
     }

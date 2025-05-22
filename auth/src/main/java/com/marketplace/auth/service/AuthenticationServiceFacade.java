@@ -10,7 +10,7 @@ import com.marketplace.usercore.model.User;
 import com.marketplace.usercore.model.UserRole;
 import com.marketplace.usercore.model.UserStatus;
 import com.marketplace.usercore.repository.UserRepository;
-import com.marketplace.usercore.service.MongoUserService;
+import com.marketplace.usercore.service.UserServiceFacade;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -22,13 +22,13 @@ import org.springframework.stereotype.Service;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class JwtAuthenticationService implements AuthenticationService {
+public class AuthenticationServiceFacade implements AuthenticationService {
 
     private final UserRepository userRepository;
 
     private final PasswordEncoder passwordEncoder;
 
-    private final MongoUserService mongoUserService;
+    private final UserServiceFacade userServiceFacade;
 
     private final JwtTokenManager jwtTokenManager;
 
@@ -52,7 +52,7 @@ public class JwtAuthenticationService implements AuthenticationService {
     @Override
     public void signUp(AuthRequest authRequest) {
 
-        mongoUserService.throwIfUserExistsByEmail(authRequest.getEmail());
+        userServiceFacade.throwIfUserExistsByEmail(authRequest.getEmail());
         String encodedPassword = passwordEncoder.encode(authRequest.getPassword());
 
         userRepository.save(User.builder()
@@ -77,21 +77,21 @@ public class JwtAuthenticationService implements AuthenticationService {
                     .build();
 
         } catch (JwtException exception) {
-            log.error("[JWT_AUTHENTICATION_SERVICE]: {}", exception.getMessage());
+            log.error("[AUTHENTICATION_SERVICE_FACADE]: {}", exception.getMessage());
             throw new TokenNotValidException("Token not valid!");
         }
     }
 
     private User findUserByEmailOrThrow(String email) {
         return userRepository.findByEmail(email).orElseThrow(() ->  {
-            log.error("[JWT_AUTHENTICATION_SERVICE]: User does not exist with email: {}",email);
+            log.error("[AUTHENTICATION_SERVICE_FACADE]: User does not exist with email: {}",email);
             return new CredentialException("Wrong credentials!");
         });
     }
 
     private void matchPasswordsOrThrow(String rawPassword, String encodedPassword) throws CredentialException {
         if (!passwordEncoder.matches(rawPassword, encodedPassword)) {
-            log.error("[JWT_AUTHENTICATION_SERVICE]: User password {} is not matching", rawPassword);
+            log.error("[AUTHENTICATION_SERVICE_FACADE]: User password {} is not matching", rawPassword);
             throw new CredentialException("Wrong credentials!");
         }
     }
