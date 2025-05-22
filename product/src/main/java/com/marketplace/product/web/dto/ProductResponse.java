@@ -1,4 +1,4 @@
-package com.marketplace.product.web.rest.dto;
+package com.marketplace.product.web.dto;
 
 import lombok.Builder;
 import lombok.Data;

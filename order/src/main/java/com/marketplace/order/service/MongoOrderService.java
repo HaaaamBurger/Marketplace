@@ -5,9 +5,9 @@ import com.marketplace.order.repository.OrderRepository;
 import com.marketplace.order.web.model.Order;
 import com.marketplace.order.web.model.OrderStatus;
 import com.marketplace.order.web.dto.OrderRequest;
-import com.marketplace.product.service.MongoProductService;
+import com.marketplace.product.service.ProductServiceFacade;
 import com.marketplace.usercore.model.User;
-import com.marketplace.usercore.security.ProfileService;
+import com.marketplace.usercore.security.AuthenticationUserService;
 import com.marketplace.usercore.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,9 +25,9 @@ public class MongoOrderService implements OrderService {
 
     private final OrderRepository orderRepository;
 
-    private final ProfileService profileService;
+    private final AuthenticationUserService authenticationUserService;
 
-    private final MongoProductService mongoProductService;
+    private final ProductServiceFacade productServiceFacade;
 
     private final UserService userService;
 
@@ -38,10 +38,10 @@ public class MongoOrderService implements OrderService {
 
     @Override
     public Order create(OrderRequest request) {
-        User authenticatedUser = profileService.getAuthenticatedUser();
+        User authenticatedUser = authenticationUserService.getAuthenticatedUser();
 
         List<String> productIds = request.getProductIds();
-        productIds.forEach(mongoProductService::findProductOrThrow);
+        productIds.forEach(productServiceFacade::findProductOrThrow);
 
         return orderRepository.save(Order.builder()
                 .ownerId(authenticatedUser.getId())
@@ -58,7 +58,7 @@ public class MongoOrderService implements OrderService {
 
     @Override
     public Order findByOwnerIdOrCreate() {
-        User authenticatedUser = profileService.getAuthenticatedUser();
+        User authenticatedUser = authenticationUserService.getAuthenticatedUser();
         return orderRepository.findOrderByOwnerId(authenticatedUser.getId())
                 .orElse(Order.builder()
                         .ownerId(authenticatedUser.getId())
@@ -86,7 +86,7 @@ public class MongoOrderService implements OrderService {
 
     @Override
     public Order addProductToOrder(String productId) {
-        mongoProductService.findProductOrThrow(productId);
+        productServiceFacade.findProductOrThrow(productId);
         Order order = findByOwnerIdOrCreate();
 
         order.getProductIds().add(productId);
@@ -96,7 +96,7 @@ public class MongoOrderService implements OrderService {
     }
 
     private Order validateOrderAccessOrThrow(String orderId) {
-        User authenticatedUser = profileService.getAuthenticatedUser();
+        User authenticatedUser = authenticationUserService.getAuthenticatedUser();
         Order order = findOrderOrThrow(orderId);
 
         if (userService.validateEntityOwnerOrAdmin(authenticatedUser, order.getOwnerId())) {

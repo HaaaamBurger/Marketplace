@@ -1,7 +1,7 @@
 package com.marketplace.product.mapper;
 
-import com.marketplace.product.web.rest.dto.ProductRequest;
-import com.marketplace.product.web.rest.dto.ProductResponse;
+import com.marketplace.product.web.dto.ProductRequest;
+import com.marketplace.product.web.dto.ProductResponse;
 import com.marketplace.product.web.model.Product;
 import org.springframework.stereotype.Service;
 

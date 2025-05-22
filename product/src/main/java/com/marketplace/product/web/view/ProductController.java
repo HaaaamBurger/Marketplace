@@ -1,8 +1,8 @@
-package com.marketplace.product.web.rest;
+package com.marketplace.product.web.view;
 
 import com.marketplace.product.service.ProductService;
-import com.marketplace.product.web.rest.dto.ProductResponse;
-import com.marketplace.product.web.rest.dto.ProductRequest;
+import com.marketplace.product.web.dto.ProductResponse;
+import com.marketplace.product.web.dto.ProductRequest;
 import com.marketplace.product.web.model.Product;
 
 import com.marketplace.product.mapper.ProductEntityMapper;

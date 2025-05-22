@@ -1,6 +1,6 @@
 package com.marketplace.product.service;
 
-import com.marketplace.product.web.rest.dto.ProductRequest;
+import com.marketplace.product.web.dto.ProductRequest;
 import com.marketplace.product.web.model.Product;
 
 import java.util.List;

@@ -1,6 +1,6 @@
 package com.marketplace.user.service.validator;
 
-import com.marketplace.usercore.dto.UserUpdateRequest;
+import com.marketplace.usercore.dto.ProfileUpdateRequest;
 import com.marketplace.usercore.model.User;
 import com.marketplace.usercore.service.UserServiceFacade;
 import lombok.RequiredArgsConstructor;
@@ -9,15 +9,15 @@ import org.springframework.validation.Errors;
 
 @Service
 @RequiredArgsConstructor
-public class UserUpdateValidator {
-
-    private final UserServiceFacade userServiceFacade;
+public class ProfileUpdateValidator {
 
     private final EmailValidator emailValidator;
 
-    public void validateUserUpdateRequest(String userId, UserUpdateRequest userUpdateRequest, Errors errors) {
+    private final UserServiceFacade userServiceFacade;
+
+    public void validate(String userId, ProfileUpdateRequest profileUpdateRequest, Errors errors) {
         User user = userServiceFacade.findById(userId);
-        emailValidator.validateEmailUniqueness(userUpdateRequest.getEmail(), user.getEmail(), errors);
+        emailValidator.validateEmailUniqueness(profileUpdateRequest.getEmail(), user.getEmail(), errors);
     }
 
 }

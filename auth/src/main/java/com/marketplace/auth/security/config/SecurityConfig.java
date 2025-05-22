@@ -42,6 +42,10 @@ public class SecurityConfig {
             "/.well-known/appspecific/com.chrome.devtools.json"
     };
 
+    private static final String[] ADMIN_ROUTES = new String[] {
+            "/users/**"
+    };
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
@@ -54,6 +58,7 @@ public class SecurityConfig {
                 .logout(logout -> logout.deleteCookies(COOKIE_ACCESS_TOKEN, COOKIE_REFRESH_TOKEN).logoutSuccessUrl("/home"))
                 .authorizeHttpRequests(authorizationManagerRequestMatcherRegistry -> authorizationManagerRequestMatcherRegistry
                         .requestMatchers(PERMITTED_ROUTES).permitAll()
+                        .requestMatchers(ADMIN_ROUTES).hasAuthority(UserRole.ADMIN.getAuthority())
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
