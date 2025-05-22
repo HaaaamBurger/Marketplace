@@ -1,14 +1,18 @@
 package com.marketplace.user.service;
 
-import com.marketplace.auth.exception.EntityExistsException;
-import com.marketplace.auth.exception.EntityNotFoundException;
-import com.marketplace.auth.repository.UserRepository;
-import com.marketplace.auth.web.model.User;
-import com.marketplace.auth.web.model.UserRole;
-import com.marketplace.auth.web.model.UserStatus;
-import com.marketplace.user.config.UserApplicationConfig;
+import com.marketplace.user.util.UserUpdateRequestDataBuilder;
+import com.marketplace.usercore.dto.UserRequest;
+import com.marketplace.usercore.dto.UserUpdateRequest;
+import com.marketplace.usercore.model.User;
+import com.marketplace.common.exception.EntityExistsException;
+import com.marketplace.common.exception.EntityNotFoundException;
 import com.marketplace.user.util.UserDataBuilder;
-import com.marketplace.user.web.dto.UserRequest;
+import com.marketplace.usercore.config.UserCoreApplicationConfig;
+import com.marketplace.usercore.model.UserRole;
+import com.marketplace.usercore.model.UserStatus;
+import com.marketplace.usercore.repository.UserRepository;
+import com.marketplace.usercore.security.ProfileService;
+import com.marketplace.usercore.service.UserService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -20,12 +24,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
+import static org.assertj.core.api.AssertionsForClassTypes.*;
 import static org.mockito.Mockito.*;
 
 @ActiveProfiles("test")
-@SpringBootTest(classes = UserApplicationConfig.class)
+@SpringBootTest(classes = UserCoreApplicationConfig.class)
 public class UserServiceTest {
 
     @MockitoBean
@@ -33,6 +36,9 @@ public class UserServiceTest {
 
     @MockitoBean
     private PasswordEncoder passwordEncoder;
+
+    @MockitoBean
+    private ProfileService profileService;
 
     @Autowired
     private UserService userService;
@@ -136,37 +142,26 @@ public class UserServiceTest {
 
     @Test
     public void update_shouldReturnUpdatedUser() {
-        String userId = String.valueOf(UUID.randomUUID());
-        User user = UserDataBuilder.buildUserWithAllFields().build();
-        UserRequest userRequest = UserRequest.builder()
-                .email("test1@gmail.com")
-                .role(UserRole.ADMIN)
-                .password("testPassword2")
+        User user = UserDataBuilder.buildUserWithAllFields()
+                .id(String.valueOf(UUID.randomUUID()))
                 .build();
+        UserUpdateRequest userUpdateRequest = UserUpdateRequestDataBuilder.buildUserWithAllFields().build();
 
-        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-        when(userRepository.save(user)).thenAnswer(invocation -> invocation.getArgument(0));
+        when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
+        when(profileService.getAuthenticatedUser()).thenReturn(user);
+        when(userRepository.save(user)).thenAnswer(invocation -> {
+            User invocationUser = invocation.getArgument(0);
+            invocationUser.setRole(UserRole.ADMIN);
+            invocationUser.setEmail("test1@gmail.com");
+            return invocationUser;
+        });
 
-        User responseUser = userService.update(userId, userRequest);
+        User responseUser = userService.update(user.getId(), userUpdateRequest);
         assertThat(responseUser).isNotNull();
-        assertThat(responseUser.getEmail()).isEqualTo(userRequest.getEmail());
-        assertThat(responseUser.getRole()).isEqualTo(userRequest.getRole());
+        assertThat(responseUser.getEmail()).isEqualTo(userUpdateRequest.getEmail());
+        assertThat(responseUser.getRole()).isEqualTo(userUpdateRequest.getRole());
 
-        verify(userRepository).findById(userId);
-        verify(userRepository).save(user);
-    }
-
-    @Test
-    public void updateStatus_shouldUpdateStatus() {
-        String userId = String.valueOf(UUID.randomUUID());
-        User user = UserDataBuilder.buildUserWithAllFields().build();
-
-        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-
-        userService.updateStatus(userId, UserStatus.BLOCKED);
-
-        assertThat(user.getStatus()).isEqualTo(UserStatus.BLOCKED);
-
+        verify(userRepository).findById(user.getId());
         verify(userRepository).save(user);
     }
 

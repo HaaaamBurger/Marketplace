@@ -1,8 +1,5 @@
 package com.marketplace.auth.security;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.marketplace.auth.exception.ExceptionResponse;
-import com.marketplace.auth.exception.ExceptionType;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -13,26 +10,21 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 
+import static jakarta.servlet.http.HttpServletResponse.SC_FORBIDDEN;
+
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class RestAccessDeniedHandler implements AccessDeniedHandler {
 
-    private final ObjectMapper objectMapper;
-
     @Override
     public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException accessDeniedException) throws IOException {
         log.error("[REST_ACCESS_DENIED_HANDLER]: {}", accessDeniedException.getMessage());
 
-        ExceptionResponse exceptionResponse = ExceptionResponse.builder()
-                .status(HttpServletResponse.SC_FORBIDDEN)
-                .type(ExceptionType.AUTHORIZATION)
-                .path(request.getRequestURI())
-                .message("Forbidden, not enough access!")
-                .build();
+        request.getSession().setAttribute("message", accessDeniedException.getMessage());
+        request.getSession().setAttribute("status", SC_FORBIDDEN);
 
-        response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-        response.getWriter().write(objectMapper.writeValueAsString(exceptionResponse));
+        response.sendRedirect("/error");
     }
 
 }
