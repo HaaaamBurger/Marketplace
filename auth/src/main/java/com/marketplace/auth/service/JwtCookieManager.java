@@ -3,7 +3,7 @@ package com.marketplace.auth.service;
 import com.marketplace.auth.security.cookie.CookiePayload;
 import com.marketplace.auth.security.cookie.CookieService;
 import com.marketplace.auth.security.service.JwtService;
-import com.marketplace.auth.web.dto.TokenPayload;
+import com.marketplace.auth.security.TokenPayload;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -31,8 +31,8 @@ public class JwtCookieManager {
                 .maxAge(jwtService.JWT_REFRESH_EXPIRATION_TIME)
                 .build();
 
-        cookieService.addValueToCookie(accessTokenCookiePayload, httpServletResponse);
-        cookieService.addValueToCookie(refreshTokenCookiePayload, httpServletResponse);
+        cookieService.addPayloadToCookie(accessTokenCookiePayload, httpServletResponse);
+        cookieService.addPayloadToCookie(refreshTokenCookiePayload, httpServletResponse);
     }
 
     public void deleteTokensFromCookie(HttpServletResponse response) {

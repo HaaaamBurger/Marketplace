@@ -17,6 +17,6 @@ public class AuthenticationExceptionHandler {
     @ExceptionHandler(ExpiredJwtException.class)
     public void handleExpiredJwtException(ExpiredJwtException exception, HttpServletResponse response) throws IOException {
         log.error("[EXPIRED_JWT_EXCEPTION_HANDLER]: {}", exception.getMessage());
-        response.sendRedirect("/sign-in?error=true");
+        response.sendRedirect("/sign-in");
     }
 }

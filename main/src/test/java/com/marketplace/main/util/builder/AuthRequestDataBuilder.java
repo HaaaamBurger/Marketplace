@@ -1,4 +1,4 @@
-package com.marketplace.main.util;
+package com.marketplace.main.util.builder;
 
 import com.marketplace.auth.web.dto.AuthRequest;
 

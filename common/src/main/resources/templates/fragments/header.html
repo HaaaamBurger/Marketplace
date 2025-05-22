@@ -24,22 +24,20 @@
                 </button>
 
                 <div class="collapse navbar-collapse" id="navbarNav">
-                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0" th:if="${#authorization.expression('hasAuthority(''ADMIN'')')}">
                         <li class="nav-item">
                             <a class="nav-link"
                                th:classappend="${request.startsWith('/home')} ? ' active' : ''"
                                th:href="@{/home}">Main</a>
                         </li>
 
-                        <li class="nav-item"
-                            th:if="${#authorization.expression('hasAuthority(''ADMIN'')')}">
+                        <li class="nav-item">
                             <a class="nav-link"
                                th:classappend="${request.startsWith('/users')} ? ' active' : ''"
                                th:href="@{/users}">Users</a>
                         </li>
 
-                        <li class="nav-item"
-                            th:if="${#authorization.expression('isAuthenticated()')}">
+                        <li class="nav-item">
                             <a class="nav-link"
                                th:classappend="${request.startsWith('/products')} ? ' active' : ''"
                                th:href="@{/products}">Products</a>
@@ -47,13 +45,13 @@
                     </ul>
 
 
-                    <ul class="navbar-nav">
+                    <ul class="navbar-nav ms-auto">
 
                         <li class="nav-item" th:unless="${#authorization.expression('isAuthenticated()')}">
                             <a class="nav-link" th:href="@{/sign-in}">Sign in</a>
                         </li>
                         <li class="nav-item" th:unless="${#authorization.expression('isAuthenticated()')}">
-                            <a class="nav-link" th:href="@{/sign-up}">Sign up</a>
+                            <a class="btn btn-primary ms-2" th:href="@{/sign-up}">Sign up</a>
                         </li>
 
                         <li class="nav-item dropdown" th:if="${#authorization.expression('isAuthenticated()')}">

@@ -1,4 +1,4 @@
-package com.marketplace.auth.web.dto;
+package com.marketplace.auth.security;
 
 import lombok.Builder;
 import lombok.Data;

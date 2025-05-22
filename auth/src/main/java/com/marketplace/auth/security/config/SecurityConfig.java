@@ -30,7 +30,7 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
-    public static final String[] PERMITTED_ROUTES = new String[] {
+    private static final String[] PERMITTED_ROUTES = new String[] {
             "/sign-in",
             "/sign-up",
             "/logout",
@@ -40,10 +40,6 @@ public class SecurityConfig {
             "/v3/api-docs*/**",
             "/favicon.ico",
             "/.well-known/appspecific/com.chrome.devtools.json"
-    };
-
-    private static final String[] ADMIN_ROUTES = new String[] {
-            "/users/**"
     };
 
     @Bean
@@ -58,7 +54,6 @@ public class SecurityConfig {
                 .logout(logout -> logout.deleteCookies(COOKIE_ACCESS_TOKEN, COOKIE_REFRESH_TOKEN).logoutSuccessUrl("/home"))
                 .authorizeHttpRequests(authorizationManagerRequestMatcherRegistry -> authorizationManagerRequestMatcherRegistry
                         .requestMatchers(PERMITTED_ROUTES).permitAll()
-                        .requestMatchers(ADMIN_ROUTES).hasAuthority(UserRole.ADMIN.name())
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 

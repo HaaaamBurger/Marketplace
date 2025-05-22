@@ -1,6 +1,5 @@
 package com.marketplace.order.service;
 
-import com.marketplace.auth.service.AuthHelper;
 import com.marketplace.common.exception.EntityNotFoundException;
 import com.marketplace.order.repository.OrderRepository;
 import com.marketplace.order.web.model.Order;
@@ -8,6 +7,7 @@ import com.marketplace.order.web.model.OrderStatus;
 import com.marketplace.order.web.dto.OrderRequest;
 import com.marketplace.product.service.MongoProductService;
 import com.marketplace.usercore.model.User;
+import com.marketplace.usercore.security.ProfileService;
 import com.marketplace.usercore.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,7 +25,7 @@ public class MongoOrderService implements OrderService {
 
     private final OrderRepository orderRepository;
 
-    private final AuthHelper authHelper;
+    private final ProfileService profileService;
 
     private final MongoProductService mongoProductService;
 
@@ -38,7 +38,7 @@ public class MongoOrderService implements OrderService {
 
     @Override
     public Order create(OrderRequest request) {
-        User authenticatedUser = authHelper.getAuthenticatedUser();
+        User authenticatedUser = profileService.getAuthenticatedUser();
 
         List<String> productIds = request.getProductIds();
         productIds.forEach(mongoProductService::findProductOrThrow);
@@ -58,7 +58,7 @@ public class MongoOrderService implements OrderService {
 
     @Override
     public Order findByOwnerIdOrCreate() {
-        User authenticatedUser = authHelper.getAuthenticatedUser();
+        User authenticatedUser = profileService.getAuthenticatedUser();
         return orderRepository.findOrderByOwnerId(authenticatedUser.getId())
                 .orElse(Order.builder()
                         .ownerId(authenticatedUser.getId())
@@ -96,7 +96,7 @@ public class MongoOrderService implements OrderService {
     }
 
     private Order validateOrderAccessOrThrow(String orderId) {
-        User authenticatedUser = authHelper.getAuthenticatedUser();
+        User authenticatedUser = profileService.getAuthenticatedUser();
         Order order = findOrderOrThrow(orderId);
 
         if (userService.validateEntityOwnerOrAdmin(authenticatedUser, order.getOwnerId())) {

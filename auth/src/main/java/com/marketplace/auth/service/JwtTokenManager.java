@@ -2,7 +2,7 @@ package com.marketplace.auth.service;
 
 import com.marketplace.auth.exception.TokenNotValidException;
 import com.marketplace.auth.security.service.JwtService;
-import com.marketplace.auth.web.dto.TokenPayload;
+import com.marketplace.auth.security.TokenPayload;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -31,9 +31,7 @@ public class JwtTokenManager {
 
     public UserDetails getUserDetailsIfTokenValidOrThrow(String token) {
         String subject = jwtService.extractSubject(token);
-
         UserDetails userDetails = userDetailsService.loadUserByUsername(subject);
-
         boolean isTokenValid = jwtService.isTokenValid(token, userDetails);
 
         if (isTokenValid) {
