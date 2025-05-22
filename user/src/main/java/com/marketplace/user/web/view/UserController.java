@@ -57,7 +57,7 @@ public class UserController {
             Model model
     ) {
         model.addAttribute("userRequest", UserRequest.builder().build());
-        return "/user-create";
+        return "user-create";
     }
 
     @PreAuthorize("hasAuthority('ADMIN')")
@@ -68,7 +68,7 @@ public class UserController {
     ) {
         userCreateValidator.validate(userRequest, bindingResult);
         if (bindingResult.hasErrors()) {
-            return "/user-create";
+            return "user-create";
         }
 
         userService.create(userRequest);
