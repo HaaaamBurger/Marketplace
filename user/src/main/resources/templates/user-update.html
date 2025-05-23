@@ -2,7 +2,7 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8" />
-    <title>Edit User</title>
+    <title>Update User</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet" />
     <style>
         body {
@@ -29,7 +29,7 @@
 <body>
 
 <div class="form-container">
-    <h2 class="mb-4 text-center">Edit User</h2>
+    <h2 class="mb-4 text-center">Update User</h2>
 
     <form th:action="@{/users/update/{id}(id=${userId})}" th:method="PUT" th:object="${userUpdateRequest}">
 

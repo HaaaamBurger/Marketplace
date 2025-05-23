@@ -61,7 +61,7 @@ public class ProductController {
         return "redirect:/products";
     }
 
-    @GetMapping("/{productId}/edit")
+    @GetMapping("/{productId}/update")
     public String getUpdateProduct(
             @PathVariable String productId,
             Model model
@@ -70,17 +70,17 @@ public class ProductController {
 
         model.addAttribute("productId", productId);
         model.addAttribute("productRequest", productEntityMapper.mapProductToProductRequestDto(product));
-        return "product-edit";
+        return "product-update";
     }
 
-    @PutMapping("/{productId}/edit")
+    @PutMapping("/{productId}/update")
     public String updateProduct(
              @PathVariable String productId,
              @Valid @ModelAttribute ProductRequest productRequest,
              BindingResult bindingResult
     ) {
         if (bindingResult.hasErrors()) {
-            return "product-edit";
+            return "product-update";
         }
 
         Product product = productService.update(productId, productRequest);

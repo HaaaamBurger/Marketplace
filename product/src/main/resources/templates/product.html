@@ -63,10 +63,10 @@
                     </button>
                 </form>
 
-                <a th:href="@{/products/{id}/edit(id=${productId})}"
+                <a th:href="@{/products/{id}/update(id=${productId})}"
                    th:if="${authUser.id == ownerId || authUser.role?.name() == 'ADMIN'}"
                    class="btn btn-warning">
-                    <i class="bi bi-pencil-square"></i> Edit
+                    <i class="bi bi-pencil-square"></i> Update
                 </a>
 
                 <form th:action="@{/products/{id}(id=${product.id})}"

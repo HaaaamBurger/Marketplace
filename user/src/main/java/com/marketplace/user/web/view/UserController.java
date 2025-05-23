@@ -70,7 +70,7 @@ public class UserController {
         UserUpdateRequest userUpdateRequest = userEntityMapper.mapUserEntityToUserUpdateRequestDto(user);
         model.addAttribute("userUpdateRequest", userUpdateRequest);
 
-        return "user-edit";
+        return "user-update";
     }
 
     @PutMapping("/update/{userId}")
@@ -82,7 +82,7 @@ public class UserController {
     ) {
         userUpdateValidator.validateUserUpdateRequest(userId, userUpdateRequest, bindingResult);
         if (bindingResult.hasErrors()) {
-            return "user-edit";
+            return "user-update";
         }
 
         model.addAttribute("userId", userId);

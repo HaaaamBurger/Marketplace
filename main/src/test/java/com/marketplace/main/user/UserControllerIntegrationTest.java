@@ -66,7 +66,7 @@ public class UserControllerIntegrationTest {
         User authUser = UserDataBuilder.buildUserWithAllFields().build();
 
         Cookie cookie = authHelper.signIn(authUser, mockMvc);
-        MvcResult mvcResult = mockMvc.perform(get("/users/profile")
+        MvcResult mvcResult = mockMvc.perform(get("/profile")
                         .cookie(cookie))
                 .andExpect(status().isOk())
                 .andReturn();
@@ -226,7 +226,7 @@ public class UserControllerIntegrationTest {
     }
 
     @Test
-    public void updateUser_WhenRoleAdminAndNotOwner_ThenRedirectToUsers() throws Exception {
+    public void updateUser_WhenRoleAdmin_ThenRedirectToUsers() throws Exception {
         User authUser = UserDataBuilder.buildUserWithAllFields()
                 .role(UserRole.ADMIN)
                 .build();
@@ -255,7 +255,7 @@ public class UserControllerIntegrationTest {
     }
 
     @Test
-    public void updateUser_WhenRoleUserAndIsOwner_ThenRedirectToHome() throws Exception {
+    public void updateUser_WhenRoleUser_ThenAccessDenied() throws Exception {
         User authUser = UserDataBuilder.buildUserWithAllFields().build();
         UserUpdateRequest userUpdateRequest = UserUpdateRequestDataBuilder.buildUserWithAllFields()
                 .email("test2@gmail.com")
@@ -273,34 +273,11 @@ public class UserControllerIntegrationTest {
 
         String redirectedUrl = mvcResult.getResponse().getRedirectedUrl();
         assertThat(redirectedUrl).isNotNull();
-        assertThat(redirectedUrl).isEqualTo("/home");
-
-        Optional<User> optionalUser = userRepository.findByEmail(userUpdateRequest.getEmail());
-        assertThat(optionalUser).isPresent();
-    }
-
-    @Test
-    public void updateUser_WhenUserNotOwnerAndNotAdmin_ThenRedirectToErrorPage() throws Exception {
-        User user = UserDataBuilder.buildUserWithAllFields().email("test1@gmail.com").build();
-        User authUser = UserDataBuilder.buildUserWithAllFields().build();
-        UserUpdateRequest userUpdateRequest = UserUpdateRequestDataBuilder.buildUserWithAllFields()
-                .email("test2@gmail.com")
-                .build();
-
-        Cookie cookie = authHelper.signIn(authUser, mockMvc);
-        userRepository.save(user);
-
-        MvcResult mvcResult = mockMvc.perform(put("/users/update/{userId}", user.getId())
-                        .cookie(cookie)
-                        .param("email", userUpdateRequest.getEmail())
-                        .param("status", String.valueOf(userUpdateRequest.getStatus()))
-                        .param("role", String.valueOf(userUpdateRequest.getRole())))
-                .andExpect(status().is3xxRedirection())
-                .andReturn();
-
-        String redirectedUrl = mvcResult.getResponse().getRedirectedUrl();
-        assertThat(redirectedUrl).isNotNull();
         assertThat(redirectedUrl).isEqualTo("/error");
+
+        Optional<User> optionalUser = userRepository.findByEmail(authUser.getEmail());
+        assertThat(optionalUser).isPresent();
+        assertThat(optionalUser.get().getEmail()).isNotEqualTo(userUpdateRequest.getEmail());
     }
 
     @Test

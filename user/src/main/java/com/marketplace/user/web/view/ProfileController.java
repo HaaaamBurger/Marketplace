@@ -30,17 +30,17 @@ public class ProfileController {
         return "profile";
     }
 
-    @GetMapping("/edit")
+    @GetMapping("/update")
     public String getUpdateProfile(Model model) {
         User authUser = (User) model.getAttribute("authUser");
 
         ProfileUpdateRequest profileUpdateRequest = userEntityMapper.mapUserEntityToProfileUpdateRequestDto(authUser);
         model.addAttribute("profileUpdateRequest", profileUpdateRequest);
 
-        return "profile-edit";
+        return "profile-update";
     }
 
-    @PutMapping("/edit")
+    @PutMapping("/update")
     public String updateProfile(
             @ModelAttribute ProfileUpdateRequest profileUpdateRequest,
             BindingResult bindingResult
@@ -48,7 +48,7 @@ public class ProfileController {
         User authenticatedUser = authenticationUserService.getAuthenticatedUser();
         profileUpdateValidator.validate(authenticatedUser.getId(), profileUpdateRequest, bindingResult);
         if (bindingResult.hasErrors()) {
-            return "profile-edit";
+            return "profile-update";
         }
 
         profileService.update(authenticatedUser.getId(), profileUpdateRequest);

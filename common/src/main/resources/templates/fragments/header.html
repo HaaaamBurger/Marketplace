@@ -24,14 +24,15 @@
             </button>
 
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto mb-2 mb-lg-0" th:if="${#authorization.expression('hasAuthority(''ADMIN'')')}">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0" th:if="${authUser}">
                     <li class="nav-item">
                         <a class="nav-link"
                            th:classappend="${request.startsWith('/home')} ? ' active' : ''"
                            th:href="@{/home}">Main</a>
                     </li>
 
-                    <li class="nav-item">
+                    <li class="nav-item"
+                        th:if="${#authorization.expression('hasAuthority(''ADMIN'')')}">
                         <a class="nav-link"
                            th:classappend="${request.startsWith('/users')} ? ' active' : ''"
                            th:href="@{/users}">Users</a>
