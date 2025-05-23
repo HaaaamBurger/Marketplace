@@ -29,6 +29,14 @@ public class ProductEntityMapper {
                 .build();
     }
 
+    public ProductRequest mapProductToProductRequestDto(Product product) {
+        return ProductRequest.builder()
+                .name(product.getName())
+                .price(product.getPrice())
+                .description(product.getDescription())
+                .build();
+    }
+
     public List<ProductResponse> mapProductsToProductResponseDtos(List<Product> products) {
         return products.stream()
                 .map(this::mapProductToProductResponseDto)

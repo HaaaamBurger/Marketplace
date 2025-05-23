@@ -1,19 +1,20 @@
 package com.marketplace.product.web.view;
 
 import com.marketplace.product.service.ProductService;
-import com.marketplace.product.web.dto.ProductResponse;
 import com.marketplace.product.web.dto.ProductRequest;
 import com.marketplace.product.web.model.Product;
 
 import com.marketplace.product.mapper.ProductEntityMapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@RestController
+@Controller
 @RequiredArgsConstructor
 @RequestMapping("/products")
 public class ProductController {
@@ -23,34 +24,74 @@ public class ProductController {
     private final ProductEntityMapper productEntityMapper;
 
     @GetMapping
-    public ResponseEntity<List<ProductResponse>> getAllProducts() {
+    public String getAllProducts(Model model) {
         List<Product> products = productService.findAll();
-        return ResponseEntity.ok(productEntityMapper.mapProductsToProductResponseDtos(products));
+        model.addAttribute("products", productEntityMapper.mapProductsToProductResponseDtos(products));
+        return "products";
     }
 
     @GetMapping("/{productId}")
-    public ResponseEntity<ProductResponse> getProductById(@PathVariable String productId) {
-        Product product = productService.findById(productId);
-        return ResponseEntity.ok(productEntityMapper.mapProductToProductResponseDto(product));
-    }
-
-    @PostMapping
-    public ResponseEntity<ProductResponse> createProduct(@Valid @RequestBody ProductRequest productRequest) {
-        Product product = productService.create(productRequest);
-        return ResponseEntity.ok(productEntityMapper.mapProductToProductResponseDto(product));
-    }
-
-    @PutMapping("/{productId}")
-    public ResponseEntity<ProductResponse> updateProduct(
-             @PathVariable String productId,
-             @Valid @RequestBody ProductRequest productRequest
+    public String getProduct(
+            Model model,
+            @PathVariable String productId
     ) {
+        Product product = productService.findById(productId);
+        model.addAttribute("product", productEntityMapper.mapProductToProductResponseDto(product));
+        model.addAttribute("ownerId", product.getOwnerId());
+        return "product";
+    }
+
+    @GetMapping("/create")
+    public String getCreateProduct(Model model) {
+        model.addAttribute("productRequest", ProductRequest.builder().build());
+        return "product-create";
+    }
+
+    @PostMapping("/create")
+    public String createProduct(
+            @Valid @ModelAttribute ProductRequest productRequest,
+            BindingResult bindingResult
+    ) {
+
+        if (bindingResult.hasErrors()) {
+            return "product-create";
+        }
+
+        productService.create(productRequest);
+        return "redirect:/products";
+    }
+
+    @GetMapping("/{productId}/edit")
+    public String getUpdateProduct(
+            @PathVariable String productId,
+            Model model
+    ) {
+        Product product = productService.findById(productId);
+
+        model.addAttribute("productId", productId);
+        model.addAttribute("productRequest", productEntityMapper.mapProductToProductRequestDto(product));
+        return "product-edit";
+    }
+
+    @PutMapping("/{productId}/edit")
+    public String updateProduct(
+             @PathVariable String productId,
+             @Valid @ModelAttribute ProductRequest productRequest,
+             BindingResult bindingResult
+    ) {
+        if (bindingResult.hasErrors()) {
+            return "product-edit";
+        }
+
         Product product = productService.update(productId, productRequest);
-        return ResponseEntity.ok(productEntityMapper.mapProductToProductResponseDto(product));
+        productEntityMapper.mapProductToProductResponseDto(product);
+
+        return "redirect:/products/" + productId;
     }
 
     @DeleteMapping("/{productId}")
-    public void deleteProduct(@PathVariable String productId) {
+    public String deleteProduct(@PathVariable String productId) {
         productService.delete(productId);
+        return "redirect:/products";
     }
 }

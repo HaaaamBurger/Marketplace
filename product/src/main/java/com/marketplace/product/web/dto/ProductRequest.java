@@ -19,7 +19,7 @@ public class ProductRequest {
     private String description;
 
     @NotNull(message = "Price is required")
-    @DecimalMin(value = "5.0", inclusive = false, message = "Price must be greater than 0")
+    @DecimalMin(value = "0.01", message = "Price must be greater than 0")
     @Digits(integer = 8, fraction = 2, message = "Price must have up to 8 digits before the decimal point and 2 after")
     private BigDecimal price;
 
