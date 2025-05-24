@@ -1,5 +1,6 @@
 package com.marketplace.usercore.mapper;
 
+import com.marketplace.usercore.dto.ProfileUpdateRequest;
 import com.marketplace.usercore.dto.UserRequest;
 import com.marketplace.usercore.dto.UserResponse;
 import com.marketplace.usercore.dto.UserUpdateRequest;
@@ -30,11 +31,25 @@ public class UserEntityMapper {
                 .build();
     }
 
+    public User mapUserUpdateRequestToUser(UserUpdateRequest userUpdateRequest) {
+        return User.builder()
+                .email(userUpdateRequest.getEmail())
+                .role(userUpdateRequest.getRole())
+                .status(userUpdateRequest.getStatus())
+                .build();
+    }
+
     public UserUpdateRequest mapUserEntityToUserUpdateRequestDto(User user) {
         return UserUpdateRequest.builder()
                 .email(user.getEmail())
                 .status(user.getStatus())
                 .role(user.getRole())
+                .build();
+    }
+
+    public ProfileUpdateRequest mapUserEntityToProfileUpdateRequestDto(User user) {
+        return ProfileUpdateRequest.builder()
+                .email(user.getEmail())
                 .build();
     }
 

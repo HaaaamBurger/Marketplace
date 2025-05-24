@@ -11,7 +11,7 @@ import com.marketplace.usercore.config.UserCoreApplicationConfig;
 import com.marketplace.usercore.model.UserRole;
 import com.marketplace.usercore.model.UserStatus;
 import com.marketplace.usercore.repository.UserRepository;
-import com.marketplace.usercore.security.ProfileService;
+import com.marketplace.usercore.security.AuthenticationUserService;
 import com.marketplace.usercore.service.UserService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,7 +38,7 @@ public class UserServiceTest {
     private PasswordEncoder passwordEncoder;
 
     @MockitoBean
-    private ProfileService profileService;
+    private AuthenticationUserService authenticationUserService;
 
     @Autowired
     private UserService userService;
@@ -148,7 +148,7 @@ public class UserServiceTest {
         UserUpdateRequest userUpdateRequest = UserUpdateRequestDataBuilder.buildUserWithAllFields().build();
 
         when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
-        when(profileService.getAuthenticatedUser()).thenReturn(user);
+        when(authenticationUserService.getAuthenticatedUser()).thenReturn(user);
         when(userRepository.save(user)).thenAnswer(invocation -> {
             User invocationUser = invocation.getArgument(0);
             invocationUser.setRole(UserRole.ADMIN);

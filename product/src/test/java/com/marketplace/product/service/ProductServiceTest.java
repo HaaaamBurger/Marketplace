@@ -3,7 +3,7 @@ package com.marketplace.product.service;
 import com.marketplace.common.exception.EntityNotFoundException;
 import com.marketplace.product.config.ProductApplicationConfig;
 import com.marketplace.product.util.MockHelper;
-import com.marketplace.product.web.rest.dto.ProductRequest;
+import com.marketplace.product.web.dto.ProductRequest;
 import com.marketplace.product.web.model.Product;
 import com.marketplace.product.util.ProductDataBuilder;
 import com.marketplace.product.repository.ProductRepository;

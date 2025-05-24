@@ -1,94 +1,146 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8" />
     <title>Marketplace</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css"
-          rel="stylesheet"
-          integrity="sha384-4Q6Gf2aSP4eDXB8Miphtr37CMZZQ5oXLH2yaXMJ2w8e2ZtHTl7GptT4jmndRuHDT"
-          crossorigin="anonymous">
-
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-4Q6Gf2aSP4eDXB8Miphtr37CMZZQ5oXLH2yaXMJ2w8e2ZtHTl7GptT4jmndRuHDT" crossorigin="anonymous">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <style>
+        body {
+            background: linear-gradient(135deg, #eef2ff, #dfe9f3);
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        .card {
+            border: none;
+            border-radius: 16px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-header {
+            background-color: royalblue;
+            border-top-left-radius: 16px;
+            border-top-right-radius: 16px;
+        }
+
+        .card-header h4 {
+            margin: 0;
+        }
+
+        .form-control:focus {
+            border-color: royalblue;
+            box-shadow: 0 0 0 0.2rem rgba(65, 105, 225, 0.25);
+        }
+
+        .form-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6c757d;
+        }
+
+        .input-with-icon {
+            position: relative;
+        }
+
+        .input-with-icon input {
+            padding-left: 2.5rem;
+        }
+
+        .btn-primary-custom {
+            background-color: royalblue;
+            color: white;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn-primary-custom:hover {
+            background-color: #264de4;
+        }
+
+        .toast-container {
+            z-index: 1055;
+        }
+    </style>
 </head>
 <body>
 
-<div>
-    <div class="container">
-        <div class="row align-items-center justify-content-center" style="height: 100vh">
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-header bg-dark text-white text-center">
-                        <h4>Sign In</h4>
+<div class="container d-flex justify-content-center align-items-center" style="min-height: 100vh;">
+    <div class="col-md-6 col-lg-5">
+        <div class="card">
+            <div class="card-header text-white text-center py-3">
+                <h4>Sign In</h4>
+            </div>
+            <div class="card-body p-4">
+
+                <a th:href="@{/home}" class="btn btn-outline-secondary mb-3">
+                    <i class="bi bi-arrow-left"></i> Back
+                </a>
+
+                <form th:action="@{/sign-in}" th:object="${authRequest}" method="POST">
+
+                    <div class="mb-4">
+                        <label for="email" class="form-label">Email address</label>
+                        <div class="input-with-icon">
+                            <i class="bi bi-envelope form-icon"></i>
+                            <input type="text"
+                                   th:field="*{email}"
+                                   class="form-control"
+                                   id="email"
+                                   name="email"
+                                   placeholder="johnwick123@gmail.com"
+                                   required>
+                        </div>
+                        <div th:if="${#fields.hasErrors('email')}" class="text-danger small" th:errors="*{email}"></div>
                     </div>
-                    <div class="card-body">
 
-                        <a th:href="@{/home}" class="btn btn-outline-secondary mb-3">
-                            <i class="bi bi-arrow-left"></i> Back
-                        </a>
+                    <div class="mb-4">
+                        <label for="password" class="form-label">Password</label>
+                        <div class="input-with-icon">
+                            <i class="bi bi-lock form-icon"></i>
+                            <input type="password"
+                                   th:field="*{password}"
+                                   class="form-control"
+                                   id="password"
+                                   name="password"
+                                   placeholder="••••••••"
+                                   required>
+                        </div>
+                        <div th:if="${#fields.hasErrors('password')}" class="text-danger small" th:errors="*{password}"></div>
+                    </div>
 
-                        <form th:action="@{/sign-in}" th:object="${authRequest}" method="POST">
-                            <div class="mb-4">
-                                <label for="email" class="form-label">Email address</label>
-                                <input type="text"
-                                       th:field="*{email}"
-                                       class="form-control"
-                                       id="email"
-                                       name="email"
-                                       placeholder="johnwick123@gmail.com"
-                                       required>
-
-                                <div th:if="${#fields.hasErrors('email')}">
-                                    <a th:errors="*{email}" class="text-danger"></a>
-                                </div>
-
-                            </div>
-
-                            <div class="mb-4">
-                                <label for="password" class="form-label">Password</label>
-                                <input type="password"
-                                       th:field="*{password}"
-                                       class="form-control"
-                                       id="password"
-                                       name="password"
-                                       placeholder="johnwick123"
-                                       required>
-
-                                <div th:if="${#fields.hasErrors('password')}">
-                                    <a th:errors="*{password}" class="text-danger"></a>
-                                </div>
-                            </div>
-
-                            <div aria-live="polite" aria-atomic="true" class="position-relative">
-                                <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1055;">
-                                    <div th:if="${#fields.hasGlobalErrors()}"
-                                         class="toast show align-items-center text-bg-danger border-0"
-                                         role="alert"
-                                         aria-live="assertive"
-                                         aria-atomic="true">
-                                        <div class="d-flex">
-                                            <div class="toast-body">
-                                                <ul class="mb-0 ps-3">
-                                                    <li th:each="err : ${#fields.globalErrors()}" th:text="${err}"></li>
-                                                </ul>
-                                            </div>
-                                            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
-                                                    aria-label="Close"></button>
-                                        </div>
+                    <div aria-live="polite" aria-atomic="true" class="position-relative">
+                        <div class="toast-container position-fixed top-0 end-0 p-3">
+                            <div th:if="${#fields.hasGlobalErrors()}"
+                                 class="toast show align-items-center text-bg-danger border-0"
+                                 role="alert"
+                                 aria-live="assertive"
+                                 aria-atomic="true">
+                                <div class="d-flex">
+                                    <div class="toast-body">
+                                        <ul class="mb-0 ps-3">
+                                            <li th:each="err : ${#fields.globalErrors()}" th:text="${err}"></li>
+                                        </ul>
                                     </div>
+                                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
+                                            aria-label="Close"></button>
                                 </div>
                             </div>
-
-
-                            <button type="submit" class="btn w-100" style="color: white; background-color: royalblue">Sign In</button>
-                        </form>
+                        </div>
                     </div>
-                </div>
+
+                    <button type="submit" class="btn btn-primary-custom w-100 py-2">
+                        <i class="bi bi-box-arrow-in-right me-2"></i> Sign In
+                    </button>
+                </form>
+
             </div>
         </div>
     </div>
-
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js"

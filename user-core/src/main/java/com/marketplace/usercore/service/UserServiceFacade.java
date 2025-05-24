@@ -4,7 +4,7 @@ import com.marketplace.common.exception.EntityExistsException;
 import com.marketplace.common.exception.EntityNotFoundException;
 import com.marketplace.usercore.dto.UserUpdateRequest;
 import com.marketplace.usercore.model.UserRole;
-import com.marketplace.usercore.security.ProfileService;
+import com.marketplace.usercore.security.AuthenticationUserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import com.marketplace.usercore.dto.UserRequest;
@@ -12,7 +12,6 @@ import com.marketplace.usercore.mapper.UserEntityMapper;
 import com.marketplace.usercore.model.User;
 import com.marketplace.usercore.model.UserStatus;
 import com.marketplace.usercore.repository.UserRepository;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -29,7 +28,7 @@ public final class UserServiceFacade implements UserService {
 
     private final PasswordEncoder passwordEncoder;
 
-    private final ProfileService profileService;
+    private final AuthenticationUserService authenticationUserService;
 
     private final UserEntityMapper userEntityMapper;
 
@@ -59,20 +58,14 @@ public final class UserServiceFacade implements UserService {
     @Override
     public User update(String userId, UserUpdateRequest userUpdateRequest) {
         User userForUpdate = throwIfUserNotFoundById(userId);
-        User authenticatedUser = profileService.getAuthenticatedUser();
 
-        if (!validateEntityOwnerOrAdmin(authenticatedUser, userId)) {
-            log.error("[USER_SERVICE_FACADE]: User {} is not owner or not ADMIN", authenticatedUser.getId());
-            throw new AccessDeniedException("Access denied!");
+        if (!userUpdateRequest.getEmail().equals(userForUpdate.getEmail())) {
+            throwIfUserWithSameEmailExists(userUpdateRequest.getEmail());
         }
-
-        throwIfUserWithSameEmailExists(userUpdateRequest.getEmail());
 
         Optional.ofNullable(userUpdateRequest.getEmail()).ifPresent(userForUpdate::setEmail);
-        if (authenticatedUser.getRole() == UserRole.ADMIN) {
-            Optional.ofNullable(userUpdateRequest.getRole()).ifPresent(userForUpdate::setRole);
-            Optional.ofNullable(userUpdateRequest.getStatus()).ifPresent(userForUpdate::setStatus);
-        }
+        Optional.ofNullable(userUpdateRequest.getRole()).ifPresent(userForUpdate::setRole);
+        Optional.ofNullable(userUpdateRequest.getStatus()).ifPresent(userForUpdate::setStatus);
 
         return userRepository.save(userForUpdate);
     }
@@ -86,6 +79,10 @@ public final class UserServiceFacade implements UserService {
     @Override
     public boolean validateEntityOwnerOrAdmin(User authUser, String userId) {
         return Objects.equals(authUser.getId(), userId) || authUser.getRole() == UserRole.ADMIN;
+    }
+
+    public boolean existsByEmail(String email) {
+        return userRepository.existsByEmail(email);
     }
 
     public void throwIfUserExistsByEmail(String email) {
@@ -104,8 +101,9 @@ public final class UserServiceFacade implements UserService {
                 });
     }
 
+
     public void throwIfUserWithSameEmailExists(String email) {
-        User authenticatedUser = profileService.getAuthenticatedUser();
+        User authenticatedUser = authenticationUserService.getAuthenticatedUser();
 
         if (authenticatedUser.getEmail().equals(email)) {
             return;
