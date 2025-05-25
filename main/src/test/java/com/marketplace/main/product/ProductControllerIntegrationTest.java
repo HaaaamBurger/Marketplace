@@ -110,6 +110,7 @@ class ProductControllerIntegrationTest {
 
         assertThat(modelAndView).isNotNull();
         assertThat(modelAndView.getViewName()).isEqualTo("error");
+
     }
 
 //    @Test
