@@ -7,7 +7,7 @@ import java.util.UUID;
 
 public class ProductRequestDataBuilder {
 
-    public static ProductRequest.ProductRequestBuilder buildOrderWithAllFields() {
+    public static ProductRequest.ProductRequestBuilder buildProductWithAllFields() {
         return ProductRequest.builder()
                 .name(String.valueOf(UUID.randomUUID()))
                 .description(String.valueOf(UUID.randomUUID()))

@@ -42,7 +42,7 @@ class OrderControllerIntegrationTest {
 //    @Test
 //    public void getAllOrders_ShouldReturnAllOrders() throws Exception {
 //        AuthHelper.AuthHelperResponse adminAuth = authHelper.createAdminAuth();
-//        Order order = OrderDataBuilder.buildOrderWithAllFields().build();
+//        Order order = OrderDataBuilder.buildProductWithAllFields().build();
 //
 //        orderRepository.save(order);
 //
@@ -61,7 +61,7 @@ class OrderControllerIntegrationTest {
 //    @Test
 //    public void getAllOrders_ShouldThrowException_WhenUserAuthentication() throws Exception {
 //        AuthHelper.AuthHelperResponse userAuth = authHelper.createUserAuth();
-//        Order order = OrderDataBuilder.buildOrderWithAllFields().build();
+//        Order order = OrderDataBuilder.buildProductWithAllFields().build();
 //
 //        orderRepository.save(order);
 //
@@ -82,7 +82,7 @@ class OrderControllerIntegrationTest {
 //    @Test
 //    public void getOrderById_ShouldReturnOrder() throws Exception {
 //        AuthHelper.AuthHelperResponse userAuth = authHelper.createUserAuth();
-//        Order order = OrderDataBuilder.buildOrderWithAllFields()
+//        Order order = OrderDataBuilder.buildProductWithAllFields()
 //                .ownerId(userAuth.getAuthUser().getId())
 //                .build();
 //
@@ -103,7 +103,7 @@ class OrderControllerIntegrationTest {
 //    @Test
 //    public void getOrderById_ShouldThrowException_WhenUserAuthentication_AndUserNotOwner() throws Exception {
 //        AuthHelper.AuthHelperResponse userAuth = authHelper.createUserAuth();
-//        Order order = OrderDataBuilder.buildOrderWithAllFields().build();
+//        Order order = OrderDataBuilder.buildProductWithAllFields().build();
 //
 //        orderRepository.save(order);
 //
@@ -124,7 +124,7 @@ class OrderControllerIntegrationTest {
 //    @Test
 //    public void getOrderById_ShouldReturnOrder_WhenAdminAuthentication_AndAdminNotOwner() throws Exception {
 //        AuthHelper.AuthHelperResponse adminAuth = authHelper.createAdminAuth();
-//        Order order = OrderDataBuilder.buildOrderWithAllFields().build();
+//        Order order = OrderDataBuilder.buildProductWithAllFields().build();
 //
 //        orderRepository.save(order);
 //
@@ -143,7 +143,7 @@ class OrderControllerIntegrationTest {
 //    public void createOrder_ShouldReturnOrder() throws Exception {
 //        AuthHelper.AuthHelperResponse adminAuth = authHelper.createAdminAuth();
 //        Product product = ProductDataBuilder.buildProductWithAllFields().build();
-//        OrderRequest orderRequest = OrderRequestDataBuilder.buildOrderWithAllFields()
+//        OrderRequest orderRequest = OrderRequestDataBuilder.buildProductWithAllFields()
 //                .productIds(List.of(product.getId()))
 //                .build();
 //
@@ -172,7 +172,7 @@ class OrderControllerIntegrationTest {
 //    public void createOrder_ShouldThrowException_WhenUserAuthentication() throws Exception {
 //        AuthHelper.AuthHelperResponse userAuth = authHelper.createUserAuth();
 //        Product product = ProductDataBuilder.buildProductWithAllFields().build();
-//        OrderRequest orderRequest = OrderRequestDataBuilder.buildOrderWithAllFields()
+//        OrderRequest orderRequest = OrderRequestDataBuilder.buildProductWithAllFields()
 //                .productIds(List.of(product.getId()))
 //                .build();
 //
@@ -198,7 +198,7 @@ class OrderControllerIntegrationTest {
 //    public void createOrder_ShouldThrowException_WhenProductNotFound() throws Exception {
 //        AuthHelper.AuthHelperResponse adminAuth = authHelper.createAdminAuth();
 //        Product product = ProductDataBuilder.buildProductWithAllFields().build();
-//        OrderRequest orderRequest = OrderRequestDataBuilder.buildOrderWithAllFields()
+//        OrderRequest orderRequest = OrderRequestDataBuilder.buildProductWithAllFields()
 //                .productIds(List.of(product.getId()))
 //                .build();
 //
@@ -221,8 +221,8 @@ class OrderControllerIntegrationTest {
 //    @Test
 //    public void updateOrder_ShouldUpdateOrder() throws Exception {
 //        AuthHelper.AuthHelperResponse adminAuth = authHelper.createAdminAuth();
-//        Order order = OrderDataBuilder.buildOrderWithAllFields().build();
-//        OrderRequest orderRequest = OrderRequestDataBuilder.buildOrderWithAllFields()
+//        Order order = OrderDataBuilder.buildProductWithAllFields().build();
+//        OrderRequest orderRequest = OrderRequestDataBuilder.buildProductWithAllFields()
 //                .status(OrderStatus.COMPLETED)
 //                .build();
 //
@@ -245,8 +245,8 @@ class OrderControllerIntegrationTest {
 //    @Test
 //    public void updateOrder_ShouldThrowException_WhenUserAuthentication() throws Exception {
 //        AuthHelper.AuthHelperResponse userAuth = authHelper.createUserAuth();
-//        Order order = OrderDataBuilder.buildOrderWithAllFields().build();
-//        OrderRequest orderRequest = OrderRequestDataBuilder.buildOrderWithAllFields()
+//        Order order = OrderDataBuilder.buildProductWithAllFields().build();
+//        OrderRequest orderRequest = OrderRequestDataBuilder.buildProductWithAllFields()
 //                .status(OrderStatus.COMPLETED)
 //                .build();
 //
@@ -303,7 +303,7 @@ class OrderControllerIntegrationTest {
 //                .ownerId(userAuth.getAuthUser().getId())
 //                .build();
 //        Product product2 = ProductDataBuilder.buildProductWithAllFields().build();
-//        Order order = OrderDataBuilder.buildOrderWithAllFields()
+//        Order order = OrderDataBuilder.buildProductWithAllFields()
 //                .ownerId(userAuth.getAuthUser().getId())
 //                .productIds(List.of(product.getId()))
 //                .build();
@@ -352,7 +352,7 @@ class OrderControllerIntegrationTest {
 //    @Test
 //    public void deleteOrder_ShouldDeleteOrder() throws Exception {
 //        AuthHelper.AuthHelperResponse adminAuth = authHelper.createAdminAuth();
-//        Order order = OrderDataBuilder.buildOrderWithAllFields()
+//        Order order = OrderDataBuilder.buildProductWithAllFields()
 //                .ownerId(adminAuth.getAuthUser().getId())
 //                .build();
 //
@@ -369,7 +369,7 @@ class OrderControllerIntegrationTest {
 //    @Test
 //    public void deleteOrder_ShouldThrowException_WhenUserAuthentication() throws Exception {
 //        AuthHelper.AuthHelperResponse userAuth = authHelper.createUserAuth();
-//        Order order = OrderDataBuilder.buildOrderWithAllFields()
+//        Order order = OrderDataBuilder.buildProductWithAllFields()
 //                .ownerId(userAuth.getAuthUser().getId())
 //                .build();
 //
@@ -393,7 +393,7 @@ class OrderControllerIntegrationTest {
 //    @Test
 //    public void deleteOrder_ShouldThrowException_WhenOrderNotFound() throws Exception {
 //        AuthHelper.AuthHelperResponse adminAuth = authHelper.createAdminAuth();
-//        Order order = OrderDataBuilder.buildOrderWithAllFields()
+//        Order order = OrderDataBuilder.buildProductWithAllFields()
 //                .ownerId(adminAuth.getAuthUser().getId())
 //                .build();
 //
