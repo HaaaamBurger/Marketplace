@@ -263,8 +263,33 @@ class ProductControllerIntegrationTest {
     public void deleteProduct_ShouldDeleteAndRedirectToProducts_WhenUserOwner() throws Exception {
         User authUser = UserDataBuilder.buildUserWithAllFields()
                 .build();
+
+        Cookie cookie = authHelper.signIn(authUser, mockMvc);
         Product product = ProductDataBuilder.buildProductWithAllFields()
                 .ownerId(authUser.getId())
+                .build();
+
+        product = productRepository.save(product);
+
+        String redirectedUrl = mockMvc.perform(delete("/products/{productId}", product.getId())
+                        .cookie(cookie))
+                .andExpect(status().is3xxRedirection())
+                .andReturn()
+                .getResponse()
+                .getRedirectedUrl();
+
+        assertThat(redirectedUrl).isNotNull();
+        assertThat(redirectedUrl).isEqualTo("/products");
+        assertThat(productRepository.findById(product.getId())).isNotPresent();
+    }
+
+    @Test
+    public void deleteProduct_ShouldDeleteAndRedirectToProducts_WhenUserAdmin() throws Exception {
+        User authUser = UserDataBuilder.buildUserWithAllFields()
+                .role(UserRole.ADMIN)
+                .build();
+        Product product = ProductDataBuilder.buildProductWithAllFields()
+                .ownerId(String.valueOf(UUID.randomUUID()))
                 .build();
 
         Cookie cookie = authHelper.signIn(authUser, mockMvc);
@@ -283,65 +308,25 @@ class ProductControllerIntegrationTest {
     }
 
     @Test
-    public void deleteProduct_ShouldDeleteAndRedirectToProducts_WhenUserAdmin() {
+    public void deleteProduct_ShouldRedirectToError_WhenUserNotAdminAndNotOwner() throws Exception {
+        User authUser = UserDataBuilder.buildUserWithAllFields()
+                .build();
+        Product product = ProductDataBuilder.buildProductWithAllFields()
+                .ownerId(String.valueOf(UUID.randomUUID()))
+                .build();
 
+        Cookie cookie = authHelper.signIn(authUser, mockMvc);
+        product = productRepository.save(product);
+
+        String redirectedUrl = mockMvc.perform(delete("/products/{productId}", product.getId())
+                        .cookie(cookie))
+                .andExpect(status().is3xxRedirection())
+                .andReturn()
+                .getResponse()
+                .getRedirectedUrl();
+
+        assertThat(redirectedUrl).isNotNull();
+        assertThat(redirectedUrl).isEqualTo("/error");
+        assertThat(productRepository.findById(product.getId())).isPresent();
     }
-
-    @Test
-    public void deleteProduct_ShouldRedirectToError_WhenUserNotAdminAndNotOwner() {
-
-    }
-
-//    @Test
-//    public void deleteProduct_ShouldRemoveProduct() throws Exception {
-//        AuthHelper.AuthHelperResponse userAuth = authHelper.createUserAuth();
-//        Product product = ProductDataBuilder.buildProductWithAllFields()
-//                .ownerId(userAuth.getAuthUser().getId())
-//                .build();
-//
-//        product = productRepository.save(product);
-//        assertThat(productRepository.findById(product.getId())).isPresent();
-//
-//        mockMvc.perform(delete("/products/{productId}", product.getId())
-//                        .header(AUTHORIZATION_HEADER, userAuth.getToken()))
-//                .andExpect(status().isOk());
-//
-//        assertThat(productRepository.findById(product.getId())).isNotPresent();
-//    }
-//
-//    @Test
-//    public void deleteProduct_ShouldNotAllow_WhenUserNotOwner() throws Exception {
-//        AuthHelper.AuthHelperResponse userAuth = authHelper.createUserAuth();
-//        Product product = ProductDataBuilder.buildProductWithAllFields().build();
-//
-//        product = productRepository.save(product);
-//
-//        String response = mockMvc.perform(delete("/products/{productId}", product.getId())
-//                        .header(AUTHORIZATION_HEADER, userAuth.getToken()))
-//                .andExpect(status().isForbidden())
-//                .andReturn().getResponse().getContentAsString();
-//
-//        ExceptionResponse exceptionResponse = objectMapper.readValue(response, ExceptionResponse.class);
-//
-//        assertThat(exceptionResponse).isNotNull();
-//        assertThat(exceptionResponse.getStatus()).isEqualTo(HttpStatus.FORBIDDEN.value());
-//        assertThat(exceptionResponse.getType()).isEqualTo(ExceptionType.AUTHORIZATION);
-//        assertThat(exceptionResponse.getMessage()).isEqualTo("Forbidden, not enough access!");
-//        assertThat(exceptionResponse.getPath()).isEqualTo("/products/%s", product.getId());
-//    }
-//
-//    @Test
-//    public void deleteProduct_ShouldRemove_WhenUserNotOwnerButAdmin() throws Exception {
-//        AuthHelper.AuthHelperResponse userAuth = authHelper.createAdminAuth();
-//        Product product = ProductDataBuilder.buildProductWithAllFields().build();
-//
-//        product = productRepository.save(product);
-//
-//         mockMvc.perform(delete("/products/{productId}", product.getId())
-//                        .header(AUTHORIZATION_HEADER, userAuth.getToken()))
-//                .andExpect(status().isOk());
-//
-//        assertThat(productRepository.findById(product.getId())).isNotPresent();
-//    }
-
 }
