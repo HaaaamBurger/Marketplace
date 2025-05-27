@@ -147,7 +147,7 @@ public class UserControllerIntegrationTest {
         FieldError fieldError = ((BindingResult) model.get("org.springframework.validation.BindingResult.userRequest")).getFieldError();
         assertThat(fieldError).isNotNull();
         assertThat(fieldError.getDefaultMessage()).isNotNull();
-        assertThat(fieldError.getDefaultMessage()).isEqualTo("User with this email already exists");
+        assertThat(fieldError.getDefaultMessage()).isEqualTo("This email already in use");
     }
 
 
