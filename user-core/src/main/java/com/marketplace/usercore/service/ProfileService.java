@@ -24,20 +24,19 @@ public class ProfileService {
     private final UserRepository userRepository;
 
     public User update(String userId, ProfileUpdateRequest profileUpdateRequest) {
-        User userForUpdate = userServiceFacade.throwIfUserNotFoundById(userId);
-        User authenticatedUser = authenticationUserService.getAuthenticatedUser();
 
+        User authenticatedUser = authenticationUserService.getAuthenticatedUser();
         if (!Objects.equals(authenticatedUser.getId(), userId)) {
             log.error("[PROFILE_SERVICE]: User {} is not owner", authenticatedUser.getId());
             throw new AccessDeniedException("Access denied!");
         }
 
+        User userForUpdate = userServiceFacade.throwIfUserNotFoundById(userId);
         if (!profileUpdateRequest.getEmail().equals(userForUpdate.getEmail())) {
             userServiceFacade.throwIfUserWithSameEmailExists(profileUpdateRequest.getEmail());
         }
 
         Optional.ofNullable(profileUpdateRequest.getEmail()).ifPresent(userForUpdate::setEmail);
-
         return userRepository.save(userForUpdate);
     }
 

@@ -14,6 +14,8 @@ public class ProductResponse {
 
     private String name;
 
+    private String ownerId;
+
     private String description;
 
     private BigDecimal price;

@@ -14,6 +14,7 @@ public class ProductEntityMapper {
         return ProductResponse.builder()
                 .id(product.getId())
                 .name(product.getName())
+                .ownerId(product.getOwnerId())
                 .price(product.getPrice())
                 .description(product.getDescription())
                 .createdAt(product.getCreatedAt())

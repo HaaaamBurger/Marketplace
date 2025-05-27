@@ -31,13 +31,12 @@ public class ProductController {
     }
 
     @GetMapping("/{productId}")
-    public String getProduct(
+    public String getProductById(
             Model model,
             @PathVariable String productId
     ) {
         Product product = productService.findById(productId);
         model.addAttribute("product", productEntityMapper.mapProductToProductResponseDto(product));
-        model.addAttribute("ownerId", product.getOwnerId());
         return "product";
     }
 

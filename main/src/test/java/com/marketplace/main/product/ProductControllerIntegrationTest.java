@@ -22,6 +22,8 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
 import org.springframework.web.servlet.ModelAndView;
 
 import java.util.List;
@@ -76,7 +78,24 @@ class ProductControllerIntegrationTest {
         Map<String, Object> model = authHelper.requireModel(mvcResult);
 
         List<ProductResponse> productResponses = (List<ProductResponse>) model.get("products");
-        Assertions.assertThat(productResponses.size()).isEqualTo(2);
+        assertThat(productResponses.size()).isEqualTo(2);
+    }
+
+    @Test
+    public void getAllProducts_WhenNoAuth_ShouldReturnProducts() throws Exception {
+        Product product = ProductDataBuilder.buildProductWithAllFields().build();
+        Product product1 = ProductDataBuilder.buildProductWithAllFields().build();
+
+        productRepository.saveAll(List.of(product, product1));
+
+        MvcResult mvcResult = mockMvc.perform(get("/products"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        Map<String, Object> model = authHelper.requireModel(mvcResult);
+
+        List<ProductResponse> productResponses = (List<ProductResponse>) model.get("products");
+        assertThat(productResponses.size()).isEqualTo(2);
     }
 
     @Test
@@ -118,6 +137,25 @@ class ProductControllerIntegrationTest {
     }
 
     @Test
+    public void getProductById_ShouldReturnProduct_WhenNoAuth() throws Exception {
+        Product product = ProductDataBuilder.buildProductWithAllFields().build();
+
+        productRepository.save(product);
+
+        MvcResult mvcResult = mockMvc.perform(get("/products/{productId}", product.getId()))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        Map<String, Object> model = authHelper.requireModel(mvcResult);
+
+        ProductResponse responseProduct = (ProductResponse) model.get("product");
+
+        assertThat(responseProduct).isNotNull();
+        assertThat(responseProduct.getId()).isEqualTo(product.getId());
+        assertThat(responseProduct.getName()).isEqualTo(product.getName());
+    }
+
+    @Test
     public void createProduct_WhenUserAuthenticated_ShouldRedirectToProducts() throws Exception {
         User authUser = UserDataBuilder.buildUserWithAllFields().build();
         ProductRequest productRequest = ProductRequestDataBuilder.buildProductWithAllFields().build();
@@ -139,6 +177,26 @@ class ProductControllerIntegrationTest {
 
         Optional<Product> productByOwnerId = productRepository.findProductByOwnerId(authUser.getId());
         assertThat(productByOwnerId).isPresent();
+    }
+
+    @Test
+    public void createProduct_WhenValidationError_ShouldRedirectToProduct() throws Exception {
+        User authUser = UserDataBuilder.buildUserWithAllFields().build();
+
+        Cookie cookie = authHelper.signIn(authUser, mockMvc);
+
+        MvcResult mvcResult = mockMvc.perform(post("/products/create")
+                        .cookie(cookie)
+                        .param("price", "0"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        ModelAndView modelAndView = mvcResult.getModelAndView();
+        assertThat(modelAndView.getViewName()).isEqualTo("product-create");
+        FieldError fieldError = ((BindingResult) modelAndView.getModel().get("org.springframework.validation.BindingResult.productRequest")).getFieldError();
+        assertThat(fieldError).isNotNull();
+        assertThat(fieldError.getDefaultMessage()).isNotNull();
+        assertThat(fieldError.getDefaultMessage()).isEqualTo("Price must be greater than 0");
     }
 
     @Test
@@ -229,7 +287,7 @@ class ProductControllerIntegrationTest {
     }
 
     @Test
-    public void updateProduct_ShouldRedirectToError_WhenUserNotAdminAndNotOwner() throws Exception {
+    public void updateProduct_ShouldRedirectToErrorPage_WhenUserNotAdminAndNotOwner() throws Exception {
         User authUser = UserDataBuilder.buildUserWithAllFields()
                 .build();
         ProductRequest productRequest = ProductRequestDataBuilder.buildProductWithAllFields().build();
@@ -308,7 +366,7 @@ class ProductControllerIntegrationTest {
     }
 
     @Test
-    public void deleteProduct_ShouldRedirectToError_WhenUserNotAdminAndNotOwner() throws Exception {
+    public void deleteProduct_ShouldRedirectToErrorPage_WhenUserNotAdminAndNotOwner() throws Exception {
         User authUser = UserDataBuilder.buildUserWithAllFields()
                 .build();
         Product product = ProductDataBuilder.buildProductWithAllFields()

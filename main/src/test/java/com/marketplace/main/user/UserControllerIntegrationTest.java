@@ -154,7 +154,7 @@ public class UserControllerIntegrationTest {
 
 
     @Test
-    public void createUser_WhenRoleUser_ThenRedirectToError() throws Exception {
+    public void createUser_WhenRoleUser_ThenRedirectToErrorPage() throws Exception {
         User authUser = UserDataBuilder.buildUserWithAllFields().build();
         UserRequest userRequest = UserRequestDataBuilder.withAllFields()
                 .email("test1@gmail.com")
@@ -255,7 +255,7 @@ public class UserControllerIntegrationTest {
     }
 
     @Test
-    public void updateUser_WhenRoleUser_ThenAccessDenied() throws Exception {
+    public void updateUser_WhenRoleUser_ThenRedirectToErrorPage() throws Exception {
         User authUser = UserDataBuilder.buildUserWithAllFields().build();
         UserUpdateRequest userUpdateRequest = UserUpdateRequestDataBuilder.buildUserWithAllFields()
                 .email("test2@gmail.com")

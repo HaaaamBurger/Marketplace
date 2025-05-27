@@ -34,7 +34,6 @@ public class UserController {
     public String getAll(Model model) {
         List<UserResponse> userResponses = userEntityMapper.mapUsersToUserResponseDtos(userService.findAll());
         model.addAttribute("users", userResponses);
-        model.addAttribute("userRequest", UserRequest.builder().build());
 
         return "users";
     }
