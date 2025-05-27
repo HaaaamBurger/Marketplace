@@ -84,6 +84,11 @@
                     </div>
                 </div>
             </div>
+            <div class="w-100 text-center text-muted" th:if="${#lists.isEmpty(products)}">
+                <i class="bi bi-box-seam fs-1 d-block mb-3"></i>
+                <h4>No products found</h4>
+                <p class="mb-0">There are currently no products available. Try creating one!</p>
+            </div>
         </div>
     </div>
 
