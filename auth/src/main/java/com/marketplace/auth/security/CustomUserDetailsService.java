@@ -1,4 +1,4 @@
-package com.marketplace.auth.security.service;
+package com.marketplace.auth.security;
 
 import com.marketplace.usercore.repository.UserRepository;
 import lombok.RequiredArgsConstructor;

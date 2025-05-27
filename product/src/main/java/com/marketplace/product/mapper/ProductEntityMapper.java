@@ -1,7 +1,7 @@
 package com.marketplace.product.mapper;
 
-import com.marketplace.product.web.rest.dto.ProductRequest;
-import com.marketplace.product.web.rest.dto.ProductResponse;
+import com.marketplace.product.web.dto.ProductRequest;
+import com.marketplace.product.web.dto.ProductResponse;
 import com.marketplace.product.web.model.Product;
 import org.springframework.stereotype.Service;
 
@@ -14,6 +14,7 @@ public class ProductEntityMapper {
         return ProductResponse.builder()
                 .id(product.getId())
                 .name(product.getName())
+                .ownerId(product.getOwnerId())
                 .price(product.getPrice())
                 .description(product.getDescription())
                 .createdAt(product.getCreatedAt())
@@ -26,6 +27,14 @@ public class ProductEntityMapper {
                 .name(productRequest.getName())
                 .price(productRequest.getPrice())
                 .description(productRequest.getDescription())
+                .build();
+    }
+
+    public ProductRequest mapProductToProductRequestDto(Product product) {
+        return ProductRequest.builder()
+                .name(product.getName())
+                .price(product.getPrice())
+                .description(product.getDescription())
                 .build();
     }
 

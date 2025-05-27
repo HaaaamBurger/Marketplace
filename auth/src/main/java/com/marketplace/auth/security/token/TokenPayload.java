@@ -1,4 +1,4 @@
-package com.marketplace.auth.security;
+package com.marketplace.auth.security.token;
 
 import lombok.Builder;
 import lombok.Data;

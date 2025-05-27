@@ -1,12 +1,12 @@
 package com.marketplace.product.service;
 
 import com.marketplace.common.exception.EntityNotFoundException;
-import com.marketplace.product.web.rest.dto.ProductRequest;
+import com.marketplace.product.web.dto.ProductRequest;
 import com.marketplace.product.web.model.Product;
 import com.marketplace.product.repository.ProductRepository;
 import com.marketplace.product.mapper.ProductEntityMapper;
 import com.marketplace.usercore.model.User;
-import com.marketplace.usercore.security.ProfileService;
+import com.marketplace.usercore.security.AuthenticationUserService;
 import com.marketplace.usercore.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,19 +19,19 @@ import java.util.Optional;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public final class MongoProductService implements ProductService {
+public final class ProductServiceFacade implements ProductService {
 
     private final ProductRepository productRepository;
 
     private final ProductEntityMapper productEntityMapper;
 
-    private final ProfileService profileService;
+    private final AuthenticationUserService authenticationUserService;
 
     private final UserService userService;
 
     @Override
     public Product create(ProductRequest productRequest) {
-        User authenticatedUser = profileService.getAuthenticatedUser();
+        User authenticatedUser = authenticationUserService.getAuthenticatedUser();
 
         Product product = productEntityMapper.mapProductRequestDtoToProduct(productRequest).toBuilder()
                 .ownerId(authenticatedUser.getId())
@@ -71,20 +71,20 @@ public final class MongoProductService implements ProductService {
     public Product findProductOrThrow(String productId) {
         return productRepository.findById(productId)
                 .orElseThrow(() -> {
-                    log.error("[MONGO_PRODUCT_SERVICE]: Product not found by ID {}", productId);
+                    log.error("[PRODUCT_SERVICE_FACADE]: Product not found by ID {}", productId);
                     return new EntityNotFoundException("Product not found!");
                 });
     }
 
     public Product validateProductAccessOrThrow(String productId) {
-        User authenticatedUser = profileService.getAuthenticatedUser();
+        User authenticatedUser = authenticationUserService.getAuthenticatedUser();
         Product product = findProductOrThrow(productId);
 
         if (userService.validateEntityOwnerOrAdmin(authenticatedUser, product.getOwnerId())) {
             return product;
         }
 
-        log.error("[MONGO_PRODUCT_SERVICE]: User {} is not owner of the product: {} or not ADMIN", authenticatedUser.getId(), productId);
+        log.error("[PRODUCT_SERVICE_FACADE]: User {} is not owner of the product: {} or not ADMIN", authenticatedUser.getId(), productId);
         throw new AccessDeniedException("Access denied!");
     }
 

@@ -7,12 +7,9 @@ import com.marketplace.usercore.dto.UserResponse;
 import com.marketplace.usercore.dto.UserUpdateRequest;
 import com.marketplace.usercore.mapper.UserEntityMapper;
 import com.marketplace.usercore.model.User;
-import com.marketplace.usercore.model.UserRole;
-import com.marketplace.usercore.security.ProfileService;
 import com.marketplace.usercore.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -25,8 +22,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class UserController {
 
-    private final ProfileService profileService;
-
     private final UserService userService;
 
     private final UserUpdateValidator userUpdateValidator;
@@ -35,22 +30,14 @@ public class UserController {
 
     private final UserEntityMapper userEntityMapper;
 
-    @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping
     public String getAll(Model model) {
         List<UserResponse> userResponses = userEntityMapper.mapUsersToUserResponseDtos(userService.findAll());
         model.addAttribute("users", userResponses);
-        model.addAttribute("userRequest", UserRequest.builder().build());
 
         return "users";
     }
 
-    @GetMapping("/profile")
-    public String getProfile() {
-        return "user";
-    }
-
-    @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping("/create")
     public String getCreateUser(
             @ModelAttribute UserRequest userRequest,
@@ -60,7 +47,6 @@ public class UserController {
         return "user-create";
     }
 
-    @PreAuthorize("hasAuthority('ADMIN')")
     @PostMapping("/create")
     public String createUser(
             @Valid @ModelAttribute UserRequest userRequest,
@@ -79,9 +65,11 @@ public class UserController {
     @GetMapping("/update/{userId}")
     public String getUpdateUser(Model model, @PathVariable String userId) {
         User user = userService.findById(userId);
-        model.addAttribute("userUpdateRequest", userEntityMapper.mapUserEntityToUserUpdateRequestDto(user));
 
-        return "user-edit";
+        UserUpdateRequest userUpdateRequest = userEntityMapper.mapUserEntityToUserUpdateRequestDto(user);
+        model.addAttribute("userUpdateRequest", userUpdateRequest);
+
+        return "user-update";
     }
 
     @PutMapping("/update/{userId}")
@@ -91,23 +79,17 @@ public class UserController {
             BindingResult bindingResult,
             Model model
     ) {
-        userUpdateValidator.validate(userUpdateRequest, bindingResult);
+        userUpdateValidator.validateUserUpdateRequest(userId, userUpdateRequest, bindingResult);
         if (bindingResult.hasErrors()) {
-            return "user-edit";
+            return "user-update";
         }
 
         model.addAttribute("userId", userId);
         userService.update(userId, userUpdateRequest);
 
-        User authenticatedUser = profileService.getAuthenticatedUser();
-        if (authenticatedUser.getRole() == UserRole.USER) {
-            return "redirect:/home";
-        }
-
         return "redirect:/users";
     }
 
-    @PreAuthorize("hasAuthority('ADMIN')")
     @DeleteMapping("/{userId}")
     public String deleteUser(@PathVariable String userId) {
         userService.delete(userId);

@@ -2,7 +2,7 @@ package com.marketplace.main.auth;
 
 import com.marketplace.auth.web.dto.AuthRequest;
 import com.marketplace.main.exception.MainExceptionHandler;
-import com.marketplace.auth.security.service.JwtService;
+import com.marketplace.auth.security.token.JwtService;
 import com.marketplace.main.util.builder.AuthRequestDataBuilder;
 import com.marketplace.main.util.builder.UserDataBuilder;
 import com.marketplace.usercore.model.User;

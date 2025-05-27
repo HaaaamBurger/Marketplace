@@ -1,17 +1,41 @@
 package com.marketplace.main.product;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.marketplace.main.util.AuthHelper;
+import com.marketplace.main.util.builder.ProductDataBuilder;
+import com.marketplace.main.util.builder.ProductRequestDataBuilder;
+import com.marketplace.main.util.builder.UserDataBuilder;
 import com.marketplace.product.repository.ProductRepository;
 
+import com.marketplace.product.web.dto.ProductRequest;
+import com.marketplace.product.web.dto.ProductResponse;
+import com.marketplace.product.web.model.Product;
+import com.marketplace.usercore.model.User;
+import com.marketplace.usercore.model.UserRole;
+import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
+import org.springframework.web.servlet.ModelAndView;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -27,7 +51,7 @@ class ProductControllerIntegrationTest {
     private ApplicationContext applicationContext;
 
     @Autowired
-    private ObjectMapper objectMapper;
+    private AuthHelper authHelper;
 
     @BeforeEach
     public void setUp() {
@@ -36,212 +60,390 @@ class ProductControllerIntegrationTest {
                 .forEach(MongoRepository::deleteAll);
     }
 
-//    @Test
-//    public void getAllProducts_ShouldReturnList() throws Exception {
-//        AuthHelper.AuthHelperResponse userAuth = authHelper.createUserAuth();
-//        Product product = ProductDataBuilder.buildProductWithAllFields().build();
-//
-//        productRepository.save(product);
-//
-//        String response = mockMvc.perform(get("/products")
-//                        .header(AUTHORIZATION_HEADER, userAuth.getToken()))
-//                .andExpect(status().isOk())
-//                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-//                .andReturn().getResponse().getContentAsString();
-//
-//        List<Product> responseProducts = objectMapper.readValue(response, new TypeReference<>() {});
-//
-//        assertThat(responseProducts).isNotNull();
-//        assertThat(responseProducts.size()).isEqualTo(1);
-//        assertThat(responseProducts.get(0).getId()).isEqualTo(product.getId());
-//    }
-//
-//    @Test
-//    public void getProductById_ShouldReturnProduct() throws Exception {
-//        AuthHelper.AuthHelperResponse userAuth = authHelper.createUserAuth();
-//        Product product = ProductDataBuilder.buildProductWithAllFields().build();
-//
-//        productRepository.save(product);
-//
-//        String response = mockMvc.perform(get("/products/{productId}", product.getId())
-//                        .header(AUTHORIZATION_HEADER, userAuth.getToken()))
-//                .andExpect(status().isOk())
-//                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-//                .andReturn().getResponse().getContentAsString();
-//
-//        Product responseProduct = objectMapper.readValue(response, Product.class);
-//
-//        assertThat(responseProduct).isNotNull();
-//        assertThat(responseProduct.getId()).isEqualTo(product.getId());
-//        assertThat(responseProduct.getName()).isEqualTo(product.getName());
-//    }
-//
-//    @Test
-//    public void getProductById_ShouldThrowException_WhenProductNotFound() throws Exception {
-//        AuthHelper.AuthHelperResponse userAuth = authHelper.createUserAuth();
-//        Product product = ProductDataBuilder.buildProductWithAllFields().build();
-//
-//        String response = mockMvc.perform(get("/products/{productId}", product.getId())
-//                        .header(AUTHORIZATION_HEADER, userAuth.getToken()))
-//                .andExpect(status().isNotFound())
-//                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-//                .andReturn().getResponse().getContentAsString();
-//
-//        ExceptionResponse exceptionResponse = objectMapper.readValue(response, ExceptionResponse.class);
-//
-//        assertThat(exceptionResponse).isNotNull();
-//        assertThat(exceptionResponse.getStatus()).isEqualTo(HttpStatus.NOT_FOUND.value());
-//        assertThat(exceptionResponse.getType()).isEqualTo(ExceptionType.WEB);
-//        assertThat(exceptionResponse.getMessage()).isEqualTo("Product not found!");
-//        assertThat(exceptionResponse.getPath()).isEqualTo("/products/%s", product.getId());
-//    }
-//
-//    @Test
-//    public void createProduct_ShouldReturnCreatedProduct() throws Exception {
-//        AuthHelper.AuthHelperResponse userAuth = authHelper.createUserAuth();
-//        Product product = ProductDataBuilder.buildProductWithAllFields().build();
-//
-//        String response = mockMvc.perform(post("/products")
-//                        .header(AUTHORIZATION_HEADER, userAuth.getToken())
-//                        .contentType(MediaType.APPLICATION_JSON)
-//                        .content(objectMapper.writeValueAsString(product)))
-//                .andExpect(status().isOk())
-//                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-//                .andReturn().getResponse().getContentAsString();
-//
-//        Product responseProduct = objectMapper.readValue(response, Product.class);
-//
-//        assertThat(responseProduct).isNotNull();
-//        assertThat(responseProduct.getName()).isEqualTo(product.getName());
-//        assertThat(responseProduct.getDescription()).isEqualTo(product.getDescription());
-//        assertThat(responseProduct.getPrice()).isEqualTo(product.getPrice());
-//    }
-//
-//    @Test
-//    public void updateProduct_ShouldUpdateAndReturnProduct() throws Exception {
-//        AuthHelper.AuthHelperResponse userAuth = authHelper.createUserAuth();
-//        Product product = ProductDataBuilder.buildProductWithAllFields()
-//                .ownerId(userAuth.getAuthUser().getId())
-//                .build();
-//        Product updatedProduct = ProductDataBuilder.buildProductWithAllFields()
-//                .name("Updated Product")
-//                .build();
-//
-//        product = productRepository.save(product);
-//
-//        String response = mockMvc.perform(put("/products/{productId}", product.getId())
-//                        .header(AUTHORIZATION_HEADER, userAuth.getToken())
-//                        .contentType(MediaType.APPLICATION_JSON)
-//                        .content(objectMapper.writeValueAsString(updatedProduct)))
-//                .andExpect(status().isOk())
-//                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-//                .andReturn().getResponse().getContentAsString();
-//
-//        Product responseProduct = objectMapper.readValue(response, Product.class);
-//
-//        assertThat(product.getId()).isEqualTo(responseProduct.getId());
-//        assertThat(responseProduct.getName()).isEqualTo("Updated Product");
-//    }
-//
-//    @Test
-//    public void updateProduct_ShouldNotAllow_WhenUserNotOwner() throws Exception {
-//        AuthHelper.AuthHelperResponse userAuth = authHelper.createUserAuth();
-//        Product product = ProductDataBuilder.buildProductWithAllFields().build();
-//        Product updatedProduct = ProductDataBuilder.buildProductWithAllFields()
-//                .name("Updated Product")
-//                .build();
-//
-//        product = productRepository.save(product);
-//
-//        String response = mockMvc.perform(put("/products/{productId}", product.getId())
-//                        .header(AUTHORIZATION_HEADER, userAuth.getToken())
-//                        .contentType(MediaType.APPLICATION_JSON)
-//                        .content(objectMapper.writeValueAsString(updatedProduct)))
-//                .andExpect(status().isForbidden())
-//                .andReturn().getResponse().getContentAsString();
-//
-//        ExceptionResponse exceptionResponse = objectMapper.readValue(response, ExceptionResponse.class);
-//
-//        assertThat(exceptionResponse).isNotNull();
-//        assertThat(exceptionResponse.getStatus()).isEqualTo(HttpStatus.FORBIDDEN.value());
-//        assertThat(exceptionResponse.getType()).isEqualTo(ExceptionType.AUTHORIZATION);
-//        assertThat(exceptionResponse.getMessage()).isEqualTo("Forbidden, not enough access!");
-//        assertThat(exceptionResponse.getPath()).isEqualTo("/products/%s", product.getId());
-//    }
-//
-//    @Test
-//    public void updateProduct_ShouldUpdate_WhenUserNotOwnerButAdmin() throws Exception {
-//        AuthHelper.AuthHelperResponse userAuth = authHelper.createAdminAuth();
-//        Product product = ProductDataBuilder.buildProductWithAllFields().build();
-//        Product updatedProduct = ProductDataBuilder.buildProductWithAllFields()
-//                .name("Updated Product")
-//                .build();
-//
-//        product = productRepository.save(product);
-//
-//        String response = mockMvc.perform(put("/products/{productId}", product.getId())
-//                        .header(AUTHORIZATION_HEADER, userAuth.getToken())
-//                        .contentType(MediaType.APPLICATION_JSON)
-//                        .content(objectMapper.writeValueAsString(updatedProduct)))
-//                .andExpect(status().isOk())
-//                .andReturn().getResponse().getContentAsString();
-//
-//        Product responseProduct = objectMapper.readValue(response, Product.class);
-//
-//        assertThat(responseProduct).isNotNull();
-//        assertThat(responseProduct.getName()).isEqualTo(updatedProduct.getName());
-//    }
-//
-//    @Test
-//    public void deleteProduct_ShouldRemoveProduct() throws Exception {
-//        AuthHelper.AuthHelperResponse userAuth = authHelper.createUserAuth();
-//        Product product = ProductDataBuilder.buildProductWithAllFields()
-//                .ownerId(userAuth.getAuthUser().getId())
-//                .build();
-//
-//        product = productRepository.save(product);
-//        assertThat(productRepository.findById(product.getId())).isPresent();
-//
-//        mockMvc.perform(delete("/products/{productId}", product.getId())
-//                        .header(AUTHORIZATION_HEADER, userAuth.getToken()))
-//                .andExpect(status().isOk());
-//
-//        assertThat(productRepository.findById(product.getId())).isNotPresent();
-//    }
-//
-//    @Test
-//    public void deleteProduct_ShouldNotAllow_WhenUserNotOwner() throws Exception {
-//        AuthHelper.AuthHelperResponse userAuth = authHelper.createUserAuth();
-//        Product product = ProductDataBuilder.buildProductWithAllFields().build();
-//
-//        product = productRepository.save(product);
-//
-//        String response = mockMvc.perform(delete("/products/{productId}", product.getId())
-//                        .header(AUTHORIZATION_HEADER, userAuth.getToken()))
-//                .andExpect(status().isForbidden())
-//                .andReturn().getResponse().getContentAsString();
-//
-//        ExceptionResponse exceptionResponse = objectMapper.readValue(response, ExceptionResponse.class);
-//
-//        assertThat(exceptionResponse).isNotNull();
-//        assertThat(exceptionResponse.getStatus()).isEqualTo(HttpStatus.FORBIDDEN.value());
-//        assertThat(exceptionResponse.getType()).isEqualTo(ExceptionType.AUTHORIZATION);
-//        assertThat(exceptionResponse.getMessage()).isEqualTo("Forbidden, not enough access!");
-//        assertThat(exceptionResponse.getPath()).isEqualTo("/products/%s", product.getId());
-//    }
-//
-//    @Test
-//    public void deleteProduct_ShouldRemove_WhenUserNotOwnerButAdmin() throws Exception {
-//        AuthHelper.AuthHelperResponse userAuth = authHelper.createAdminAuth();
-//        Product product = ProductDataBuilder.buildProductWithAllFields().build();
-//
-//        product = productRepository.save(product);
-//
-//         mockMvc.perform(delete("/products/{productId}", product.getId())
-//                        .header(AUTHORIZATION_HEADER, userAuth.getToken()))
-//                .andExpect(status().isOk());
-//
-//        assertThat(productRepository.findById(product.getId())).isNotPresent();
-//    }
+    @Test
+    public void getAllProducts_ShouldReturnProducts() throws Exception {
+        User authUser = UserDataBuilder.buildUserWithAllFields().build();
+        Product product = ProductDataBuilder.buildProductWithAllFields().build();
+        Product product1 = ProductDataBuilder.buildProductWithAllFields().build();
 
+        Cookie cookie = authHelper.signIn(authUser, mockMvc);
+        productRepository.saveAll(List.of(product, product1));
+
+        MvcResult mvcResult = mockMvc.perform(get("/products")
+                        .cookie(cookie))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        Map<String, Object> model = authHelper.requireModel(mvcResult);
+
+        List<ProductResponse> productResponses = (List<ProductResponse>) model.get("products");
+        assertThat(productResponses).isNotNull();
+        assertThat(productResponses.size()).isEqualTo(2);
+    }
+
+    @Test
+    public void getAllProducts_WhenNoAuth_ShouldReturnProducts() throws Exception {
+        Product product = ProductDataBuilder.buildProductWithAllFields().build();
+        Product product1 = ProductDataBuilder.buildProductWithAllFields().build();
+
+        productRepository.saveAll(List.of(product, product1));
+
+        MvcResult mvcResult = mockMvc.perform(get("/products"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        Map<String, Object> model = authHelper.requireModel(mvcResult);
+
+        List<ProductResponse> productResponses = (List<ProductResponse>) model.get("products");
+        assertThat(productResponses).isNotNull();
+        assertThat(productResponses.size()).isEqualTo(2);
+    }
+
+    @Test
+    public void getProductById_ShouldReturnProduct() throws Exception {
+        User authUser = UserDataBuilder.buildUserWithAllFields().build();
+        Product product = ProductDataBuilder.buildProductWithAllFields().build();
+
+        Cookie cookie = authHelper.signIn(authUser, mockMvc);
+        productRepository.save(product);
+
+        MvcResult mvcResult = mockMvc.perform(get("/products/{productId}", product.getId())
+                        .cookie(cookie))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        Map<String, Object> model = authHelper.requireModel(mvcResult);
+
+        ProductResponse responseProduct = (ProductResponse) model.get("product");
+
+        assertThat(responseProduct).isNotNull();
+        assertThat(responseProduct.getId()).isEqualTo(product.getId());
+        assertThat(responseProduct.getName()).isEqualTo(product.getName());
+    }
+
+    @Test
+    public void getProductById_ShouldRedirectToErrorPage_WhenProductNotFound() throws Exception {
+        User authUser = UserDataBuilder.buildUserWithAllFields().build();
+        Product product = ProductDataBuilder.buildProductWithAllFields().build();
+
+        Cookie cookie = authHelper.signIn(authUser, mockMvc);
+
+        ModelAndView modelAndView = mockMvc.perform(get("/products/{productId}", product.getId())
+                        .cookie(cookie))
+                .andExpect(status().isNotFound())
+                .andReturn().getModelAndView();
+
+        assertThat(modelAndView).isNotNull();
+        assertThat(modelAndView.getViewName()).isEqualTo("error");
+    }
+
+    @Test
+    public void getProductById_ShouldReturnProduct_WhenNoAuth() throws Exception {
+        Product product = ProductDataBuilder.buildProductWithAllFields().build();
+
+        productRepository.save(product);
+
+        MvcResult mvcResult = mockMvc.perform(get("/products/{productId}", product.getId()))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        Map<String, Object> model = authHelper.requireModel(mvcResult);
+
+        ProductResponse responseProduct = (ProductResponse) model.get("product");
+
+        assertThat(responseProduct).isNotNull();
+        assertThat(responseProduct.getId()).isEqualTo(product.getId());
+        assertThat(responseProduct.getName()).isEqualTo(product.getName());
+    }
+
+    @Test
+    public void createProduct_WhenUserAuthenticated_ShouldRedirectToProducts() throws Exception {
+        User authUser = UserDataBuilder.buildUserWithAllFields().build();
+        ProductRequest productRequest = ProductRequestDataBuilder.buildProductWithAllFields().build();
+
+        Cookie cookie = authHelper.signIn(authUser, mockMvc);
+
+        String redirectedUrl = mockMvc.perform(post("/products/create")
+                        .cookie(cookie)
+                        .param("name", productRequest.getName())
+                        .param("description", productRequest.getDescription())
+                        .param("price", String.valueOf(productRequest.getPrice())))
+                .andExpect(status().is3xxRedirection())
+                .andReturn()
+                .getResponse()
+                .getRedirectedUrl();
+
+        assertThat(redirectedUrl).isNotNull();
+        assertThat(redirectedUrl).isEqualTo("/products");
+
+        Optional<Product> productByOwnerId = productRepository.findProductByOwnerId(authUser.getId());
+        assertThat(productByOwnerId).isPresent();
+    }
+
+    @Test
+    public void createProduct_WhenValidationError_ShouldRedirectToProduct() throws Exception {
+        User authUser = UserDataBuilder.buildUserWithAllFields().build();
+
+        Cookie cookie = authHelper.signIn(authUser, mockMvc);
+
+        MvcResult mvcResult = mockMvc.perform(post("/products/create")
+                        .cookie(cookie)
+                        .param("name", String.valueOf(UUID.randomUUID()))
+                        .param("description", String.valueOf(UUID.randomUUID()))
+                        .param("price", "0"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+
+        ModelAndView modelAndView = mvcResult.getModelAndView();
+        assertThat(modelAndView).isNotNull();
+        assertThat(modelAndView.getViewName()).isNotNull();
+        assertThat(modelAndView.getViewName()).isEqualTo("product-create");
+
+        FieldError fieldError = ((BindingResult) modelAndView.getModel().get("org.springframework.validation.BindingResult.productRequest")).getFieldError();
+        assertThat(fieldError).isNotNull();
+        assertThat(fieldError.getDefaultMessage()).isNotNull();
+        assertThat(fieldError.getDefaultMessage()).isEqualTo("Price must be greater than 0");
+    }
+
+    @Test
+    public void createProduct_WhenUserNotAuthenticated_ShouldRedirectToHome() throws Exception {
+        User authUser = UserDataBuilder.buildUserWithAllFields().build();
+        ProductRequest productRequest = ProductRequestDataBuilder.buildProductWithAllFields().build();
+
+        String redirectedUrl = mockMvc.perform(post("/products/create")
+                        .param("name", productRequest.getName())
+                        .param("description", productRequest.getDescription())
+                        .param("price", String.valueOf(productRequest.getPrice())))
+                .andExpect(status().is3xxRedirection())
+                .andReturn()
+                .getResponse()
+                .getRedirectedUrl();
+
+        assertThat(redirectedUrl).isNotNull();
+        assertThat(redirectedUrl).isEqualTo("/home");
+
+        Optional<Product> productByOwnerId = productRepository.findProductByOwnerId(authUser.getId());
+        assertThat(productByOwnerId).isNotPresent();
+    }
+
+    @Test
+    public void updateProduct_ShouldUpdateAndRedirectToProduct_WhenUserOwner() throws Exception {
+        User authUser = UserDataBuilder.buildUserWithAllFields().build();
+        ProductRequest productRequest = ProductRequestDataBuilder.buildProductWithAllFields().build();
+
+        Cookie cookie = authHelper.signIn(authUser, mockMvc);
+        Product product = ProductDataBuilder.buildProductWithAllFields()
+                .ownerId(authUser.getId())
+                .build();
+        productRepository.save(product);
+
+        String redirectedUrl = mockMvc.perform(put("/products/{productId}/update", product.getId())
+                        .cookie(cookie)
+                        .param("name", productRequest.getName())
+                        .param("description", productRequest.getDescription())
+                        .param("price", String.valueOf(productRequest.getPrice())))
+                .andExpect(status().is3xxRedirection())
+                .andReturn()
+                .getResponse()
+                .getRedirectedUrl();
+
+        assertThat(redirectedUrl).isNotNull();
+        assertThat(redirectedUrl).isEqualTo("/products/%s", product.getId());
+
+        Optional<Product> productByOwnerId = productRepository.findProductByOwnerId(product.getOwnerId());
+        assertThat(productByOwnerId).isPresent();
+        assertThat(productByOwnerId.get().getOwnerId()).isEqualTo(authUser.getId());
+        assertThat(productByOwnerId.get().getName()).isEqualTo(productRequest.getName());
+        assertThat(productByOwnerId.get().getDescription()).isEqualTo(productRequest.getDescription());
+        assertThat(productByOwnerId.get().getPrice()).isEqualTo(productRequest.getPrice());
+    }
+
+    @Test
+    public void updateProduct_ShouldUpdateAndRedirectToProduct_WhenUserAdmin() throws Exception {
+        User authUser = UserDataBuilder.buildUserWithAllFields()
+                .role(UserRole.ADMIN)
+                .build();
+        ProductRequest productRequest = ProductRequestDataBuilder.buildProductWithAllFields().build();
+        Product product = ProductDataBuilder.buildProductWithAllFields()
+                .ownerId(String.valueOf(UUID.randomUUID()))
+                .build();
+
+        Cookie cookie = authHelper.signIn(authUser, mockMvc);
+        productRepository.save(product);
+
+        String redirectedUrl = mockMvc.perform(put("/products/{productId}/update", product.getId())
+                        .cookie(cookie)
+                        .param("name", productRequest.getName())
+                        .param("description", productRequest.getDescription())
+                        .param("price", String.valueOf(productRequest.getPrice())))
+                .andExpect(status().is3xxRedirection())
+                .andReturn()
+                .getResponse()
+                .getRedirectedUrl();
+
+        assertThat(redirectedUrl).isNotNull();
+        assertThat(redirectedUrl).isEqualTo("/products/%s", product.getId());
+
+        Optional<Product> productByOwnerId = productRepository.findProductByOwnerId(product.getOwnerId());
+        assertThat(productByOwnerId).isPresent();
+        assertThat(productByOwnerId.get().getOwnerId()).isNotEqualTo(authUser.getId());
+        assertThat(productByOwnerId.get().getName()).isEqualTo(productRequest.getName());
+        assertThat(productByOwnerId.get().getDescription()).isEqualTo(productRequest.getDescription());
+        assertThat(productByOwnerId.get().getPrice()).isEqualTo(productRequest.getPrice());
+    }
+
+    @Test
+    public void updateProduct_ShouldRedirectToErrorPage_WhenUserNotAdminAndNotOwner() throws Exception {
+        User authUser = UserDataBuilder.buildUserWithAllFields()
+                .build();
+        ProductRequest productRequest = ProductRequestDataBuilder.buildProductWithAllFields().build();
+        Product product = ProductDataBuilder.buildProductWithAllFields()
+                .ownerId(String.valueOf(UUID.randomUUID()))
+                .build();
+
+        Cookie cookie = authHelper.signIn(authUser, mockMvc);
+        productRepository.save(product);
+
+        String redirectedUrl = mockMvc.perform(put("/products/{productId}/update", product.getId())
+                        .cookie(cookie)
+                        .param("name", productRequest.getName())
+                        .param("description", productRequest.getDescription())
+                        .param("price", String.valueOf(productRequest.getPrice())))
+                .andExpect(status().is3xxRedirection())
+                .andReturn()
+                .getResponse()
+                .getRedirectedUrl();
+
+        assertThat(redirectedUrl).isEqualTo("/error");
+
+        Optional<Product> productByOwnerId = productRepository.findProductByOwnerId(product.getOwnerId());
+        assertThat(productByOwnerId).isPresent();
+        assertThat(productByOwnerId.get().getName()).isEqualTo(product.getName());
+        assertThat(productByOwnerId.get().getDescription()).isEqualTo(product.getDescription());
+        assertThat(productByOwnerId.get().getPrice()).isEqualTo(product.getPrice());
+    }
+
+    @Test
+    public void updateProduct_ShouldRedirectToUpdateProduct_WhenValidationError() throws Exception {
+        User authUser = UserDataBuilder.buildUserWithAllFields()
+                .role(UserRole.ADMIN)
+                .build();
+        ProductRequest productRequest = ProductRequestDataBuilder.buildProductWithAllFields().build();
+        Product product = ProductDataBuilder.buildProductWithAllFields()
+                .ownerId(String.valueOf(UUID.randomUUID()))
+                .build();
+
+        Cookie cookie = authHelper.signIn(authUser, mockMvc);
+        productRepository.save(product);
+
+        MvcResult mvcResult = mockMvc.perform(put("/products/{productId}/update", product.getId())
+                        .cookie(cookie)
+                        .param("name", "")
+                        .param("description", productRequest.getDescription())
+                        .param("price", String.valueOf(productRequest.getPrice())))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        ModelAndView modelAndView = mvcResult.getModelAndView();
+        assertThat(modelAndView).isNotNull();
+        assertThat(modelAndView.getViewName()).isNotNull();
+        assertThat(modelAndView.getViewName()).isEqualTo("product-update");
+
+        FieldError fieldError = ((BindingResult) modelAndView.getModel().get("org.springframework.validation.BindingResult.productRequest")).getFieldError();
+        assertThat(fieldError).isNotNull();
+        assertThat(fieldError.getDefaultMessage()).isNotNull();
+        assertThat(fieldError.getDefaultMessage()).containsAnyOf("Name is required", "Name must be between 2 and 100 characters");
+    }
+
+    @Test
+    public void deleteProduct_ShouldDeleteAndRedirectToProducts_WhenUserOwner() throws Exception {
+        User authUser = UserDataBuilder.buildUserWithAllFields()
+                .build();
+
+        Cookie cookie = authHelper.signIn(authUser, mockMvc);
+        Product product = ProductDataBuilder.buildProductWithAllFields()
+                .ownerId(authUser.getId())
+                .build();
+
+        product = productRepository.save(product);
+
+        String redirectedUrl = mockMvc.perform(delete("/products/{productId}", product.getId())
+                        .cookie(cookie))
+                .andExpect(status().is3xxRedirection())
+                .andReturn()
+                .getResponse()
+                .getRedirectedUrl();
+
+        assertThat(redirectedUrl).isNotNull();
+        assertThat(redirectedUrl).isEqualTo("/products");
+        assertThat(productRepository.findById(product.getId())).isNotPresent();
+    }
+
+    @Test
+    public void deleteProduct_ShouldDeleteAndRedirectToProducts_WhenUserAdmin() throws Exception {
+        User authUser = UserDataBuilder.buildUserWithAllFields()
+                .role(UserRole.ADMIN)
+                .build();
+        Product product = ProductDataBuilder.buildProductWithAllFields()
+                .ownerId(String.valueOf(UUID.randomUUID()))
+                .build();
+
+        Cookie cookie = authHelper.signIn(authUser, mockMvc);
+        product = productRepository.save(product);
+
+        String redirectedUrl = mockMvc.perform(delete("/products/{productId}", product.getId())
+                        .cookie(cookie))
+                .andExpect(status().is3xxRedirection())
+                .andReturn()
+                .getResponse()
+                .getRedirectedUrl();
+
+        assertThat(redirectedUrl).isNotNull();
+        assertThat(redirectedUrl).isEqualTo("/products");
+        assertThat(productRepository.findById(product.getId())).isNotPresent();
+    }
+
+    @Test
+    public void deleteProduct_ShouldRedirectToErrorPage_WhenUserNotAdminAndNotOwner() throws Exception {
+        User authUser = UserDataBuilder.buildUserWithAllFields()
+                .build();
+        Product product = ProductDataBuilder.buildProductWithAllFields()
+                .ownerId(String.valueOf(UUID.randomUUID()))
+                .build();
+
+        Cookie cookie = authHelper.signIn(authUser, mockMvc);
+        product = productRepository.save(product);
+
+        String redirectedUrl = mockMvc.perform(delete("/products/{productId}", product.getId())
+                        .cookie(cookie))
+                .andExpect(status().is3xxRedirection())
+                .andReturn()
+                .getResponse()
+                .getRedirectedUrl();
+
+        assertThat(redirectedUrl).isNotNull();
+        assertThat(redirectedUrl).isEqualTo("/error");
+        assertThat(productRepository.findById(product.getId())).isPresent();
+    }
+
+    @Test
+    public void deleteProduct_WhenUserNotAuthenticated_ShouldRedirectToError() throws Exception {
+        String userId = String.valueOf(UUID.randomUUID());
+
+        Product product = ProductDataBuilder.buildProductWithAllFields()
+                .ownerId(userId)
+                .build();
+
+        product = productRepository.save(product);
+
+        String redirectedUrl = mockMvc.perform(delete("/products/{productId}", product.getId()))
+                .andExpect(status().is3xxRedirection())
+                .andReturn()
+                .getResponse()
+                .getRedirectedUrl();
+
+        assertThat(redirectedUrl).isNotNull();
+        assertThat(redirectedUrl).isEqualTo("/home");
+    }
 }

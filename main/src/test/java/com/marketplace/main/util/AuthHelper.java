@@ -12,11 +12,14 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.ui.Model;
 import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.View;
 
 import java.util.Map;
 
 import static com.marketplace.auth.security.cookie.CookieService.COOKIE_ACCESS_TOKEN;
+import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -49,6 +52,16 @@ public class AuthHelper {
         assertThat(accessCookieAccess).isNotNull();
 
         return accessCookieAccess;
+    }
+
+    public View requireView(MvcResult mvcResult) {
+        ModelAndView modelAndView = mvcResult.getModelAndView();
+        assertThat(modelAndView).isNotNull();
+
+        View view = modelAndView.getView();
+        assertThat(view).isNotNull();
+
+        return view;
     }
 
     public Map<String, Object> requireModel(MvcResult mvcResult) {

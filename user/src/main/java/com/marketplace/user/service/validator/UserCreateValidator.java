@@ -1,8 +1,7 @@
 package com.marketplace.user.service.validator;
 
-import com.marketplace.common.exception.EntityExistsException;
 import com.marketplace.usercore.dto.UserRequest;
-import com.marketplace.usercore.service.UserServiceFacade;
+import com.marketplace.usercore.service.validator.EmailValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.Errors;
@@ -12,7 +11,7 @@ import org.springframework.validation.Validator;
 @RequiredArgsConstructor
 public class UserCreateValidator implements Validator {
 
-    private final UserServiceFacade userServiceFacade;
+    private final EmailValidator emailValidator;
 
     @Override
     public boolean supports(Class<?> clazz) {
@@ -22,18 +21,7 @@ public class UserCreateValidator implements Validator {
     @Override
     public void validate(Object target, Errors errors) {
         UserRequest userRequest = (UserRequest) target;
-        validateUserExistenceByEmail(userRequest.getEmail(), errors);
-    }
-
-    private void validateUserExistenceByEmail(String email, Errors errors) {
-        try {
-            userServiceFacade.throwIfUserExistsByEmail(email);
-        } catch (EntityExistsException exception) {
-            errors.rejectValue(
-                    "email",
-                    "error.email",
-                    "User with this email already exists");
-        }
+        emailValidator.validateUserExistenceByEmail(userRequest.getEmail(), errors);
     }
 
 }

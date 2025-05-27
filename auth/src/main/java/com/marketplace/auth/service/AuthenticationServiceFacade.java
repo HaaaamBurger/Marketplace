@@ -2,7 +2,7 @@ package com.marketplace.auth.service;
 
 import com.marketplace.auth.exception.CredentialException;
 import com.marketplace.auth.exception.TokenNotValidException;
-import com.marketplace.auth.security.TokenPayload;
+import com.marketplace.auth.security.token.TokenPayload;
 import com.marketplace.auth.web.dto.AuthRefreshRequest;
 import com.marketplace.auth.web.dto.AuthRequest;
 import com.marketplace.auth.web.dto.AuthResponse;
