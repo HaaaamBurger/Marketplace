@@ -1,7 +1,7 @@
 package com.marketplace.auth.service.validator;
 
 import com.marketplace.auth.web.dto.AuthRequest;
-import com.marketplace.usercore.repository.UserRepository;
+import com.marketplace.usercore.service.validator.EmailValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.Errors;
@@ -11,7 +11,7 @@ import org.springframework.validation.Validator;
 @RequiredArgsConstructor
 public class SignUpValidator implements Validator {
 
-    private final UserRepository userRepository;
+    private final EmailValidator emailValidator;
 
     @Override
     public boolean supports(Class<?> clazz) {
@@ -21,16 +21,6 @@ public class SignUpValidator implements Validator {
     @Override
     public void validate(Object target, Errors errors) {
         AuthRequest authRequest = (AuthRequest) target;
-        validateUserExistence(authRequest, errors);
-    }
-
-
-    private void validateUserExistence(AuthRequest authRequest, Errors errors) {
-        if (userRepository.existsByEmail(authRequest.getEmail())) {
-            errors.rejectValue(
-                    "email",
-                    "error.email",
-                    "This email already in use");
-        }
+        emailValidator.validateUserExistenceByEmail(authRequest.getEmail(), errors);
     }
 }

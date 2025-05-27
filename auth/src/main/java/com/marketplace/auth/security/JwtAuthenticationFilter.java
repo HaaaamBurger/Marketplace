@@ -2,6 +2,7 @@ package com.marketplace.auth.security;
 
 import com.marketplace.auth.security.cookie.CookieNotFoundException;
 import com.marketplace.auth.security.cookie.CookieService;
+import com.marketplace.auth.security.token.TokenPayload;
 import com.marketplace.auth.service.JwtCookieManager;
 import com.marketplace.auth.service.JwtTokenManager;
 import com.marketplace.usercore.model.User;

@@ -12,7 +12,6 @@ import com.marketplace.usercore.model.User;
 import com.marketplace.usercore.model.UserRole;
 import com.marketplace.usercore.repository.UserRepository;
 import jakarta.servlet.http.Cookie;
-import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,9 +20,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.mongodb.repository.MongoRepository;
-import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.servlet.ModelAndView;
@@ -145,7 +144,6 @@ public class UserControllerIntegrationTest {
                 .andExpect(status().isOk()).andReturn();
 
         Map<String, Object> model = authHelper.requireModel(mvcResult);
-        assertThat(model).isNotNull();
         FieldError fieldError = ((BindingResult) model.get("org.springframework.validation.BindingResult.userRequest")).getFieldError();
         assertThat(fieldError).isNotNull();
         assertThat(fieldError.getDefaultMessage()).isNotNull();
@@ -198,6 +196,7 @@ public class UserControllerIntegrationTest {
         Map<String, Object> model = authHelper.requireModel(mvcResult);
 
         List<UserResponse> userResponses = (List<UserResponse>) model.get("users");
+        assertThat(userResponses).isNotNull();
         assertThat(userResponses.size()).isEqualTo(3);
         assertThat(userResponses).extracting(UserResponse::getEmail).containsExactlyInAnyOrder(authUser.getEmail(), user1.getEmail(), user2.getEmail());
     }

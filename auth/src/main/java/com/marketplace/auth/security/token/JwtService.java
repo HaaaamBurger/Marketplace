@@ -1,4 +1,4 @@
-package com.marketplace.auth.security.service;
+package com.marketplace.auth.security.token;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;

@@ -2,8 +2,8 @@ package com.marketplace.auth.service;
 
 import com.marketplace.auth.security.cookie.CookiePayload;
 import com.marketplace.auth.security.cookie.CookieService;
-import com.marketplace.auth.security.service.JwtService;
-import com.marketplace.auth.security.TokenPayload;
+import com.marketplace.auth.security.token.JwtService;
+import com.marketplace.auth.security.token.TokenPayload;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

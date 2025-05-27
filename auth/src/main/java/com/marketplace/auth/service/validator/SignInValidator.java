@@ -3,7 +3,7 @@ package com.marketplace.auth.service.validator;
 import com.marketplace.auth.web.dto.AuthRequest;
 import com.marketplace.usercore.model.User;
 import com.marketplace.usercore.model.UserStatus;
-import com.marketplace.usercore.repository.UserRepository;
+import com.marketplace.usercore.service.validator.EmailValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -16,9 +16,9 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class SignInValidator implements Validator {
 
-    private final UserRepository userRepository;
-
     private final PasswordEncoder passwordEncoder;
+
+    private final EmailValidator emailValidator;
 
     @Override
     public boolean supports(Class<?> clazz) {
@@ -29,7 +29,7 @@ public class SignInValidator implements Validator {
     public void validate(Object target, Errors errors) {
         AuthRequest authRequest = (AuthRequest) target;
 
-        Optional<User> userOptional = findUserOrRejectByEmail(authRequest.getEmail(), errors);
+        Optional<User> userOptional = emailValidator.findUserOrRejectByEmail(authRequest.getEmail(), errors);
 
         userOptional.ifPresent(user -> {
             if (validateUserBlocked(user, errors)) {
@@ -39,21 +39,7 @@ public class SignInValidator implements Validator {
         });
     }
 
-    private Optional<User> findUserOrRejectByEmail(String email, Errors errors) {
-
-        Optional<User> user = userRepository.findByEmail(email);
-
-        if (user.isEmpty()) {
-            errors.rejectValue(
-                    "email",
-                    "error.email",
-                    "Email not found");
-        }
-
-        return user;
-    }
-
-    private boolean validatePasswordMatching(String rawPassword, User user, Errors errors) {
+    private void validatePasswordMatching(String rawPassword, User user, Errors errors) {
         boolean matches = passwordEncoder.matches(rawPassword, user.getPassword());
 
         if (!matches) {
@@ -61,11 +47,7 @@ public class SignInValidator implements Validator {
                     "password",
                     "error.password",
                     "Passwords not matching");
-
-            return false;
         }
-
-        return true;
     }
 
     private boolean validateUserBlocked(User user, Errors errors) {

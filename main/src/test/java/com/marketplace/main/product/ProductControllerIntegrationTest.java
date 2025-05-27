@@ -12,7 +12,6 @@ import com.marketplace.product.web.model.Product;
 import com.marketplace.usercore.model.User;
 import com.marketplace.usercore.model.UserRole;
 import jakarta.servlet.http.Cookie;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -78,6 +77,7 @@ class ProductControllerIntegrationTest {
         Map<String, Object> model = authHelper.requireModel(mvcResult);
 
         List<ProductResponse> productResponses = (List<ProductResponse>) model.get("products");
+        assertThat(productResponses).isNotNull();
         assertThat(productResponses.size()).isEqualTo(2);
     }
 
@@ -95,6 +95,7 @@ class ProductControllerIntegrationTest {
         Map<String, Object> model = authHelper.requireModel(mvcResult);
 
         List<ProductResponse> productResponses = (List<ProductResponse>) model.get("products");
+        assertThat(productResponses).isNotNull();
         assertThat(productResponses.size()).isEqualTo(2);
     }
 
@@ -187,12 +188,18 @@ class ProductControllerIntegrationTest {
 
         MvcResult mvcResult = mockMvc.perform(post("/products/create")
                         .cookie(cookie)
+                        .param("name", String.valueOf(UUID.randomUUID()))
+                        .param("description", String.valueOf(UUID.randomUUID()))
                         .param("price", "0"))
                 .andExpect(status().isOk())
                 .andReturn();
 
+
         ModelAndView modelAndView = mvcResult.getModelAndView();
+        assertThat(modelAndView).isNotNull();
+        assertThat(modelAndView.getViewName()).isNotNull();
         assertThat(modelAndView.getViewName()).isEqualTo("product-create");
+
         FieldError fieldError = ((BindingResult) modelAndView.getModel().get("org.springframework.validation.BindingResult.productRequest")).getFieldError();
         assertThat(fieldError).isNotNull();
         assertThat(fieldError.getDefaultMessage()).isNotNull();
@@ -318,6 +325,38 @@ class ProductControllerIntegrationTest {
     }
 
     @Test
+    public void updateProduct_ShouldRedirectToUpdateProduct_WhenValidationError() throws Exception {
+        User authUser = UserDataBuilder.buildUserWithAllFields()
+                .role(UserRole.ADMIN)
+                .build();
+        ProductRequest productRequest = ProductRequestDataBuilder.buildProductWithAllFields().build();
+        Product product = ProductDataBuilder.buildProductWithAllFields()
+                .ownerId(String.valueOf(UUID.randomUUID()))
+                .build();
+
+        Cookie cookie = authHelper.signIn(authUser, mockMvc);
+        productRepository.save(product);
+
+        MvcResult mvcResult = mockMvc.perform(put("/products/{productId}/update", product.getId())
+                        .cookie(cookie)
+                        .param("name", "")
+                        .param("description", productRequest.getDescription())
+                        .param("price", String.valueOf(productRequest.getPrice())))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        ModelAndView modelAndView = mvcResult.getModelAndView();
+        assertThat(modelAndView).isNotNull();
+        assertThat(modelAndView.getViewName()).isNotNull();
+        assertThat(modelAndView.getViewName()).isEqualTo("product-update");
+
+        FieldError fieldError = ((BindingResult) modelAndView.getModel().get("org.springframework.validation.BindingResult.productRequest")).getFieldError();
+        assertThat(fieldError).isNotNull();
+        assertThat(fieldError.getDefaultMessage()).isNotNull();
+        assertThat(fieldError.getDefaultMessage()).containsAnyOf("Name is required", "Name must be between 2 and 100 characters");
+    }
+
+    @Test
     public void deleteProduct_ShouldDeleteAndRedirectToProducts_WhenUserOwner() throws Exception {
         User authUser = UserDataBuilder.buildUserWithAllFields()
                 .build();
@@ -386,5 +425,25 @@ class ProductControllerIntegrationTest {
         assertThat(redirectedUrl).isNotNull();
         assertThat(redirectedUrl).isEqualTo("/error");
         assertThat(productRepository.findById(product.getId())).isPresent();
+    }
+
+    @Test
+    public void deleteProduct_WhenUserNotAuthenticated_ShouldRedirectToError() throws Exception {
+        String userId = String.valueOf(UUID.randomUUID());
+
+        Product product = ProductDataBuilder.buildProductWithAllFields()
+                .ownerId(userId)
+                .build();
+
+        product = productRepository.save(product);
+
+        String redirectedUrl = mockMvc.perform(delete("/products/{productId}", product.getId()))
+                .andExpect(status().is3xxRedirection())
+                .andReturn()
+                .getResponse()
+                .getRedirectedUrl();
+
+        assertThat(redirectedUrl).isNotNull();
+        assertThat(redirectedUrl).isEqualTo("/home");
     }
 }

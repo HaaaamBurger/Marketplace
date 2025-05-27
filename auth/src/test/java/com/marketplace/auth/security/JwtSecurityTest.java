@@ -1,7 +1,7 @@
 package com.marketplace.auth.security;
 
 import com.marketplace.auth.config.AuthApplicationConfig;
-import com.marketplace.auth.security.service.JwtService;
+import com.marketplace.auth.security.token.JwtService;
 import com.marketplace.auth.web.util.UserDataBuilder;
 import com.marketplace.usercore.model.User;
 import org.junit.jupiter.api.Test;
@@ -10,7 +10,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.Map;
 
-import static com.marketplace.auth.security.service.JwtService.ROLES_CLAIM;
+import static com.marketplace.auth.security.token.JwtService.ROLES_CLAIM;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 @SpringBootTest(classes = AuthApplicationConfig.class)
