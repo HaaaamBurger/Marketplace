@@ -23,7 +23,7 @@ public class ProductController {
 
     private final ProductEntityMapper productEntityMapper;
 
-    @GetMapping
+    @GetMapping("/all")
     public String getAllProducts(Model model) {
         List<Product> products = productCrudService.findAll();
         model.addAttribute("products", productEntityMapper.mapProductsToProductResponseDtos(products));
@@ -89,7 +89,7 @@ public class ProductController {
     }
 
     // TODO on delete we need to remove product ids in orders as well　(better to use Kafka some day here)
-    @DeleteMapping("/{productId}")
+    @DeleteMapping("/{productId}/delete")
     public String deleteProduct(@PathVariable String productId) {
 //        productCrudService.delete(productId);
         return "redirect:/products";

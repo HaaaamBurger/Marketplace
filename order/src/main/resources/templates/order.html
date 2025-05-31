@@ -96,7 +96,7 @@
 <body>
 
 <div class="container py-5">
-    <a th:href="@{/orders}" class="btn btn-outline-secondary back-btn">
+    <a th:href="@{/orders/all}" class="btn btn-outline-secondary back-btn">
         <i class="bi bi-arrow-left"></i> Back to Orders
     </a>
 
@@ -115,11 +115,11 @@
             </span>
 
             <div class="d-flex gap-2">
-                <a th:href="@{/orders/update/{id}(id=${order.id})}" class="btn btn-outline-primary btn-sm" title="Edit Order">
+                <a th:href="@{/orders/{id}/update(id=${order.id})}" class="btn btn-outline-primary btn-sm" title="Edit Order">
                     <i class="bi bi-pencil-square"></i> Edit
                 </a>
 
-                <form th:action="@{/orders/{id}(id=${order.id})}" method="post"
+                <form th:action="@{/orders/{id}/delete(id=${order.id})}" method="post"
                       th:onsubmit="return confirm('Are you sure you want to delete this order?')">
                     <input type="hidden" name="_method" value="delete"/>
                     <button type="submit" class="btn btn-outline-danger btn-sm" title="Delete Order">

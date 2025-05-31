@@ -37,7 +37,7 @@ public class OrderController {
     private final ProductEntityMapper productEntityMapper;
 
     @PreAuthorize("hasAuthority('ADMIN')")
-    @GetMapping
+    @GetMapping("/all")
     public String getAllOrders(Model model) {
         List<Order> orders = orderCrudService.findAll();
         model.addAttribute("orders", orderEntityMapper.mapOrdersToOrderResponseDtos(orders));
@@ -58,8 +58,8 @@ public class OrderController {
         return "order";
     }
 
-    @GetMapping("/my-order")
-    public String getAuthUserOrder(
+    @GetMapping("/user-order")
+    public String getUserOrder(
             Model model
     ) {
         Optional<Order> orderOptional = orderSettingsService.findByOwnerId();
@@ -79,19 +79,19 @@ public class OrderController {
             model.addAttribute("previousOrders", List.of());
         });
 
-        return "my-order";
+        return "user-order";
     }
 
-    @PutMapping("/products/{productId}")
+    @PutMapping("/add-product/{productId}")
     public String addProductToOrder(
             @PathVariable String productId,
             Model model
     ) {
         orderSettingsService.addProductToOrder(productId);
-        return getAuthUserOrder(model);
+        return getUserOrder(model);
     }
 
-    @DeleteMapping("/{orderId}")
+    @DeleteMapping("/{orderId}/delete")
     public String deleteOrder(@PathVariable String orderId) {
         orderCrudService.delete(orderId);
         return "redirect:/home";
@@ -106,7 +106,7 @@ public class OrderController {
     }
 
     @PreAuthorize("hasAuthority('ADMIN')")
-    @GetMapping("/update/{orderId}")
+    @GetMapping("/{orderId}/update")
     public String getUpdateOrder(
             Model model,
             @PathVariable String orderId
@@ -118,7 +118,7 @@ public class OrderController {
     }
 
     @PreAuthorize("hasAuthority('ADMIN')")
-    @PutMapping("/update/{orderId}")
+    @PutMapping("/{orderId}/update")
     public String updateOrder(
             @PathVariable String orderId,
             @Valid @ModelAttribute OrderUpdateRequest orderUpdateRequest,

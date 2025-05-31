@@ -8,7 +8,7 @@
 <body>
 <div class="container py-5">
     <h2>Edit Order #<span th:text="${order.id}"></span></h2>
-    <form th:action="@{/orders/update/{id}(id=${order.id})}" th:object="${order}" th:method="put">
+    <form th:action="@{/orders/{id}/update(id=${order.id})}" th:object="${order}" th:method="put">
         <div class="mb-3">
             <label for="address" class="form-label">Address</label>
             <input type="text" th:field="*{address}" class="form-control" id="address"/>

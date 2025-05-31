@@ -31,7 +31,7 @@
 <div class="form-container">
     <h2 class="mb-4 text-center">Update User</h2>
 
-    <form th:action="@{/users/update/{id}(id=${userId})}" th:method="PUT" th:object="${userUpdateRequest}">
+    <form th:action="@{/users/{id}/update(id=${userId})}" th:method="PUT" th:object="${userUpdateRequest}">
 
         <div class="mb-3">
             <label for="email" class="form-label fw-semibold">Email</label>

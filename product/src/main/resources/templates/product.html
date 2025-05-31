@@ -85,7 +85,7 @@
     <div class="card shadow rounded p-4">
 
         <div class="d-flex justify-content-start mb-3">
-            <a th:href="@{/products}" class="btn btn-sm btn-outline-secondary">
+            <a th:href="@{/products/all}" class="btn btn-sm btn-outline-secondary">
                 <i class="bi bi-arrow-left me-1"></i> Back
             </a>
         </div>
@@ -115,7 +115,7 @@
             <hr class="my-3">
 
             <div class="d-flex gap-2 flex-wrap">
-                <form th:action="@{/orders/products/{id}(id=${productId})}" th:method="put">
+                <form th:action="@{/orders/add-product/{id}(id=${productId})}" th:method="put">
                     <button type="submit"
                             th:attr="disabled=${authUser.id == product.ownerId || product.amount == 0}"
                             class="btn btn-success">

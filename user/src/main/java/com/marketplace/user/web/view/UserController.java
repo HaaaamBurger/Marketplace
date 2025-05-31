@@ -30,8 +30,8 @@ public class UserController {
 
     private final UserEntityMapper userEntityMapper;
 
-    @GetMapping
-    public String getAll(Model model) {
+    @GetMapping("/all")
+    public String getAllUsers(Model model) {
         List<UserResponse> userResponses = userEntityMapper.mapUsersToUserResponseDtos(userCrudService.findAll());
         model.addAttribute("users", userResponses);
 
@@ -59,10 +59,10 @@ public class UserController {
 
         userCrudService.create(userRequest);
 
-        return "redirect:/users";
+        return "redirect:/users/all";
     }
 
-    @GetMapping("/update/{userId}")
+    @GetMapping("/{userId}/update")
     public String getUpdateUser(Model model, @PathVariable String userId) {
         User user = userCrudService.findById(userId);
 
@@ -72,7 +72,7 @@ public class UserController {
         return "user-update";
     }
 
-    @PutMapping("/update/{userId}")
+    @PutMapping("/{userId}/update")
     public String updateUser(
             @ModelAttribute UserUpdateRequest userUpdateRequest,
             @PathVariable String userId,
@@ -87,12 +87,12 @@ public class UserController {
         model.addAttribute("userId", userId);
         userCrudService.update(userId, userUpdateRequest);
 
-        return "redirect:/users";
+        return "redirect:/users/all";
     }
 
-    @DeleteMapping("/{userId}")
+    @DeleteMapping("/{userId}/delete")
     public String deleteUser(@PathVariable String userId) {
         userCrudService.delete(userId);
-        return "redirect:/users";
+        return "redirect:/users/all";
     }
 }

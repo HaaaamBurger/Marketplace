@@ -59,10 +59,10 @@
                 <td th:text="${#temporals.format(user.createdAt, 'yyyy-MM-dd HH:mm')}">2024-01-01 12:00</td>
                 <td th:text="${#temporals.format(user.updatedAt, 'yyyy-MM-dd HH:mm')}">2024-01-02 13:00</td>
                 <td>
-                    <a th:href="@{/users/update/{id}(id=${user.id})}" class="btn btn-sm btn-outline-primary me-2">
+                    <a th:href="@{/users/{id}/update(id=${user.id})}" class="btn btn-sm btn-outline-primary me-2">
                         <i class="bi bi-pencil"></i> Update
                     </a>
-                    <form th:action="@{/users/{id}(id=${user.id})}" method="post" th:object="${user}"
+                    <form th:action="@{/users/{id}/delete(id=${user.id})}" method="post" th:object="${user}"
                           style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this user?');">
                         <input type="hidden" name="_method" value="delete" />
                         <button type="submit" class="btn btn-sm btn-outline-danger">
