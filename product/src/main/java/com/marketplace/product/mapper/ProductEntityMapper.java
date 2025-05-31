@@ -16,6 +16,7 @@ public class ProductEntityMapper {
                 .name(product.getName())
                 .ownerId(product.getOwnerId())
                 .price(product.getPrice())
+                .amount(product.getAmount())
                 .description(product.getDescription())
                 .createdAt(product.getCreatedAt())
                 .updatedAt(product.getUpdatedAt())
@@ -26,6 +27,7 @@ public class ProductEntityMapper {
         return Product.builder()
                 .name(productRequest.getName())
                 .price(productRequest.getPrice())
+                .amount(productRequest.getAmount())
                 .description(productRequest.getDescription())
                 .build();
     }
@@ -34,6 +36,7 @@ public class ProductEntityMapper {
         return ProductRequest.builder()
                 .name(product.getName())
                 .price(product.getPrice())
+                .amount(product.getAmount())
                 .description(product.getDescription())
                 .build();
     }

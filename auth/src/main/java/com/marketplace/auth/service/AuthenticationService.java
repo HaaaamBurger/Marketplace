@@ -12,5 +12,4 @@ public interface AuthenticationService {
     void signUp(AuthRequest authRequest);
 
     AuthResponse refreshToken(AuthRefreshRequest authRefreshRequest);
-
 }

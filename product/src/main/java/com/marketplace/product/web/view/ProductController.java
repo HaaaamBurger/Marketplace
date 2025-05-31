@@ -88,6 +88,7 @@ public class ProductController {
         return "redirect:/products/" + productId;
     }
 
+    // TODO on delete we need to remove product ids in orders as well
     @DeleteMapping("/{productId}")
     public String deleteProduct(@PathVariable String productId) {
         productService.delete(productId);

@@ -21,14 +21,16 @@ public class AuthenticationUserService {
         }
 
         Object principal = authentication.getPrincipal();
-
         if (principal instanceof User user) {
             return user;
         } else {
             log.error("[PROFILE_SERVICE]: {} is not instance of UserDetails", principal);
             throw new AuthenticationServiceException("User is not authenticated");
         }
-
     }
 
+    public boolean isAuthenticated() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return authentication != null;
+    }
 }

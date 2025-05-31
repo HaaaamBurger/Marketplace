@@ -8,6 +8,7 @@ import com.marketplace.order.util.MockHelper;
 import com.marketplace.order.util.OrderDataBuilder;
 import com.marketplace.order.util.ProductDataBuilder;
 import com.marketplace.order.util.UserDataBuilder;
+import com.marketplace.order.web.dto.OrderUpdateRequest;
 import com.marketplace.order.web.model.Order;
 import com.marketplace.order.web.model.OrderStatus;
 import com.marketplace.order.web.dto.OrderRequest;
@@ -200,18 +201,18 @@ class OrderServiceTest {
     @Test
     public void update_ShouldUpdateOrder() {
         Order order = OrderDataBuilder.buildOrderWithAllFields().build();
-        OrderRequest orderRequest = OrderRequest.builder()
+        OrderUpdateRequest orderUpdateRequest = OrderUpdateRequest.builder()
                 .status(OrderStatus.IN_PROGRESS)
                 .build();
 
         when(orderRepository.findById(order.getId())).thenReturn(Optional.of(order));
         when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        Order responseOrder = orderService.update(order.getId(), orderRequest);
+        Order responseOrder = orderService.update(order.getId(), orderUpdateRequest);
 
         assertThat(responseOrder).isNotNull();
         assertThat(responseOrder.getId()).isEqualTo(order.getId());
-        assertThat(responseOrder.getStatus()).isEqualTo(orderRequest.getStatus());
+        assertThat(responseOrder.getStatus()).isEqualTo(orderUpdateRequest.getStatus());
 
         verify(orderRepository, times(1)).findById(order.getId());
         verify(orderRepository, times(1)).save(any(Order.class));
@@ -220,13 +221,13 @@ class OrderServiceTest {
     @Test
     public void update_ShouldThrowException_WhenOrderNotFound() {
         String orderId = String.valueOf(UUID.randomUUID());
-        OrderRequest orderRequest = OrderRequest.builder()
+        OrderUpdateRequest orderUpdateRequest = OrderUpdateRequest.builder()
                 .status(OrderStatus.IN_PROGRESS)
                 .build();
 
         when(orderRepository.findById(orderId)).thenReturn(Optional.empty());
 
-        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> orderService.update(orderId, orderRequest));
+        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> orderService.update(orderId, orderUpdateRequest));
         assertThat(exception.getMessage()).isEqualTo("Order not found!");
 
         verify(orderRepository, times(1)).findById(orderId);

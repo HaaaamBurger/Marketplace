@@ -57,6 +57,7 @@ public final class ProductServiceFacade implements ProductService {
 
         Optional.ofNullable(productRequest.getName()).ifPresent(product::setName);
         Optional.ofNullable(productRequest.getPrice()).ifPresent(product::setPrice);
+        Optional.ofNullable(productRequest.getAmount()).ifPresent(product::setAmount);
         Optional.ofNullable(productRequest.getDescription()).ifPresent(product::setDescription);
 
         return productRepository.save(product);

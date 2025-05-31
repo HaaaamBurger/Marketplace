@@ -102,6 +102,20 @@
             <div th:if="${#fields.hasErrors('price')}" class="text-danger small" th:errors="*{price}"></div>
           </div>
 
+          <div class="mb-4">
+            <label for="amount" class="form-label">Amount</label>
+            <div class="input-with-icon">
+              <i class="bi bi-stack form-icon"></i>
+              <input type="number"
+                     min="0"
+                     th:field="*{amount}"
+                     class="form-control"
+                     id="amount"
+                     required/>
+            </div>
+            <div th:if="${#fields.hasErrors('amount')}" class="text-danger small" th:errors="*{amount}"></div>
+          </div>
+
           <button type="submit" class="btn btn-primary-custom w-100 py-2">
             <i class="bi bi-plus-circle me-2"></i> Create Product
           </button>

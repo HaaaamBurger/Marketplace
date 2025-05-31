@@ -2,10 +2,13 @@ package com.marketplace.order.service;
 
 import com.marketplace.common.exception.EntityNotFoundException;
 import com.marketplace.order.repository.OrderRepository;
+import com.marketplace.order.web.dto.OrderUpdateRequest;
 import com.marketplace.order.web.model.Order;
 import com.marketplace.order.web.model.OrderStatus;
 import com.marketplace.order.web.dto.OrderRequest;
+import com.marketplace.product.exception.ProductAmountNotEnoughException;
 import com.marketplace.product.service.ProductServiceFacade;
+import com.marketplace.product.web.model.Product;
 import com.marketplace.usercore.model.User;
 import com.marketplace.usercore.security.AuthenticationUserService;
 import com.marketplace.usercore.service.UserService;
@@ -13,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,6 +31,7 @@ public class MongoOrderService implements OrderService {
 
     private final AuthenticationUserService authenticationUserService;
 
+    // TODO Dependency inversion not followed (fix it and look for other classes)
     private final ProductServiceFacade productServiceFacade;
 
     private final UserService userService;
@@ -57,6 +62,12 @@ public class MongoOrderService implements OrderService {
     }
 
     @Override
+    public Optional<Order> findByOwnerId() {
+        User authenticatedUser = authenticationUserService.getAuthenticatedUser();
+        return orderRepository.findOrderByOwnerId(authenticatedUser.getId());
+    }
+
+    @Override
     public Order findByOwnerIdOrCreate() {
         User authenticatedUser = authenticationUserService.getAuthenticatedUser();
         return orderRepository.findOrderByOwnerId(authenticatedUser.getId())
@@ -68,10 +79,9 @@ public class MongoOrderService implements OrderService {
     }
 
     @Override
-    public Order update(String orderId, OrderRequest request) {
+    public Order update(String orderId, OrderUpdateRequest request) {
         Order order = findOrderOrThrow(orderId);
 
-        Optional.ofNullable(request.getProductIds()).ifPresent(order::setProductIds);
         Optional.ofNullable(request.getAddress()).ifPresent(order::setAddress);
         Optional.ofNullable(request.getStatus()).ifPresent(order::setStatus);
 
@@ -85,8 +95,30 @@ public class MongoOrderService implements OrderService {
     }
 
     @Override
+    public void removeProductFromOrder(String productId) {
+        Optional<Order> orderOptional = findByOwnerId();
+
+        if (orderOptional.isPresent()) {
+            Order order = orderOptional.get();
+            List<String> filteredProducts = order.getProductIds().stream().filter(s -> !s.equals(productId)).toList();
+
+            if (filteredProducts.isEmpty()) {
+                orderRepository.deleteById(order.getId());
+                return;
+            }
+
+            order.setProductIds(filteredProducts);
+            orderRepository.save(order);
+        }
+    }
+
+    @Transactional
+    @Override
     public Order addProductToOrder(String productId) {
-        productServiceFacade.findProductOrThrow(productId);
+        // TODO the same logic were done in validation so it has been duplicated (think about the way how to avoid duplication)...not only here...
+        Product product = productServiceFacade.findProductOrThrow(productId);
+        validateEnoughAmountOrThrow(product.getAmount());
+
         Order order = findByOwnerIdOrCreate();
 
         order.getProductIds().add(productId);
@@ -103,15 +135,21 @@ public class MongoOrderService implements OrderService {
             return order;
         }
 
-        log.error("[ORDER_SERVICE_IMPL]: User {} is not owner of the order: {} or not ADMIN", authenticatedUser.getId(), orderId);
+        log.error("[MONGO_ORDER_SERVICE]: User {} is not owner of the order: {} or not ADMIN", authenticatedUser.getId(), orderId);
         throw new AccessDeniedException("Access denied!");
     }
 
     private Order findOrderOrThrow(String orderId) {
         return orderRepository.findById(orderId)
                 .orElseThrow(() -> {
-                    log.error("[ORDER_SERVICE_IMPL]: Order not found by ID {}", orderId);
+                    log.error("[MONGO_ORDER_SERVICE]: Order not found by ID {}", orderId);
                     return new EntityNotFoundException("Order not found!");
                 });
+    }
+
+    private void validateEnoughAmountOrThrow(int amount) {
+        if (amount == 0) {
+            throw new ProductAmountNotEnoughException("There are no products available");
+        }
     }
 }
