@@ -12,7 +12,7 @@ import com.marketplace.usercore.model.UserRole;
 import com.marketplace.usercore.model.UserStatus;
 import com.marketplace.usercore.repository.UserRepository;
 import com.marketplace.usercore.security.AuthenticationUserService;
-import com.marketplace.usercore.service.UserService;
+import com.marketplace.usercore.service.UserCrudService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -29,7 +29,7 @@ import static org.mockito.Mockito.*;
 
 @ActiveProfiles("test")
 @SpringBootTest(classes = UserCoreApplicationConfig.class)
-public class UserServiceTest {
+public class UserCrudServiceTest {
 
     @MockitoBean
     private UserRepository userRepository;
@@ -41,7 +41,7 @@ public class UserServiceTest {
     private AuthenticationUserService authenticationUserService;
 
     @Autowired
-    private UserService userService;
+    private UserCrudService userCrudService;
 
     @Test
     public void findById_shouldReturnUserById() {
@@ -52,7 +52,7 @@ public class UserServiceTest {
 
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
 
-        User responseUser = userService.findById(userId);
+        User responseUser = userCrudService.findById(userId);
         assertThat(responseUser).isNotNull();
         assertThat(responseUser.getId()).isEqualTo(userId);
 
@@ -65,7 +65,7 @@ public class UserServiceTest {
 
         when(userRepository.findById(userId)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> userService.findById(userId))
+        assertThatThrownBy(() -> userCrudService.findById(userId))
                 .isInstanceOf(EntityNotFoundException.class)
                 .hasMessage("User not found!");
 
@@ -87,7 +87,7 @@ public class UserServiceTest {
         when(passwordEncoder.encode(mockPassword)).thenReturn(mockEncodedPassword);
         when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        User responseUser = userService.create(userRequest);
+        User responseUser = userCrudService.create(userRequest);
 
         assertThat(responseUser).isNotNull();
         assertThat(responseUser.getEmail()).isEqualTo(mockEmail);
@@ -113,7 +113,7 @@ public class UserServiceTest {
 
         when(userRepository.findByEmail(mockEmail)).thenReturn(Optional.of(mockUser));
 
-        assertThatThrownBy(() -> userService.create(userRequest))
+        assertThatThrownBy(() -> userCrudService.create(userRequest))
                 .isInstanceOf(EntityExistsException.class)
                 .hasMessage("User already exists!");
 
@@ -131,7 +131,7 @@ public class UserServiceTest {
 
         when(userRepository.findAll()).thenReturn(List.of(user, user1));
 
-        List<User> responseUsers = userService.findAll();
+        List<User> responseUsers = userCrudService.findAll();
         assertThat(responseUsers).isNotNull();
         assertThat(responseUsers.size()).isEqualTo(2);
         assertThat(responseUsers.get(0).getEmail()).isEqualTo("test@gmail.com");
@@ -156,7 +156,7 @@ public class UserServiceTest {
             return invocationUser;
         });
 
-        User responseUser = userService.update(user.getId(), userUpdateRequest);
+        User responseUser = userCrudService.update(user.getId(), userUpdateRequest);
         assertThat(responseUser).isNotNull();
         assertThat(responseUser.getEmail()).isEqualTo(userUpdateRequest.getEmail());
         assertThat(responseUser.getRole()).isEqualTo(userUpdateRequest.getRole());
@@ -173,7 +173,7 @@ public class UserServiceTest {
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
         doNothing().when(userRepository).deleteById(userId);
 
-        userService.delete(userId);
+        userCrudService.delete(userId);
 
         verify(userRepository).findById(userId);
         verify(userRepository).deleteById(userId);

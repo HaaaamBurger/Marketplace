@@ -7,7 +7,7 @@ import com.marketplace.usercore.dto.UserResponse;
 import com.marketplace.usercore.dto.UserUpdateRequest;
 import com.marketplace.usercore.mapper.UserEntityMapper;
 import com.marketplace.usercore.model.User;
-import com.marketplace.usercore.service.UserService;
+import com.marketplace.usercore.service.UserCrudService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -22,7 +22,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class UserController {
 
-    private final UserService userService;
+    private final UserCrudService userCrudService;
 
     private final UserUpdateValidator userUpdateValidator;
 
@@ -32,7 +32,7 @@ public class UserController {
 
     @GetMapping
     public String getAll(Model model) {
-        List<UserResponse> userResponses = userEntityMapper.mapUsersToUserResponseDtos(userService.findAll());
+        List<UserResponse> userResponses = userEntityMapper.mapUsersToUserResponseDtos(userCrudService.findAll());
         model.addAttribute("users", userResponses);
 
         return "users";
@@ -57,14 +57,14 @@ public class UserController {
             return "user-create";
         }
 
-        userService.create(userRequest);
+        userCrudService.create(userRequest);
 
         return "redirect:/users";
     }
 
     @GetMapping("/update/{userId}")
     public String getUpdateUser(Model model, @PathVariable String userId) {
-        User user = userService.findById(userId);
+        User user = userCrudService.findById(userId);
 
         UserUpdateRequest userUpdateRequest = userEntityMapper.mapUserEntityToUserUpdateRequestDto(user);
         model.addAttribute("userUpdateRequest", userUpdateRequest);
@@ -85,14 +85,14 @@ public class UserController {
         }
 
         model.addAttribute("userId", userId);
-        userService.update(userId, userUpdateRequest);
+        userCrudService.update(userId, userUpdateRequest);
 
         return "redirect:/users";
     }
 
     @DeleteMapping("/{userId}")
     public String deleteUser(@PathVariable String userId) {
-        userService.delete(userId);
+        userCrudService.delete(userId);
         return "redirect:/users";
     }
 }

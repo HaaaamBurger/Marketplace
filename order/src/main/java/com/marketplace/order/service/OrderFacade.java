@@ -7,11 +7,11 @@ import com.marketplace.order.web.model.Order;
 import com.marketplace.order.web.model.OrderStatus;
 import com.marketplace.order.web.dto.OrderRequest;
 import com.marketplace.product.exception.ProductAmountNotEnoughException;
-import com.marketplace.product.service.ProductServiceFacade;
+import com.marketplace.product.service.ProductCrudService;
 import com.marketplace.product.web.model.Product;
 import com.marketplace.usercore.model.User;
 import com.marketplace.usercore.security.AuthenticationUserService;
-import com.marketplace.usercore.service.UserService;
+import com.marketplace.usercore.service.UserSettingsService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.AccessDeniedException;
@@ -25,16 +25,15 @@ import java.util.Optional;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class MongoOrderService implements OrderService {
+public class OrderFacade implements OrderCrudService, OrderSettingsService {
 
     private final OrderRepository orderRepository;
 
     private final AuthenticationUserService authenticationUserService;
 
-    // TODO Dependency inversion not followed (fix it and look for other classes)
-    private final ProductServiceFacade productServiceFacade;
+    private final ProductCrudService productCrudService;
 
-    private final UserService userService;
+    private final UserSettingsService userSettingsService;
 
     @Override
     public List<Order> findAll() {
@@ -46,7 +45,7 @@ public class MongoOrderService implements OrderService {
         User authenticatedUser = authenticationUserService.getAuthenticatedUser();
 
         List<String> productIds = request.getProductIds();
-        productIds.forEach(productServiceFacade::findProductOrThrow);
+        productIds.forEach(productCrudService::getById);
 
         return orderRepository.save(Order.builder()
                 .ownerId(authenticatedUser.getId())
@@ -116,7 +115,7 @@ public class MongoOrderService implements OrderService {
     @Override
     public Order addProductToOrder(String productId) {
         // TODO the same logic were done in validation so it has been duplicated (think about the way how to avoid duplication)...not only here...
-        Product product = productServiceFacade.findProductOrThrow(productId);
+        Product product = productCrudService.getById(productId);
         validateEnoughAmountOrThrow(product.getAmount());
 
         Order order = findByOwnerIdOrCreate();
@@ -131,7 +130,7 @@ public class MongoOrderService implements OrderService {
         User authenticatedUser = authenticationUserService.getAuthenticatedUser();
         Order order = findOrderOrThrow(orderId);
 
-        if (userService.validateEntityOwnerOrAdmin(authenticatedUser, order.getOwnerId())) {
+        if (userSettingsService.validateEntityOwnerOrAdmin(authenticatedUser, order.getOwnerId())) {
             return order;
         }
 

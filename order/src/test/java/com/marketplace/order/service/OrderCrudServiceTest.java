@@ -38,7 +38,7 @@ import static org.mockito.Mockito.*;
 
 @ActiveProfiles("test")
 @SpringBootTest(classes = OrderApplicationConfig.class)
-class OrderServiceTest {
+class OrderCrudServiceTest {
 
     @MockitoBean
     private OrderRepository orderRepository;
@@ -50,7 +50,10 @@ class OrderServiceTest {
     private ProductRepository productRepository;
 
     @Autowired
-    private OrderService orderService;
+    private OrderCrudService orderCrudService;
+
+    @Autowired
+    private OrderSettingsService orderSettingsService;
 
     @Autowired
     private MockHelper mockHelper;
@@ -69,7 +72,7 @@ class OrderServiceTest {
 
         when(orderRepository.findById(order.getId())).thenReturn(Optional.of(order));
 
-        Order responseOrder = orderService.findById(order.getId());
+        Order responseOrder = orderCrudService.findById(order.getId());
         assertThat(responseOrder).isNotNull();
         assertThat(responseOrder.getId()).isEqualTo(order.getId());
 
@@ -83,7 +86,7 @@ class OrderServiceTest {
 
         when(orderRepository.findById(orderId)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> orderService.findById(orderId))
+        assertThatThrownBy(() -> orderCrudService.findById(orderId))
                 .isInstanceOf(EntityNotFoundException.class)
                 .hasMessage("Order not found!");
 
@@ -97,7 +100,7 @@ class OrderServiceTest {
 
         when(orderRepository.findById(order.getId())).thenReturn(Optional.of(order));
 
-        assertThatThrownBy(() -> orderService.findById(order.getId()))
+        assertThatThrownBy(() -> orderCrudService.findById(order.getId()))
                 .isInstanceOf(AccessDeniedException.class)
                 .hasMessage("Access denied!");
 
@@ -113,7 +116,7 @@ class OrderServiceTest {
 
         when(orderRepository.findById(order.getId())).thenReturn(Optional.of(order));
 
-        AuthenticationCredentialsNotFoundException exception = assertThrows(AuthenticationCredentialsNotFoundException.class, () -> orderService.findById(order.getId()));
+        AuthenticationCredentialsNotFoundException exception = assertThrows(AuthenticationCredentialsNotFoundException.class, () -> orderCrudService.findById(order.getId()));
         assertThat(exception.getMessage()).isEqualTo("Authentication is unavailable!");
     }
 
@@ -127,7 +130,7 @@ class OrderServiceTest {
 
         when(orderRepository.findById(order.getId())).thenReturn(Optional.of(order));
 
-        Order responseOrder = orderService.findById(order.getId());
+        Order responseOrder = orderCrudService.findById(order.getId());
         assertThat(responseOrder).isNotNull();
         assertThat(responseOrder.getId()).isEqualTo(order.getId());
 
@@ -146,7 +149,7 @@ class OrderServiceTest {
 
         when(productRepository.findById(mockProductId)).thenReturn(Optional.of(mockedProduct));
         when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> invocation.getArgument(0));
-        Order responseOrder = orderService.create(orderRequest);
+        Order responseOrder = orderCrudService.create(orderRequest);
 
         assertThat(responseOrder).isNotNull();
         assertThat(responseOrder.getOwnerId()).isEqualTo(user.getId());
@@ -163,7 +166,7 @@ class OrderServiceTest {
                 .productIds(List.of(mockProductId))
                 .build();
 
-        AuthenticationCredentialsNotFoundException exception = assertThrows(AuthenticationCredentialsNotFoundException.class, () -> orderService.create(orderRequest));
+        AuthenticationCredentialsNotFoundException exception = assertThrows(AuthenticationCredentialsNotFoundException.class, () -> orderCrudService.create(orderRequest));
         assertThat(exception.getMessage()).isEqualTo("Authentication is unavailable!");
     }
 
@@ -178,7 +181,7 @@ class OrderServiceTest {
 
         when(productRepository.findById(mockProductId)).thenReturn(Optional.empty());
 
-        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> orderService.create(orderRequest));
+        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> orderCrudService.create(orderRequest));
         assertThat(exception.getMessage()).isEqualTo("Product not found!");
 
         verify(productRepository, times(1)).findById(mockProductId);
@@ -190,7 +193,7 @@ class OrderServiceTest {
 
         when(orderRepository.findAll()).thenReturn(List.of(order));
 
-        List<Order> orders = orderService.findAll();
+        List<Order> orders = orderCrudService.findAll();
 
         assertEquals(1, orders.size());
         assertEquals(orders.get(0).getId(), orders.get(0).getId());
@@ -208,7 +211,7 @@ class OrderServiceTest {
         when(orderRepository.findById(order.getId())).thenReturn(Optional.of(order));
         when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        Order responseOrder = orderService.update(order.getId(), orderUpdateRequest);
+        Order responseOrder = orderCrudService.update(order.getId(), orderUpdateRequest);
 
         assertThat(responseOrder).isNotNull();
         assertThat(responseOrder.getId()).isEqualTo(order.getId());
@@ -227,7 +230,7 @@ class OrderServiceTest {
 
         when(orderRepository.findById(orderId)).thenReturn(Optional.empty());
 
-        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> orderService.update(orderId, orderUpdateRequest));
+        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> orderCrudService.update(orderId, orderUpdateRequest));
         assertThat(exception.getMessage()).isEqualTo("Order not found!");
 
         verify(orderRepository, times(1)).findById(orderId);
@@ -241,7 +244,7 @@ class OrderServiceTest {
                 .build();
 
         when(orderRepository.findById(order.getId())).thenReturn(Optional.of(order));
-        orderService.delete(order.getId());
+        orderCrudService.delete(order.getId());
 
         verify(orderRepository, times(1)).delete(order);
     }
@@ -253,7 +256,7 @@ class OrderServiceTest {
 
         when(orderRepository.findById(orderId)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> orderService.delete(orderId))
+        assertThatThrownBy(() -> orderCrudService.delete(orderId))
                 .isInstanceOf(EntityNotFoundException.class)
                 .hasMessage("Order not found!");
 
@@ -267,7 +270,7 @@ class OrderServiceTest {
                 .ownerId(ownerId)
                 .build();
 
-        AuthenticationCredentialsNotFoundException exception = assertThrows(AuthenticationCredentialsNotFoundException.class, () -> orderService.delete(order.getId()));
+        AuthenticationCredentialsNotFoundException exception = assertThrows(AuthenticationCredentialsNotFoundException.class, () -> orderCrudService.delete(order.getId()));
         assertThat(exception.getMessage()).isEqualTo("Authentication is unavailable!");
     }
 
@@ -281,7 +284,7 @@ class OrderServiceTest {
 
         when(orderRepository.findById(order.getId())).thenReturn(Optional.of(order));
 
-        orderService.delete(order.getId());
+        orderCrudService.delete(order.getId());
 
         verify(orderRepository, times(1)).delete(order);
     }
@@ -298,7 +301,7 @@ class OrderServiceTest {
         when(orderRepository.findOrderByOwnerId(order.getId())).thenReturn(Optional.of(order));
         when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        Order responseOrder = orderService.addProductToOrder(product.getId());
+        Order responseOrder = orderSettingsService.addProductToOrder(product.getId());
 
         assertThat(responseOrder).isNotNull();
         assertThat(responseOrder.getOwnerId()).isEqualTo(user.getId());
@@ -321,7 +324,7 @@ class OrderServiceTest {
         when(orderRepository.findOrderByOwnerId(user.getId())).thenReturn(Optional.empty());
         when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        Order responseOrder = orderService.addProductToOrder(product.getId());
+        Order responseOrder = orderSettingsService.addProductToOrder(product.getId());
 
         assertThat(responseOrder).isNotNull();
         assertThat(responseOrder.getOwnerId()).isEqualTo(user.getId());
@@ -342,7 +345,7 @@ class OrderServiceTest {
 
         when(productRepository.findById(product.getId())).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> orderService.addProductToOrder(product.getId()))
+        assertThatThrownBy(() -> orderSettingsService.addProductToOrder(product.getId()))
                 .isInstanceOf(EntityNotFoundException.class)
                 .hasMessage("Product not found!");
 

@@ -1,11 +1,12 @@
 package com.marketplace.order.web.view;
 
-import com.marketplace.order.service.OrderService;
+import com.marketplace.order.service.OrderCrudService;
+import com.marketplace.order.service.OrderSettingsService;
 import com.marketplace.order.web.dto.OrderUpdateRequest;
 import com.marketplace.order.web.model.Order;
 import com.marketplace.order.mapper.OrderEntityMapper;
 import com.marketplace.product.mapper.ProductEntityMapper;
-import com.marketplace.product.service.ProductService;
+import com.marketplace.product.service.ProductCrudService;
 import com.marketplace.product.web.model.Product;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -25,9 +26,11 @@ import java.util.Optional;
 @RequestMapping("/orders")
 public class OrderController {
 
-    private final OrderService orderService;
+    private final ProductCrudService productCrudService;
 
-    private final ProductService productService;
+    private final OrderCrudService orderCrudService;
+
+    private final OrderSettingsService orderSettingsService;
 
     private final OrderEntityMapper orderEntityMapper;
 
@@ -36,7 +39,7 @@ public class OrderController {
     @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping
     public String getAllOrders(Model model) {
-        List<Order> orders = orderService.findAll();
+        List<Order> orders = orderCrudService.findAll();
         model.addAttribute("orders", orderEntityMapper.mapOrdersToOrderResponseDtos(orders));
         return "orders";
     }
@@ -46,10 +49,8 @@ public class OrderController {
             Model model,
             @PathVariable String orderId
     ) {
-        Order order = orderService.findById(orderId);
-        List<Product> products = order.getProductIds().stream()
-                .map(productService::findById)
-                .toList();
+        Order order = orderCrudService.findById(orderId);
+        List<Product> products = productCrudService.findAll();
 
         model.addAttribute("order", orderEntityMapper.mapOrderToOrderResponseDto(order));
         model.addAttribute("products", productEntityMapper.mapProductsToProductResponseDtos(products));
@@ -61,12 +62,12 @@ public class OrderController {
     public String getAuthUserOrder(
             Model model
     ) {
-        Optional<Order> orderOptional = orderService.findByOwnerId();
+        Optional<Order> orderOptional = orderSettingsService.findByOwnerId();
         orderOptional.ifPresent(order -> {
             model.addAttribute("currentOrder", order);
 
             List<Product> products = order.getProductIds().stream()
-                    .map(productService::findById)
+                    .map(productCrudService::getById)
                     .toList();
             model.addAttribute("orderProducts", productEntityMapper.mapProductsToProductResponseDtos(products));
 
@@ -81,19 +82,18 @@ public class OrderController {
         return "my-order";
     }
 
-    // TODO maybe it's better to make it /orders/{orderId}/products/{productId}
     @PutMapping("/products/{productId}")
     public String addProductToOrder(
             @PathVariable String productId,
             Model model
     ) {
-        orderService.addProductToOrder(productId);
+        orderSettingsService.addProductToOrder(productId);
         return getAuthUserOrder(model);
     }
 
     @DeleteMapping("/{orderId}")
     public String deleteOrder(@PathVariable String orderId) {
-        orderService.delete(orderId);
+        orderCrudService.delete(orderId);
         return "redirect:/home";
     }
 
@@ -101,7 +101,7 @@ public class OrderController {
     public String removeProductFromOrder(
             @PathVariable String productId
     ) {
-        orderService.removeProductFromOrder(productId);
+        orderSettingsService.removeProductFromOrder(productId);
         return "home";
     }
 
@@ -111,7 +111,7 @@ public class OrderController {
             Model model,
             @PathVariable String orderId
     ) {
-        Order order = orderService.findById(orderId);
+        Order order = orderCrudService.findById(orderId);
         model.addAttribute("order", order);
 
         return "order-edit";
@@ -128,7 +128,7 @@ public class OrderController {
             return "order-edit";
         }
 
-        orderService.update(orderId, orderUpdateRequest);
+        orderCrudService.update(orderId, orderUpdateRequest);
         return "redirect:/orders/" + orderId;
     }
 }

@@ -28,9 +28,4 @@ public class AuthenticationUserService {
             throw new AuthenticationServiceException("User is not authenticated");
         }
     }
-
-    public boolean isAuthenticated() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        return authentication != null;
-    }
 }

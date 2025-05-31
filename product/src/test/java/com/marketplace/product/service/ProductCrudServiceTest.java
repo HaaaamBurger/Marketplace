@@ -26,13 +26,13 @@ import static org.mockito.Mockito.*;
 
 @ActiveProfiles("test")
 @SpringBootTest(classes = ProductApplicationConfig.class)
-class ProductServiceTest {
+class ProductCrudServiceTest {
 
     @MockitoBean
     private ProductRepository productRepository;
 
     @Autowired
-    private ProductService productService;
+    private ProductCrudService productCrudService;
 
     @Autowired
     private MockHelper mockHelper;
@@ -48,7 +48,7 @@ class ProductServiceTest {
 
         when(productRepository.findById(product.getId())).thenReturn(Optional.of(product));
 
-        Product result = productService.findById(product.getId());
+        Product result = productCrudService.getById(product.getId());
         assertEquals(product, result);
     }
 
@@ -58,7 +58,7 @@ class ProductServiceTest {
 
         when(productRepository.findById(id)).thenReturn(Optional.empty());
 
-        Exception exception = assertThrows(EntityNotFoundException.class, () -> productService.findById(id));
+        Exception exception = assertThrows(EntityNotFoundException.class, () -> productCrudService.findById(id));
         assertThat(exception.getMessage()).isEqualTo("Product not found!");
     }
 
@@ -74,7 +74,7 @@ class ProductServiceTest {
         mockHelper.mockAuthenticationAndSetContext();
 
         when(productRepository.save(any(Product.class))).thenAnswer(invocation -> invocation.getArgument(0));
-        Product responseProduct = productService.create(productRequest);
+        Product responseProduct = productCrudService.create(productRequest);
 
         assertThat(product.getName()).isEqualTo(responseProduct.getName());
         assertThat(product.getDescription()).isEqualTo(responseProduct.getDescription());
@@ -91,7 +91,7 @@ class ProductServiceTest {
                 .build();
 
         when(productRepository.save(any(Product.class))).thenAnswer(invocation -> invocation.getArgument(0));
-        AuthenticationCredentialsNotFoundException exception = assertThrows(AuthenticationCredentialsNotFoundException.class, () -> productService.create(productRequest));
+        AuthenticationCredentialsNotFoundException exception = assertThrows(AuthenticationCredentialsNotFoundException.class, () -> productCrudService.create(productRequest));
         assertThat(exception.getMessage()).isEqualTo("Authentication is unavailable!");
     }
 
@@ -101,7 +101,7 @@ class ProductServiceTest {
 
         when(productRepository.findAll()).thenReturn(List.of(product));
 
-        List<Product> products = productService.findAll();
+        List<Product> products = productCrudService.findAll();
 
         assertEquals(1, products.size());
         assertEquals("Test Product", products.get(0).getName());
@@ -122,7 +122,7 @@ class ProductServiceTest {
         when(productRepository.findById(product.getId())).thenReturn(Optional.of(product));
         when(productRepository.save(any(Product.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        Product resultProduct = productService.update(product.getId(), productRequest);
+        Product resultProduct = productCrudService.update(product.getId(), productRequest);
 
         assertThat(productRequest.getName()).isEqualTo(resultProduct.getName());
         assertThat(productRequest.getDescription()).isEqualTo(resultProduct.getDescription());
@@ -136,7 +136,7 @@ class ProductServiceTest {
         product.setOwnerId(user.getId());
 
         when(productRepository.findById(product.getId())).thenReturn(Optional.of(product));
-        productService.delete(product.getId());
+        productCrudService.delete(product.getId());
 
         verify(productRepository, times(1)).delete(product);
     }

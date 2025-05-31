@@ -22,7 +22,7 @@ import java.util.Optional;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public final class UserServiceFacade implements UserService {
+public final class UserFacade implements UserCrudService, UserSettingsService {
 
     private final UserRepository userRepository;
 
@@ -81,10 +81,12 @@ public final class UserServiceFacade implements UserService {
         return Objects.equals(authUser.getId(), userId) || authUser.getRole() == UserRole.ADMIN;
     }
 
+    @Override
     public boolean existsByEmail(String email) {
         return userRepository.existsByEmail(email);
     }
 
+    @Override
     public void throwIfUserExistsByEmail(String email) {
         userRepository.findByEmail(email).ifPresent(user -> {
             log.error("[USER_SERVICE_FACADE]: User already exists by email: {}", email);
@@ -93,6 +95,7 @@ public final class UserServiceFacade implements UserService {
 
     }
 
+    @Override
     public User throwIfUserNotFoundById(String userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> {
@@ -101,7 +104,7 @@ public final class UserServiceFacade implements UserService {
                 });
     }
 
-
+    @Override
     public void throwIfUserWithSameEmailExists(String email) {
         User authenticatedUser = authenticationUserService.getAuthenticatedUser();
 

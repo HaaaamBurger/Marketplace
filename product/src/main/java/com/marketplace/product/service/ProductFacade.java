@@ -7,7 +7,7 @@ import com.marketplace.product.repository.ProductRepository;
 import com.marketplace.product.mapper.ProductEntityMapper;
 import com.marketplace.usercore.model.User;
 import com.marketplace.usercore.security.AuthenticationUserService;
-import com.marketplace.usercore.service.UserService;
+import com.marketplace.usercore.service.UserSettingsService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.AccessDeniedException;
@@ -19,15 +19,16 @@ import java.util.Optional;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public final class ProductServiceFacade implements ProductService {
+public final class ProductFacade implements ProductCrudService {
 
     private final ProductRepository productRepository;
 
+    // TODO think about DI about all mappers
     private final ProductEntityMapper productEntityMapper;
 
     private final AuthenticationUserService authenticationUserService;
 
-    private final UserService userService;
+    private final UserSettingsService userSettingsService;
 
     @Override
     public Product create(ProductRequest productRequest) {
@@ -46,8 +47,17 @@ public final class ProductServiceFacade implements ProductService {
     }
 
     @Override
-    public Product findById(String productId) {
-        return findProductOrThrow(productId);
+    public Product getById(String productId) {
+        return productRepository.findById(productId)
+                .orElseThrow(() -> {
+                    log.error("[PRODUCT_SERVICE_FACADE]: Product not found by ID {}", productId);
+                    return new EntityNotFoundException("Product not found!");
+                });
+    }
+
+    @Override
+    public Optional<Product> findById(String productId) {
+        return productRepository.findById(productId);
     }
 
     @Override
@@ -57,7 +67,7 @@ public final class ProductServiceFacade implements ProductService {
 
         Optional.ofNullable(productRequest.getName()).ifPresent(product::setName);
         Optional.ofNullable(productRequest.getPrice()).ifPresent(product::setPrice);
-        Optional.ofNullable(productRequest.getAmount()).ifPresent(product::setAmount);
+        Optional.of(productRequest.getAmount()).ifPresent(product::setAmount);
         Optional.ofNullable(productRequest.getDescription()).ifPresent(product::setDescription);
 
         return productRepository.save(product);
@@ -69,19 +79,11 @@ public final class ProductServiceFacade implements ProductService {
         productRepository.delete(product);
     }
 
-    public Product findProductOrThrow(String productId) {
-        return productRepository.findById(productId)
-                .orElseThrow(() -> {
-                    log.error("[PRODUCT_SERVICE_FACADE]: Product not found by ID {}", productId);
-                    return new EntityNotFoundException("Product not found!");
-                });
-    }
-
-    public Product validateProductAccessOrThrow(String productId) {
+    private Product validateProductAccessOrThrow(String productId) {
         User authenticatedUser = authenticationUserService.getAuthenticatedUser();
-        Product product = findProductOrThrow(productId);
+        Product product = getById(productId);
 
-        if (userService.validateEntityOwnerOrAdmin(authenticatedUser, product.getOwnerId())) {
+        if (userSettingsService.validateEntityOwnerOrAdmin(authenticatedUser, product.getOwnerId())) {
             return product;
         }
 

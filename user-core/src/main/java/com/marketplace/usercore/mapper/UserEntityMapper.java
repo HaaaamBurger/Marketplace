@@ -31,14 +31,6 @@ public class UserEntityMapper {
                 .build();
     }
 
-    public User mapUserUpdateRequestToUser(UserUpdateRequest userUpdateRequest) {
-        return User.builder()
-                .email(userUpdateRequest.getEmail())
-                .role(userUpdateRequest.getRole())
-                .status(userUpdateRequest.getStatus())
-                .build();
-    }
-
     public UserUpdateRequest mapUserEntityToUserUpdateRequestDto(User user) {
         return UserUpdateRequest.builder()
                 .email(user.getEmail())
