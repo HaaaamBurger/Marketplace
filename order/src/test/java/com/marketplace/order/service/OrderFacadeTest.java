@@ -38,7 +38,7 @@ import static org.mockito.Mockito.*;
 
 @ActiveProfiles("test")
 @SpringBootTest(classes = OrderApplicationConfig.class)
-class OrderCrudServiceTest {
+class OrderFacadeTest {
 
     @MockitoBean
     private OrderRepository orderRepository;
@@ -311,7 +311,7 @@ class OrderCrudServiceTest {
         assertThat(responseOrder.getStatus()).isEqualTo(OrderStatus.IN_PROGRESS);
 
         verify(productRepository, times(1)).findById(product.getId());
-        verify(orderRepository, times(1)).findOrderByOwnerId(user.getId());
+        verify(orderRepository, times(1)).findOrderByOwnerIdAndStatus(user.getId(), OrderStatus.IN_PROGRESS);
         verify(orderRepository, times(1)).save(any(Order.class));
     }
 
@@ -334,7 +334,7 @@ class OrderCrudServiceTest {
         assertThat(responseOrder.getStatus()).isEqualTo(OrderStatus.IN_PROGRESS);
 
         verify(productRepository, times(1)).findById(product.getId());
-        verify(orderRepository, times(1)).findOrderByOwnerId(user.getId());
+        verify(orderRepository, times(1)).findOrderByOwnerIdAndStatus(user.getId(), OrderStatus.IN_PROGRESS);
         verify(orderRepository, times(1)).save(any(Order.class));
     }
 

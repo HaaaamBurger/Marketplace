@@ -29,7 +29,7 @@ import static org.mockito.Mockito.*;
 
 @ActiveProfiles("test")
 @SpringBootTest(classes = UserCoreApplicationConfig.class)
-public class UserCrudServiceTest {
+public class UserFacadeTest {
 
     @MockitoBean
     private UserRepository userRepository;

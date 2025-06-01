@@ -69,7 +69,7 @@ class ProductControllerIntegrationTest {
         Cookie cookie = authHelper.signIn(authUser, mockMvc);
         productRepository.saveAll(List.of(product, product1));
 
-        MvcResult mvcResult = mockMvc.perform(get("/products")
+        MvcResult mvcResult = mockMvc.perform(get("/products/all")
                         .cookie(cookie))
                 .andExpect(status().isOk())
                 .andReturn();
@@ -88,7 +88,7 @@ class ProductControllerIntegrationTest {
 
         productRepository.saveAll(List.of(product, product1));
 
-        MvcResult mvcResult = mockMvc.perform(get("/products"))
+        MvcResult mvcResult = mockMvc.perform(get("/products/all"))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -167,6 +167,7 @@ class ProductControllerIntegrationTest {
                         .cookie(cookie)
                         .param("name", productRequest.getName())
                         .param("description", productRequest.getDescription())
+                        .param("amount", String.valueOf(productRequest.getAmount()))
                         .param("price", String.valueOf(productRequest.getPrice())))
                 .andExpect(status().is3xxRedirection())
                 .andReturn()
@@ -174,7 +175,7 @@ class ProductControllerIntegrationTest {
                 .getRedirectedUrl();
 
         assertThat(redirectedUrl).isNotNull();
-        assertThat(redirectedUrl).isEqualTo("/products");
+        assertThat(redirectedUrl).isEqualTo("/products/all");
 
         Optional<Product> productByOwnerId = productRepository.findProductByOwnerId(authUser.getId());
         assertThat(productByOwnerId).isPresent();
@@ -183,13 +184,16 @@ class ProductControllerIntegrationTest {
     @Test
     public void createProduct_WhenValidationError_ShouldRedirectToProduct() throws Exception {
         User authUser = UserDataBuilder.buildUserWithAllFields().build();
+        ProductRequest productRequest = ProductRequestDataBuilder.buildProductWithAllFields()
+                .build();
 
         Cookie cookie = authHelper.signIn(authUser, mockMvc);
 
         MvcResult mvcResult = mockMvc.perform(post("/products/create")
                         .cookie(cookie)
-                        .param("name", String.valueOf(UUID.randomUUID()))
-                        .param("description", String.valueOf(UUID.randomUUID()))
+                        .param("name", productRequest.getName())
+                        .param("description", productRequest.getDescription())
+                        .param("amount", String.valueOf(productRequest.getAmount()))
                         .param("price", "0"))
                 .andExpect(status().isOk())
                 .andReturn();
@@ -214,6 +218,7 @@ class ProductControllerIntegrationTest {
         String redirectedUrl = mockMvc.perform(post("/products/create")
                         .param("name", productRequest.getName())
                         .param("description", productRequest.getDescription())
+                        .param("amount", String.valueOf(productRequest.getAmount()))
                         .param("price", String.valueOf(productRequest.getPrice())))
                 .andExpect(status().is3xxRedirection())
                 .andReturn()
@@ -242,6 +247,7 @@ class ProductControllerIntegrationTest {
                         .cookie(cookie)
                         .param("name", productRequest.getName())
                         .param("description", productRequest.getDescription())
+                        .param("amount", String.valueOf(productRequest.getAmount()))
                         .param("price", String.valueOf(productRequest.getPrice())))
                 .andExpect(status().is3xxRedirection())
                 .andReturn()
@@ -276,6 +282,7 @@ class ProductControllerIntegrationTest {
                         .cookie(cookie)
                         .param("name", productRequest.getName())
                         .param("description", productRequest.getDescription())
+                        .param("amount", String.valueOf(productRequest.getAmount()))
                         .param("price", String.valueOf(productRequest.getPrice())))
                 .andExpect(status().is3xxRedirection())
                 .andReturn()
@@ -309,6 +316,7 @@ class ProductControllerIntegrationTest {
                         .cookie(cookie)
                         .param("name", productRequest.getName())
                         .param("description", productRequest.getDescription())
+                        .param("amount", String.valueOf(productRequest.getAmount()))
                         .param("price", String.valueOf(productRequest.getPrice())))
                 .andExpect(status().is3xxRedirection())
                 .andReturn()
@@ -341,6 +349,7 @@ class ProductControllerIntegrationTest {
                         .cookie(cookie)
                         .param("name", "")
                         .param("description", productRequest.getDescription())
+                        .param("amount", String.valueOf(productRequest.getAmount()))
                         .param("price", String.valueOf(productRequest.getPrice())))
                 .andExpect(status().isOk())
                 .andReturn();
@@ -368,7 +377,7 @@ class ProductControllerIntegrationTest {
 
         product = productRepository.save(product);
 
-        String redirectedUrl = mockMvc.perform(delete("/products/{productId}", product.getId())
+        String redirectedUrl = mockMvc.perform(delete("/products/{productId}/delete", product.getId())
                         .cookie(cookie))
                 .andExpect(status().is3xxRedirection())
                 .andReturn()
@@ -376,7 +385,7 @@ class ProductControllerIntegrationTest {
                 .getRedirectedUrl();
 
         assertThat(redirectedUrl).isNotNull();
-        assertThat(redirectedUrl).isEqualTo("/products");
+        assertThat(redirectedUrl).isEqualTo("/products/all");
         assertThat(productRepository.findById(product.getId())).isNotPresent();
     }
 
@@ -392,7 +401,7 @@ class ProductControllerIntegrationTest {
         Cookie cookie = authHelper.signIn(authUser, mockMvc);
         product = productRepository.save(product);
 
-        String redirectedUrl = mockMvc.perform(delete("/products/{productId}", product.getId())
+        String redirectedUrl = mockMvc.perform(delete("/products/{productId}/delete", product.getId())
                         .cookie(cookie))
                 .andExpect(status().is3xxRedirection())
                 .andReturn()
@@ -400,7 +409,7 @@ class ProductControllerIntegrationTest {
                 .getRedirectedUrl();
 
         assertThat(redirectedUrl).isNotNull();
-        assertThat(redirectedUrl).isEqualTo("/products");
+        assertThat(redirectedUrl).isEqualTo("/products/all");
         assertThat(productRepository.findById(product.getId())).isNotPresent();
     }
 
@@ -415,7 +424,7 @@ class ProductControllerIntegrationTest {
         Cookie cookie = authHelper.signIn(authUser, mockMvc);
         product = productRepository.save(product);
 
-        String redirectedUrl = mockMvc.perform(delete("/products/{productId}", product.getId())
+        String redirectedUrl = mockMvc.perform(delete("/products/{productId}/delete", product.getId())
                         .cookie(cookie))
                 .andExpect(status().is3xxRedirection())
                 .andReturn()
@@ -437,7 +446,7 @@ class ProductControllerIntegrationTest {
 
         product = productRepository.save(product);
 
-        String redirectedUrl = mockMvc.perform(delete("/products/{productId}", product.getId()))
+        String redirectedUrl = mockMvc.perform(delete("/products/{productId}/delete", product.getId()))
                 .andExpect(status().is3xxRedirection())
                 .andReturn()
                 .getResponse()

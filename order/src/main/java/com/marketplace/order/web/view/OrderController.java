@@ -5,6 +5,7 @@ import com.marketplace.order.service.OrderSettingsService;
 import com.marketplace.order.web.dto.OrderUpdateRequest;
 import com.marketplace.order.web.model.Order;
 import com.marketplace.order.mapper.OrderEntityMapper;
+import com.marketplace.order.web.model.OrderStatus;
 import com.marketplace.product.mapper.ProductEntityMapper;
 import com.marketplace.product.service.ProductCrudService;
 import com.marketplace.product.web.model.Product;
@@ -20,7 +21,6 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
-// TODO reorganize all endpoints' name (add delete, update..., /products/{id}/orders/{id}...)
 @Controller
 @RequiredArgsConstructor
 @RequestMapping("/orders")
@@ -76,7 +76,8 @@ public class OrderController {
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
             model.addAttribute("totalSum", totalSum);
 
-            model.addAttribute("previousOrders", List.of());
+            List<Order> ordersByOwnerIdAndStatusIn = orderSettingsService.findOrdersByOwnerIdAndStatusIn(List.of(OrderStatus.COMPLETED, OrderStatus.CANCELLED));
+            model.addAttribute("historyOrders", List.of(ordersByOwnerIdAndStatusIn));
         });
 
         return "user-order";
@@ -88,7 +89,7 @@ public class OrderController {
             Model model
     ) {
         orderSettingsService.addProductToOrder(productId);
-        return getUserOrder(model);
+        return "redirect:/orders/" + getUserOrder(model);
     }
 
     @DeleteMapping("/{orderId}/delete")
@@ -130,5 +131,11 @@ public class OrderController {
 
         orderCrudService.update(orderId, orderUpdateRequest);
         return "redirect:/orders/" + orderId;
+    }
+
+    @PostMapping("/user-order/pay")
+    public String payForOrder() {
+        orderSettingsService.payForOrder();
+        return "redirect:/orders/user-order";
     }
 }

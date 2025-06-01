@@ -69,12 +69,13 @@ public class OrderFacade implements OrderCrudService, OrderSettingsService {
     @Override
     public Order findByOwnerIdOrCreate() {
         User authenticatedUser = authenticationUserService.getAuthenticatedUser();
-        return orderRepository.findOrderByOwnerId(authenticatedUser.getId())
+        return orderRepository.findOrderByOwnerIdAndStatus(authenticatedUser.getId(), OrderStatus.IN_PROGRESS)
                 .orElse(Order.builder()
-                        .ownerId(authenticatedUser.getId())
-                        .productIds(new ArrayList<>())
-                        .status(OrderStatus.CREATED)
-                        .build());
+                    .ownerId(authenticatedUser.getId())
+                    .productIds(new ArrayList<>())
+                    .status(OrderStatus.CREATED)
+                    .build()
+                );
     }
 
     @Override
@@ -109,6 +110,22 @@ public class OrderFacade implements OrderCrudService, OrderSettingsService {
             order.setProductIds(filteredProducts);
             orderRepository.save(order);
         }
+    }
+
+    @Override
+    public List<Order> findOrdersByOwnerIdAndStatusIn(List<OrderStatus> orderStatus) {
+        User authenticatedUser = authenticationUserService.getAuthenticatedUser();
+        return orderRepository.findOrdersByOwnerIdAndStatusIn(authenticatedUser.getId(), orderStatus);
+    }
+
+    @Override
+    public void payForOrder() {
+        Optional<Order> orderOptional = findByOwnerId();
+
+        orderOptional.ifPresent(order -> {
+            order.setStatus(OrderStatus.COMPLETED);
+            orderRepository.save(order);
+        });
     }
 
     @Transactional

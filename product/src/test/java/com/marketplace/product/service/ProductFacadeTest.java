@@ -26,7 +26,7 @@ import static org.mockito.Mockito.*;
 
 @ActiveProfiles("test")
 @SpringBootTest(classes = ProductApplicationConfig.class)
-class ProductCrudServiceTest {
+class ProductFacadeTest {
 
     @MockitoBean
     private ProductRepository productRepository;
@@ -58,7 +58,7 @@ class ProductCrudServiceTest {
 
         when(productRepository.findById(id)).thenReturn(Optional.empty());
 
-        Exception exception = assertThrows(EntityNotFoundException.class, () -> productCrudService.findById(id));
+        Exception exception = assertThrows(EntityNotFoundException.class, () -> productCrudService.getById(id));
         assertThat(exception.getMessage()).isEqualTo("Product not found!");
     }
 

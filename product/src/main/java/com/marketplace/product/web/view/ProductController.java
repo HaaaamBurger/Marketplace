@@ -57,7 +57,7 @@ public class ProductController {
         }
 
         productCrudService.create(productRequest);
-        return "redirect:/products";
+        return "redirect:/products/all";
     }
 
     @GetMapping("/{productId}/update")
@@ -91,7 +91,7 @@ public class ProductController {
     // TODO on delete we need to remove product ids in orders as well　(better to use Kafka some day here)
     @DeleteMapping("/{productId}/delete")
     public String deleteProduct(@PathVariable String productId) {
-//        productCrudService.delete(productId);
-        return "redirect:/products";
+        productCrudService.delete(productId);
+        return "redirect:/products/all";
     }
 }

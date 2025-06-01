@@ -38,12 +38,6 @@ public class Product extends AuditableEntity {
     private BigDecimal price;
 
     @Min(value = 0, message = "Amount cannot be negative value")
-    private int amount;
-
-    public void reduceAmount() {
-        if (amount != 0) {
-            amount -= 1;
-        }
-    }
+    private Integer amount;
 
 }

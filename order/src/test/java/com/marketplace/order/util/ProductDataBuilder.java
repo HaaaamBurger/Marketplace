@@ -12,8 +12,9 @@ public class ProductDataBuilder {
                 .id(String.valueOf(UUID.randomUUID()))
                 .ownerId(String.valueOf(UUID.randomUUID()))
                 .name("Test Product")
-                .description("Test Description")
-                .price(BigDecimal.valueOf(99.99));
+                .price(BigDecimal.valueOf(99.99))
+                .amount(1)
+                .description("Test Description");
     }
 
 }
