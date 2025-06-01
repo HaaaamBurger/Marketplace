@@ -4,7 +4,7 @@ import com.marketplace.order.web.model.OrderStatus;
 import lombok.*;
 
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.Set;
 
 @Data
 @Builder
@@ -16,7 +16,7 @@ public class OrderResponse {
 
     private String ownerId;
 
-    private List<String> productIds;
+    private Set<String> productIds;
 
     private String address;
 

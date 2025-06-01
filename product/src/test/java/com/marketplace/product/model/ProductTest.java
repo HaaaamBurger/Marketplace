@@ -98,4 +98,27 @@ class ProductTest {
         assertFalse(violations.isEmpty());
         assertTrue(violations.stream().anyMatch(v -> v.getMessage().contains("digits")));
     }
+
+    @Test
+    void whenAmountIsNull_thenValidationFails() {
+        Product product = ProductDataBuilder.buildProductWithAllFields()
+                .amount(null)
+                .build();
+
+        Set<ConstraintViolation<Product>> violations = validator.validate(product);
+        assertFalse(violations.isEmpty());
+        assertTrue(violations.stream().anyMatch(v -> v.getMessage().contains("Amount is required")));
+    }
+
+    @Test
+    void whenAmountIsNegative_thenValidationFails() {
+        Product product = ProductDataBuilder.buildProductWithAllFields()
+                .amount(-1)
+                .build();
+
+        Set<ConstraintViolation<Product>> violations = validator.validate(product);
+        assertFalse(violations.isEmpty());
+        assertTrue(violations.stream().anyMatch(v -> v.getMessage().contains("Amount cannot be negative value")));
+    }
+
 }

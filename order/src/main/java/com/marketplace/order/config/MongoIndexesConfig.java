@@ -1,4 +1,4 @@
-package com.marketplace.main.config;
+package com.marketplace.order.config;
 
 import com.marketplace.order.web.model.Order;
 import lombok.RequiredArgsConstructor;
@@ -21,9 +21,10 @@ public class MongoIndexesConfig implements InitializingBean {
         mongoTemplate.indexOps(Order.class)
                 .ensureIndex(
                     new Index()
-                            .on("status", Sort.Direction.ASC)
+                            .on("ownerId", Sort.Direction.ASC)
                             .unique()
                             .partial(PartialIndexFilter.of(Criteria.where("status").is("IN_PROGRESS")))
+                            .named("unique_in_progress_order_per_owner")
                     );
     }
 }

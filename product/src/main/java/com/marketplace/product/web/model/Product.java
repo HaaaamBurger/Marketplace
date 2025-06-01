@@ -37,6 +37,7 @@ public class Product extends AuditableEntity {
     @Digits(integer = 8, fraction = 2, message = "Price must have up to 8 digits before the decimal point and 2 after")
     private BigDecimal price;
 
+    @NotNull(message = "Amount is required")
     @Min(value = 0, message = "Amount cannot be negative value")
     private Integer amount;
 

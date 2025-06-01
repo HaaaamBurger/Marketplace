@@ -14,5 +14,4 @@ public interface OrderRepository extends MongoRepository<Order,String> {
     Optional<Order> findOrderByOwnerIdAndStatus(String ownerId, OrderStatus status);
 
     List<Order> findOrdersByOwnerIdAndStatusIn(String ownerId, List<OrderStatus> statuses);
-
 }

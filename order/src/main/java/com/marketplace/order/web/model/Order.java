@@ -6,11 +6,9 @@ import jakarta.validation.constraints.Size;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.index.CompoundIndex;
-import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.util.List;
+import java.util.Set;
 
 @Data
 @NoArgsConstructor
@@ -27,7 +25,8 @@ public class Order extends AuditableEntity {
     private String ownerId;
 
     @Size(min = 1, max = 50, message = "Order must contain at least 1 product and maximum 50")
-    private List<String> productIds;
+    // TODO change to Set
+    private Set<String> productIds;
 
     private String address;
 

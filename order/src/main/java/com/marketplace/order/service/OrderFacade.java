@@ -18,9 +18,11 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -44,7 +46,7 @@ public class OrderFacade implements OrderCrudService, OrderSettingsService {
     public Order create(OrderRequest request) {
         User authenticatedUser = authenticationUserService.getAuthenticatedUser();
 
-        List<String> productIds = request.getProductIds();
+        Set<String> productIds = request.getProductIds();
         productIds.forEach(productCrudService::getById);
 
         return orderRepository.save(Order.builder()
@@ -61,9 +63,9 @@ public class OrderFacade implements OrderCrudService, OrderSettingsService {
     }
 
     @Override
-    public Optional<Order> findByOwnerId() {
+    public Optional<Order> findActiveOrderByOwnerId() {
         User authenticatedUser = authenticationUserService.getAuthenticatedUser();
-        return orderRepository.findOrderByOwnerId(authenticatedUser.getId());
+        return orderRepository.findOrderByOwnerIdAndStatus(authenticatedUser.getId(), OrderStatus.IN_PROGRESS);
     }
 
     @Override
@@ -72,8 +74,8 @@ public class OrderFacade implements OrderCrudService, OrderSettingsService {
         return orderRepository.findOrderByOwnerIdAndStatus(authenticatedUser.getId(), OrderStatus.IN_PROGRESS)
                 .orElse(Order.builder()
                     .ownerId(authenticatedUser.getId())
-                    .productIds(new ArrayList<>())
-                    .status(OrderStatus.CREATED)
+                    .productIds(new HashSet<>())
+                    .status(OrderStatus.IN_PROGRESS)
                     .build()
                 );
     }
@@ -96,11 +98,11 @@ public class OrderFacade implements OrderCrudService, OrderSettingsService {
 
     @Override
     public void removeProductFromOrder(String productId) {
-        Optional<Order> orderOptional = findByOwnerId();
+        Optional<Order> orderOptional = findActiveOrderByOwnerId();
 
         if (orderOptional.isPresent()) {
             Order order = orderOptional.get();
-            List<String> filteredProducts = order.getProductIds().stream().filter(s -> !s.equals(productId)).toList();
+            Set<String> filteredProducts = order.getProductIds().stream().filter(s -> !s.equals(productId)).collect(Collectors.toSet());
 
             if (filteredProducts.isEmpty()) {
                 orderRepository.deleteById(order.getId());
@@ -113,14 +115,20 @@ public class OrderFacade implements OrderCrudService, OrderSettingsService {
     }
 
     @Override
-    public List<Order> findOrdersByOwnerIdAndStatusIn(List<OrderStatus> orderStatus) {
+    public Optional<Order> findOrderByOwnerIdAndStatus(OrderStatus orderStatus) {
         User authenticatedUser = authenticationUserService.getAuthenticatedUser();
-        return orderRepository.findOrdersByOwnerIdAndStatusIn(authenticatedUser.getId(), orderStatus);
+        return orderRepository.findOrderByOwnerIdAndStatus(authenticatedUser.getId(), orderStatus);
+    }
+
+    @Override
+    public List<Order> findOrdersByOwnerIdAndStatusIn(List<OrderStatus> orderStatuses) {
+        User authenticatedUser = authenticationUserService.getAuthenticatedUser();
+        return orderRepository.findOrdersByOwnerIdAndStatusIn(authenticatedUser.getId(), orderStatuses);
     }
 
     @Override
     public void payForOrder() {
-        Optional<Order> orderOptional = findByOwnerId();
+        Optional<Order> orderOptional = findActiveOrderByOwnerId();
 
         orderOptional.ifPresent(order -> {
             order.setStatus(OrderStatus.COMPLETED);
@@ -136,9 +144,8 @@ public class OrderFacade implements OrderCrudService, OrderSettingsService {
         validateEnoughAmountOrThrow(product.getAmount());
 
         Order order = findByOwnerIdOrCreate();
-
+        System.out.println(order);
         order.getProductIds().add(productId);
-        order.setStatus(OrderStatus.IN_PROGRESS);
 
         return orderRepository.save(order);
     }

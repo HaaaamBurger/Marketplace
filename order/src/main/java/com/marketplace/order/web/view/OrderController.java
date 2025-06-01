@@ -2,6 +2,7 @@ package com.marketplace.order.web.view;
 
 import com.marketplace.order.service.OrderCrudService;
 import com.marketplace.order.service.OrderSettingsService;
+import com.marketplace.order.web.dto.OrderResponse;
 import com.marketplace.order.web.dto.OrderUpdateRequest;
 import com.marketplace.order.web.model.Order;
 import com.marketplace.order.mapper.OrderEntityMapper;
@@ -13,6 +14,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
@@ -62,9 +64,10 @@ public class OrderController {
     public String getUserOrder(
             Model model
     ) {
-        Optional<Order> orderOptional = orderSettingsService.findByOwnerId();
+
+        Optional<Order> orderOptional = orderSettingsService.findOrderByOwnerIdAndStatus(OrderStatus.IN_PROGRESS);
         orderOptional.ifPresent(order -> {
-            model.addAttribute("currentOrder", order);
+            model.addAttribute("currentOrder", orderEntityMapper.mapOrderToOrderResponseDto(order));
 
             List<Product> products = order.getProductIds().stream()
                     .map(productCrudService::getById)
@@ -76,14 +79,16 @@ public class OrderController {
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
             model.addAttribute("totalSum", totalSum);
 
-            List<Order> ordersByOwnerIdAndStatusIn = orderSettingsService.findOrdersByOwnerIdAndStatusIn(List.of(OrderStatus.COMPLETED, OrderStatus.CANCELLED));
-            model.addAttribute("historyOrders", List.of(ordersByOwnerIdAndStatusIn));
         });
+
+        List<Order> ordersByOwnerIdAndStatusIn = orderSettingsService.findOrdersByOwnerIdAndStatusIn(List.of(OrderStatus.COMPLETED, OrderStatus.CANCELLED));
+        System.out.println(ordersByOwnerIdAndStatusIn);
+        model.addAttribute("historyOrders", orderEntityMapper.mapOrdersToOrderResponseDtos(ordersByOwnerIdAndStatusIn));
 
         return "user-order";
     }
 
-    @PutMapping("/add-product/{productId}")
+    @PutMapping("/{productId}/add-product")
     public String addProductToOrder(
             @PathVariable String productId,
             Model model

@@ -156,9 +156,9 @@
 
         <div class="tab-pane fade" id="history" role="tabpanel" aria-labelledby="history-tab">
             <div class="row g-4 mt-1"
-                 th:if="${historyOrders != null and !historyOrders.isEmpty() and historyOrders.get(0).size() > 0}">
+                 th:if="${historyOrders != null and !historyOrders.isEmpty() and historyOrders.size() > 0}">
                 <div class="col-md-6 col-lg-4"
-                     th:each="historyOrder : ${historyOrders.get(0)}">
+                     th:each="historyOrder : ${historyOrders}">
                     <div class="card order-card h-100">
                         <div class="order-header">
                             <div>
@@ -189,7 +189,7 @@
                 </div>
             </div>
 
-            <div th:if="${historyOrders == null or historyOrders.isEmpty() or historyOrders.get(0).isEmpty()}"
+            <div th:if="${historyOrders == null or historyOrders.isEmpty()}"
                  class="text-center no-orders mt-5">
                 <i class="bi bi-archive fs-1 mb-3 text-muted"></i>
                 <h4>No past orders</h4>

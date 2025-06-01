@@ -3,6 +3,7 @@ package com.marketplace.main.util.builder;
 import com.marketplace.order.web.model.Order;
 import com.marketplace.order.web.model.OrderStatus;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 public class OrderDataBuilder {
@@ -11,7 +12,7 @@ public class OrderDataBuilder {
         return Order.builder()
                 .id(String.valueOf(UUID.randomUUID()))
                 .ownerId(String.valueOf(UUID.randomUUID()))
-                .productIds(List.of(String.valueOf(UUID.randomUUID())))
+                .productIds(Set.of(String.valueOf(UUID.randomUUID())))
                 .address(String.valueOf(UUID.randomUUID()))
                 .status(OrderStatus.CREATED);
     }

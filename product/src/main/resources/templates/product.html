@@ -115,7 +115,7 @@
             <hr class="my-3">
 
             <div class="d-flex gap-2 flex-wrap">
-                <form th:action="@{/orders/add-product/{id}(id=${productId})}" th:method="put">
+                <form th:action="@{/orders/{id}/add-product(id=${productId})}" th:method="put">
                     <button type="submit"
                             th:attr="disabled=${authUser.id == product.ownerId || product.amount == 0}"
                             class="btn btn-success">
