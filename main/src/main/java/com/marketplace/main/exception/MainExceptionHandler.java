@@ -4,6 +4,7 @@ import com.marketplace.auth.exception.*;
 import com.marketplace.common.exception.EntityExistsException;
 import com.marketplace.common.exception.EntityNotFoundException;
 import com.marketplace.common.exception.ExceptionType;
+import com.marketplace.order.exception.OrderUpdateException;
 import com.marketplace.product.exception.ProductAmountNotEnoughException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -92,7 +93,7 @@ public class MainExceptionHandler {
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    protected ModelAndView handleMethodArgumentNotValid(MethodArgumentNotValidException exception, HttpServletResponse response, HttpServletRequest request) {
+    protected ModelAndView handleMethodArgumentNotValidException(MethodArgumentNotValidException exception, HttpServletResponse response, HttpServletRequest request) {
 
         String invalidFields = exception.getBindingResult()
                 .getFieldErrors()
@@ -105,6 +106,19 @@ public class MainExceptionHandler {
         return buildErrorResponseModelAndView(
                 400,
                 invalidFields,
+                ExceptionType.WEB,
+                request.getRequestURI()
+        );
+    }
+
+    @ExceptionHandler(OrderUpdateException.class)
+    protected ModelAndView handleOrderUpdateException(OrderUpdateException exception, HttpServletResponse response, HttpServletRequest request) {
+
+        response.setStatus(400);
+
+        return buildErrorResponseModelAndView(
+                400,
+                exception.getMessage(),
                 ExceptionType.WEB,
                 request.getRequestURI()
         );

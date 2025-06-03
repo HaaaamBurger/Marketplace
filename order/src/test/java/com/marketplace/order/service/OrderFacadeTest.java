@@ -27,9 +27,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 import static org.assertj.core.api.AssertionsForClassTypes.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -142,7 +140,7 @@ class OrderFacadeTest {
         String mockProductId = "mockProductId";
         Product mockedProduct = mock(Product.class);
         OrderRequest orderRequest = OrderRequest.builder()
-                .productIds(List.of(mockProductId))
+                .productIds(Set.of(mockProductId))
                 .build();
 
         User user = mockHelper.mockAuthenticationAndSetContext();
@@ -153,7 +151,7 @@ class OrderFacadeTest {
 
         assertThat(responseOrder).isNotNull();
         assertThat(responseOrder.getOwnerId()).isEqualTo(user.getId());
-        assertThat(responseOrder.getProductIds().get(0)).isEqualTo(mockProductId);
+        assertThat(responseOrder.getProductIds().stream().anyMatch(productId -> productId.equals(mockProductId))).isTrue();
 
         verify(productRepository, times(1)).findById(mockProductId);
         verify(orderRepository, times(1)).save(any(Order.class));
@@ -163,7 +161,7 @@ class OrderFacadeTest {
     public void create_ShouldThrowException_WhenNoSecurity() {
         String mockProductId = "mockProductId";
         OrderRequest orderRequest = OrderRequest.builder()
-                .productIds(List.of(mockProductId))
+                .productIds(Set.of(mockProductId))
                 .build();
 
         AuthenticationCredentialsNotFoundException exception = assertThrows(AuthenticationCredentialsNotFoundException.class, () -> orderCrudService.create(orderRequest));
@@ -174,7 +172,7 @@ class OrderFacadeTest {
     public void create_ShouldThrowException_WhenProductNotExists() {
         String mockProductId = "mockProductId";
         OrderRequest orderRequest = OrderRequest.builder()
-                .productIds(List.of(mockProductId))
+                .productIds(Set.of(mockProductId))
                 .build();
 
         mockHelper.mockAuthenticationAndSetContext();
@@ -307,7 +305,7 @@ class OrderFacadeTest {
         assertThat(responseOrder.getOwnerId()).isEqualTo(user.getId());
         assertThat(responseOrder.getProductIds()).isNotNull();
         assertThat(responseOrder.getProductIds().size()).isEqualTo(1);
-        assertThat(responseOrder.getProductIds().get(0)).isEqualTo(product.getId());
+        assertThat(responseOrder.getProductIds().stream().anyMatch(productId -> productId.equals(product.getId()))).isTrue();
         assertThat(responseOrder.getStatus()).isEqualTo(OrderStatus.IN_PROGRESS);
 
         verify(productRepository, times(1)).findById(product.getId());
@@ -330,7 +328,7 @@ class OrderFacadeTest {
         assertThat(responseOrder.getOwnerId()).isEqualTo(user.getId());
         assertThat(responseOrder.getProductIds()).isNotNull();
         assertThat(responseOrder.getProductIds().size()).isEqualTo(1);
-        assertThat(responseOrder.getProductIds().get(0)).isEqualTo(product.getId());
+        assertThat(responseOrder.getProductIds().stream().anyMatch(productId -> productId.equals(product.getId()))).isTrue();
         assertThat(responseOrder.getStatus()).isEqualTo(OrderStatus.IN_PROGRESS);
 
         verify(productRepository, times(1)).findById(product.getId());

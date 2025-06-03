@@ -91,6 +91,14 @@
             display: flex;
             flex-direction: column;
         }
+
+        .disabled-link {
+            pointer-events: none;
+            opacity: 0.5;
+            cursor: not-allowed;
+            text-decoration: none;
+        }
+
     </style>
 </head>
 <body>
@@ -115,14 +123,21 @@
             </span>
 
             <div class="d-flex gap-2">
-                <a th:href="@{/orders/{id}/update(id=${order.id})}" class="btn btn-outline-primary btn-sm" title="Edit Order">
+                <a th:href="@{/orders/{id}/update(id=${order.id})}"
+                   th:classappend="${order.status.name() == 'COMPLETED' or order.status.name() == 'CANCELLED'} ? 'disabled-link' : ''"
+                   class="btn btn-outline-primary btn-sm"
+                   th:attr="title=${(order.status.name() == 'COMPLETED' or order.status.name() == 'CANCELLED') ? 'This order cannot be edited' : 'Edit Order'}">
                     <i class="bi bi-pencil-square"></i> Edit
                 </a>
+
 
                 <form th:action="@{/orders/{id}/delete(id=${order.id})}" method="post"
                       th:onsubmit="return confirm('Are you sure you want to delete this order?')">
                     <input type="hidden" name="_method" value="delete"/>
-                    <button type="submit" class="btn btn-outline-danger btn-sm" title="Delete Order">
+                    <button type="submit"
+                            th:attr="disabled=${order.status.name() == 'COMPLETED' || order.status.name() == 'CANCELLED'}"
+                            class="btn btn-outline-danger btn-sm"
+                            title="Delete Order">
                         <i class="bi bi-trash3"></i> Delete
                     </button>
                 </form>
@@ -168,7 +183,10 @@
                               th:method="delete"
                               th:onsubmit="return confirm('Are you sure you want to delete this product?')">
                             <input type="hidden" name="_method" value="delete"/>
-                            <button type="submit" class="btn btn-outline-danger" title="Delete">
+                            <button type="submit"
+                                    th:attr="disabled=${order.status.name() == 'COMPLETED' || order.status.name() == 'CANCELLED'}"
+                                    class="btn btn-outline-danger"
+                                    title="Delete">
                                 <i class="bi bi-trash"></i>
                             </button>
                         </form>

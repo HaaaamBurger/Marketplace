@@ -2,7 +2,6 @@ package com.marketplace.main.util.builder;
 
 import com.marketplace.order.web.model.Order;
 import com.marketplace.order.web.model.OrderStatus;
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 

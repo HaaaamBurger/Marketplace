@@ -1,6 +1,7 @@
 package com.marketplace.order.service;
 
 import com.marketplace.common.exception.EntityNotFoundException;
+import com.marketplace.order.exception.OrderUpdateException;
 import com.marketplace.order.repository.OrderRepository;
 import com.marketplace.order.web.dto.OrderUpdateRequest;
 import com.marketplace.order.web.model.Order;
@@ -10,6 +11,7 @@ import com.marketplace.product.exception.ProductAmountNotEnoughException;
 import com.marketplace.product.service.ProductCrudService;
 import com.marketplace.product.web.model.Product;
 import com.marketplace.usercore.model.User;
+import com.marketplace.usercore.model.UserRole;
 import com.marketplace.usercore.security.AuthenticationUserService;
 import com.marketplace.usercore.service.UserSettingsService;
 import lombok.RequiredArgsConstructor;
@@ -84,6 +86,8 @@ public class OrderFacade implements OrderCrudService, OrderSettingsService {
     public Order update(String orderId, OrderUpdateRequest request) {
         Order order = findOrderOrThrow(orderId);
 
+        validateOrderUpdateOrThrow(order);
+
         Optional.ofNullable(request.getAddress()).ifPresent(order::setAddress);
         Optional.ofNullable(request.getStatus()).ifPresent(order::setStatus);
 
@@ -100,18 +104,24 @@ public class OrderFacade implements OrderCrudService, OrderSettingsService {
     public void removeProductFromOrder(String productId) {
         Optional<Order> orderOptional = findActiveOrderByOwnerId();
 
-        if (orderOptional.isPresent()) {
-            Order order = orderOptional.get();
-            Set<String> filteredProducts = order.getProductIds().stream().filter(s -> !s.equals(productId)).collect(Collectors.toSet());
-
-            if (filteredProducts.isEmpty()) {
-                orderRepository.deleteById(order.getId());
-                return;
-            }
-
-            order.setProductIds(filteredProducts);
-            orderRepository.save(order);
+        if (orderOptional.isEmpty()) {
+            return;
         }
+
+        Order order = orderOptional.get();
+        validateOrderUpdateOrThrow(order);
+
+        Set<String> filteredProducts = order.getProductIds().stream()
+                .filter(orderProductId -> !orderProductId.equals(productId))
+                .collect(Collectors.toSet());
+
+        if (filteredProducts.isEmpty()) {
+            orderRepository.deleteById(order.getId());
+            return;
+        }
+
+        order.setProductIds(filteredProducts);
+        orderRepository.save(order);
     }
 
     @Override
@@ -144,10 +154,16 @@ public class OrderFacade implements OrderCrudService, OrderSettingsService {
         validateEnoughAmountOrThrow(product.getAmount());
 
         Order order = findByOwnerIdOrCreate();
-        System.out.println(order);
         order.getProductIds().add(productId);
 
         return orderRepository.save(order);
+    }
+
+    private void validateOrderUpdateOrThrow(Order order) {
+        if (order.getStatus() == OrderStatus.COMPLETED || order.getStatus() == OrderStatus.CANCELLED) {
+            log.warn("[ORDER_FACADE]: Order with statuses: COMPLETED or CANCELLED cannot be updated!");
+            throw new OrderUpdateException("Completed order cannot be updated!");
+        }
     }
 
     private Order validateOrderAccessOrThrow(String orderId) {

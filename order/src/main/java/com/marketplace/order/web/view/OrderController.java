@@ -2,7 +2,6 @@ package com.marketplace.order.web.view;
 
 import com.marketplace.order.service.OrderCrudService;
 import com.marketplace.order.service.OrderSettingsService;
-import com.marketplace.order.web.dto.OrderResponse;
 import com.marketplace.order.web.dto.OrderUpdateRequest;
 import com.marketplace.order.web.model.Order;
 import com.marketplace.order.mapper.OrderEntityMapper;
@@ -14,7 +13,6 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
@@ -46,13 +44,16 @@ public class OrderController {
         return "orders";
     }
 
+    @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping("/{orderId}")
     public String getOrderById(
             Model model,
             @PathVariable String orderId
     ) {
         Order order = orderCrudService.findById(orderId);
-        List<Product> products = productCrudService.findAll();
+        List<Product> products = order.getProductIds().stream()
+                .map(productCrudService::getById)
+                .toList();
 
         model.addAttribute("order", orderEntityMapper.mapOrderToOrderResponseDto(order));
         model.addAttribute("products", productEntityMapper.mapProductsToProductResponseDtos(products));
@@ -64,7 +65,6 @@ public class OrderController {
     public String getUserOrder(
             Model model
     ) {
-
         Optional<Order> orderOptional = orderSettingsService.findOrderByOwnerIdAndStatus(OrderStatus.IN_PROGRESS);
         orderOptional.ifPresent(order -> {
             model.addAttribute("currentOrder", orderEntityMapper.mapOrderToOrderResponseDto(order));
@@ -82,7 +82,6 @@ public class OrderController {
         });
 
         List<Order> ordersByOwnerIdAndStatusIn = orderSettingsService.findOrdersByOwnerIdAndStatusIn(List.of(OrderStatus.COMPLETED, OrderStatus.CANCELLED));
-        System.out.println(ordersByOwnerIdAndStatusIn);
         model.addAttribute("historyOrders", orderEntityMapper.mapOrdersToOrderResponseDtos(ordersByOwnerIdAndStatusIn));
 
         return "user-order";

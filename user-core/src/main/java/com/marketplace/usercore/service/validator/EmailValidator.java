@@ -35,17 +35,21 @@ public class EmailValidator {
         Optional<User> user = userRepository.findByEmail(email);
 
         if (user.isEmpty()) {
-            rejectEmailValue(errors);
+            rejectEmailValue(errors, "This email is not in use. Try to sign up first!");
         }
 
         return user;
     }
 
     private void rejectEmailValue(Errors errors) {
+        rejectEmailValue(errors, "This email already in use");
+    }
+
+    private void rejectEmailValue(Errors errors, String message) {
         errors.rejectValue(
                 "email",
                 "error.email",
-                "This email already in use"
+                message
         );
     }
 

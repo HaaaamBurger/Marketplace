@@ -38,7 +38,6 @@ public class UserTest {
                 .build();
 
         Set<ConstraintViolation<User>> violations = validator.validate(user);
-        System.out.println(violations);
         assertEquals(1, violations.size());
 
         assertTrue(violations.stream().anyMatch(v -> v.getMessage().contains("Email is required")));
@@ -97,7 +96,6 @@ public class UserTest {
     public void whenEveryFieldIsInvalid_thenValidationFails() {
         User user = new User();
         Set<ConstraintViolation<User>> violations = validator.validate(user);
-        violations.forEach(userConstraintViolation -> System.out.println(userConstraintViolation.getMessage()));
         assertEquals(4, violations.size());
 
         assertTrue(violations.stream().anyMatch(v -> v.getMessage().contains("Password is required")));
