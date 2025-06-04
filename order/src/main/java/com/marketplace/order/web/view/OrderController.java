@@ -87,7 +87,29 @@ public class OrderController {
         return "user-order";
     }
 
-    @PutMapping("/{productId}/add-product")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @GetMapping("/{orderId}/update")
+    public String getUpdateOrder(
+            Model model,
+            @PathVariable String orderId
+    ) {
+        Order order = orderCrudService.findById(orderId);
+        model.addAttribute("order", orderEntityMapper.mapOrderToOrderResponseDto(order));
+
+        return "order-edit";
+    }
+
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @PutMapping("/{orderId}/update")
+    public String updateOrder(
+            @PathVariable String orderId,
+            @ModelAttribute OrderUpdateRequest orderUpdateRequest
+    ) {
+        orderCrudService.update(orderId, orderUpdateRequest);
+        return "redirect:/orders/" + orderId;
+    }
+
+    @PutMapping("/add-product/{productId}")
     public String addProductToOrder(
             @PathVariable String productId,
             Model model
@@ -108,33 +130,6 @@ public class OrderController {
     ) {
         orderSettingsService.removeProductFromOrder(productId);
         return "home";
-    }
-
-    @PreAuthorize("hasAuthority('ADMIN')")
-    @GetMapping("/{orderId}/update")
-    public String getUpdateOrder(
-            Model model,
-            @PathVariable String orderId
-    ) {
-        Order order = orderCrudService.findById(orderId);
-        model.addAttribute("order", order);
-
-        return "order-edit";
-    }
-
-    @PreAuthorize("hasAuthority('ADMIN')")
-    @PutMapping("/{orderId}/update")
-    public String updateOrder(
-            @PathVariable String orderId,
-            @Valid @ModelAttribute OrderUpdateRequest orderUpdateRequest,
-            BindingResult bindingResult
-    ) {
-        if (bindingResult.hasErrors()) {
-            return "order-edit";
-        }
-
-        orderCrudService.update(orderId, orderUpdateRequest);
-        return "redirect:/orders/" + orderId;
     }
 
     @PostMapping("/user-order/pay")

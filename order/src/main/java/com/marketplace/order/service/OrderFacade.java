@@ -155,7 +155,6 @@ public class OrderFacade implements OrderCrudService, OrderSettingsService {
 
         Order order = findByOwnerIdOrCreate();
         order.getProductIds().add(productId);
-
         return orderRepository.save(order);
     }
 
