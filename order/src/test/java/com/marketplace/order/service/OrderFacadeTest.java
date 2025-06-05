@@ -2,6 +2,7 @@ package com.marketplace.order.service;
 
 import com.marketplace.common.exception.EntityNotFoundException;
 import com.marketplace.order.config.OrderApplicationConfig;
+import com.marketplace.order.exception.OrderUpdateException;
 import com.marketplace.order.repository.OrderRepository;
 import com.marketplace.order.util.MockHelper;
 
@@ -92,7 +93,7 @@ class OrderFacadeTest {
     }
 
     @Test
-    public void findById_ShouldThrowException_WhenUserNotMatching() {
+    public void findById_ShouldThrowException_WhenUserNotOwner() {
         mockHelper.mockAuthenticationAndSetContext();
         Order order = OrderDataBuilder.buildOrderWithAllFields().build();
 
@@ -119,7 +120,7 @@ class OrderFacadeTest {
     }
 
     @Test
-    public void findById_ShouldReturnOrder_WhenUserNotMatchingButAdmin() {
+    public void findById_ShouldReturnOrder_WhenUserNotOwnerButAdmin() {
         User user = UserDataBuilder.buildUserWithAllFields()
                 .role(UserRole.ADMIN)
                 .build();
@@ -230,6 +231,21 @@ class OrderFacadeTest {
 
         EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> orderCrudService.update(orderId, orderUpdateRequest));
         assertThat(exception.getMessage()).isEqualTo("Order not found!");
+
+        verify(orderRepository, times(1)).findById(orderId);
+    }
+
+    @Test
+    public void update_ShouldThrowException_WhenOrderHasStatusCompleted() {
+        String orderId = String.valueOf(UUID.randomUUID());
+        OrderUpdateRequest orderUpdateRequest = OrderUpdateRequest.builder()
+//                .status(OrderStatus.COMPLETED)
+                .build();
+
+        when(orderRepository.findById(orderId)).thenAnswer(invocation -> invocation.getArgument(0));
+
+        OrderUpdateException exception = assertThrows(OrderUpdateException.class, () -> orderCrudService.update(orderId, orderUpdateRequest));
+        assertThat(exception.getMessage()).isEqualTo("Completed order cannot be updated");
 
         verify(orderRepository, times(1)).findById(orderId);
     }

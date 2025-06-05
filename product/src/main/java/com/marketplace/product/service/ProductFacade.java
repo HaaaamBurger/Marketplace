@@ -56,11 +56,6 @@ public final class ProductFacade implements ProductCrudService {
     }
 
     @Override
-    public Optional<Product> findById(String productId) {
-        return productRepository.findById(productId);
-    }
-
-    @Override
     public Product update(String productId, ProductRequest productRequest) {
 
         Product product = validateProductAccessOrThrow(productId);
