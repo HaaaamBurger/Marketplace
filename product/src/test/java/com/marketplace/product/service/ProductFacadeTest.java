@@ -116,6 +116,7 @@ class ProductFacadeTest {
         ProductRequest productRequest = ProductRequest.builder()
                 .name("Updated Name")
                 .description("Updated Description")
+                .amount(1)
                 .price(BigDecimal.valueOf(199.99))
                 .build();
 

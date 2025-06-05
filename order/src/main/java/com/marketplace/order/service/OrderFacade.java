@@ -11,7 +11,6 @@ import com.marketplace.product.exception.ProductAmountNotEnoughException;
 import com.marketplace.product.service.ProductCrudService;
 import com.marketplace.product.web.model.Product;
 import com.marketplace.usercore.model.User;
-import com.marketplace.usercore.model.UserRole;
 import com.marketplace.usercore.security.AuthenticationUserService;
 import com.marketplace.usercore.service.UserSettingsService;
 import lombok.RequiredArgsConstructor;
@@ -40,11 +39,6 @@ public class OrderFacade implements OrderCrudService, OrderSettingsService {
     private final UserSettingsService userSettingsService;
 
     @Override
-    public List<Order> findAll() {
-        return orderRepository.findAll();
-    }
-
-    @Override
     public Order create(OrderRequest request) {
         User authenticatedUser = authenticationUserService.getAuthenticatedUser();
 
@@ -60,26 +54,13 @@ public class OrderFacade implements OrderCrudService, OrderSettingsService {
     }
 
     @Override
+    public List<Order> findAll() {
+        return orderRepository.findAll();
+    }
+
+    @Override
     public Order findById(String orderId) {
         return validateOrderAccessOrThrow(orderId);
-    }
-
-    @Override
-    public Optional<Order> findActiveOrderByOwnerId() {
-        User authenticatedUser = authenticationUserService.getAuthenticatedUser();
-        return orderRepository.findOrderByOwnerIdAndStatus(authenticatedUser.getId(), OrderStatus.IN_PROGRESS);
-    }
-
-    @Override
-    public Order findByOwnerIdOrCreate() {
-        User authenticatedUser = authenticationUserService.getAuthenticatedUser();
-        return orderRepository.findOrderByOwnerIdAndStatus(authenticatedUser.getId(), OrderStatus.IN_PROGRESS)
-                .orElse(Order.builder()
-                    .ownerId(authenticatedUser.getId())
-                    .productIds(new HashSet<>())
-                    .status(OrderStatus.IN_PROGRESS)
-                    .build()
-                );
     }
 
     @Override
@@ -100,28 +81,16 @@ public class OrderFacade implements OrderCrudService, OrderSettingsService {
         orderRepository.delete(order);
     }
 
+    @Transactional
     @Override
-    public void removeProductFromOrder(String productId) {
-        Optional<Order> orderOptional = findActiveOrderByOwnerId();
+    public Order addProductToOrder(String productId) {
+        // TODO the same logic were done in validation so it has been duplicated (think about the way how to avoid duplication)...not only here...
+        Product product = productCrudService.getById(productId);
+        validateEnoughAmountOrThrow(product.getAmount());
 
-        if (orderOptional.isEmpty()) {
-            return;
-        }
-
-        Order order = orderOptional.get();
-        validateOrderUpdateOrThrow(order);
-
-        Set<String> filteredProducts = order.getProductIds().stream()
-                .filter(orderProductId -> !orderProductId.equals(productId))
-                .collect(Collectors.toSet());
-
-        if (filteredProducts.isEmpty()) {
-            orderRepository.deleteById(order.getId());
-            return;
-        }
-
-        order.setProductIds(filteredProducts);
-        orderRepository.save(order);
+        Order order = findByOwnerIdOrCreate();
+        order.getProductIds().add(productId);
+        return orderRepository.save(order);
     }
 
     @Override
@@ -137,32 +106,27 @@ public class OrderFacade implements OrderCrudService, OrderSettingsService {
     }
 
     @Override
-    public void payForOrder() {
-        Optional<Order> orderOptional = findActiveOrderByOwnerId();
+    public void removeProductFromOrder(String productId) {
+        Order order = findOrderByOwnerIdAndStatusOrThrow(OrderStatus.IN_PROGRESS);
 
-        orderOptional.ifPresent(order -> {
-            order.setStatus(OrderStatus.COMPLETED);
-            orderRepository.save(order);
-        });
-    }
+        Set<String> filteredProducts = order.getProductIds().stream()
+                .filter(orderProductId -> !orderProductId.equals(productId))
+                .collect(Collectors.toSet());
 
-    @Transactional
-    @Override
-    public Order addProductToOrder(String productId) {
-        // TODO the same logic were done in validation so it has been duplicated (think about the way how to avoid duplication)...not only here...
-        Product product = productCrudService.getById(productId);
-        validateEnoughAmountOrThrow(product.getAmount());
-
-        Order order = findByOwnerIdOrCreate();
-        order.getProductIds().add(productId);
-        return orderRepository.save(order);
-    }
-
-    private void validateOrderUpdateOrThrow(Order order) {
-        if (order.getStatus() == OrderStatus.COMPLETED || order.getStatus() == OrderStatus.CANCELLED) {
-            log.warn("[ORDER_FACADE]: Order with statuses: COMPLETED or CANCELLED cannot be updated!");
-            throw new OrderUpdateException("Completed order cannot be updated!");
+        if (filteredProducts.isEmpty()) {
+            orderRepository.deleteById(order.getId());
+            return;
         }
+
+        order.setProductIds(filteredProducts);
+        orderRepository.save(order);
+    }
+
+    @Override
+    public void payForOrder() {
+        Order order = findActiveOrderByOwnerIdOrThrow();
+        order.setStatus(OrderStatus.COMPLETED);
+        orderRepository.save(order);
     }
 
     private Order validateOrderAccessOrThrow(String orderId) {
@@ -177,6 +141,26 @@ public class OrderFacade implements OrderCrudService, OrderSettingsService {
         throw new AccessDeniedException("Access denied!");
     }
 
+    private Order findByOwnerIdOrCreate() {
+        User authenticatedUser = authenticationUserService.getAuthenticatedUser();
+        return orderRepository.findOrderByOwnerIdAndStatus(authenticatedUser.getId(), OrderStatus.IN_PROGRESS)
+                .orElse(Order.builder()
+                        .ownerId(authenticatedUser.getId())
+                        .productIds(new HashSet<>())
+                        .status(OrderStatus.IN_PROGRESS)
+                        .build()
+                );
+    }
+
+    private Order findActiveOrderByOwnerIdOrThrow() {
+        User authenticatedUser = authenticationUserService.getAuthenticatedUser();
+        return orderRepository.findOrderByOwnerIdAndStatus(authenticatedUser.getId(), OrderStatus.IN_PROGRESS)
+                .orElseThrow(() -> {
+                    log.error("[MONGO_ORDER_SERVICE]: Order not found by ownerId {}", authenticatedUser.getId());
+                    return new EntityNotFoundException("Order not found!");
+                });
+    }
+
     private Order findOrderOrThrow(String orderId) {
         return orderRepository.findById(orderId)
                 .orElseThrow(() -> {
@@ -185,9 +169,28 @@ public class OrderFacade implements OrderCrudService, OrderSettingsService {
                 });
     }
 
+    private void validateOrderUpdateOrThrow(Order order) {
+        if (order.getStatus() == OrderStatus.COMPLETED || order.getStatus() == OrderStatus.CANCELLED) {
+            log.warn("[ORDER_FACADE]: Order with statuses: COMPLETED or CANCELLED cannot be updated!");
+            throw new OrderUpdateException("Completed order cannot be updated");
+        }
+    }
+
     private void validateEnoughAmountOrThrow(int amount) {
         if (amount == 0) {
             throw new ProductAmountNotEnoughException("There are no products available");
         }
+    }
+
+    private Order findOrderByOwnerIdAndStatusOrThrow(OrderStatus orderStatus) {
+        User authenticatedUser = authenticationUserService.getAuthenticatedUser();
+        Optional<Order> orderByOwnerIdAndStatus = orderRepository.findOrderByOwnerIdAndStatus(authenticatedUser.getId(), orderStatus);
+
+        if (orderByOwnerIdAndStatus.isEmpty()) {
+            log.error("[ORDER_FACADE]: Order not found by ownerId {} and status {}", authenticatedUser.getId(), orderStatus);
+            throw new EntityNotFoundException("Order not found!");
+        }
+
+        return orderByOwnerIdAndStatus.get();
     }
 }

@@ -100,7 +100,7 @@ class OrderControllerIntegrationTest {
     }
 
     @Test
-    public void getAllOrders_ShouldRedirectToErrorPage_WhenNoAuth() throws Exception {
+    public void getAllOrders_ShouldRedirectToHomePage_WhenNoAuth() throws Exception {
         Order order = OrderDataBuilder.buildOrderWithAllFields().build();
 
         orderRepository.save(order);
@@ -171,7 +171,7 @@ class OrderControllerIntegrationTest {
     }
 
     @Test
-    public void getOrderById_ShouldRedirectToErrorPage_WhenNoAuth() throws Exception {
+    public void getOrderById_ShouldRedirectToHomePage_WhenNoAuth() throws Exception {
         Product product = ProductDataBuilder.buildProductWithAllFields().build();
 
         productRepository.save(product);
@@ -302,7 +302,7 @@ class OrderControllerIntegrationTest {
     }
 
     @Test
-    public void getUpdateOrder_ShouldReturnUpdateOrderPage_WhenRoleAdmin() throws Exception {
+    public void getUpdateOrder_ShouldReturnUpdateOrder_WhenRoleAdmin() throws Exception {
         User authUser = UserDataBuilder.buildUserWithAllFields()
                 .role(UserRole.ADMIN)
                 .build();
@@ -333,7 +333,7 @@ class OrderControllerIntegrationTest {
     }
 
     @Test
-    public void getUpdateOrder_ShouldRedirect_WhenRoleUser() throws Exception {
+    public void getUpdateOrder_ShouldRedirectToErrorPage_WhenRoleUser() throws Exception {
         User authUser = UserDataBuilder.buildUserWithAllFields().build();
         Product product = ProductDataBuilder.buildProductWithAllFields().build();
 
@@ -385,7 +385,7 @@ class OrderControllerIntegrationTest {
     }
 
     @Test
-    public void updateOrder_ShouldRedirect_WhenRoleUser() throws Exception {
+    public void updateOrder_ShouldRedirectToErrorPage_WhenRoleUser() throws Exception {
         User authUser = UserDataBuilder.buildUserWithAllFields().build();
         Product product = ProductDataBuilder.buildProductWithAllFields().build();
 
@@ -467,7 +467,7 @@ class OrderControllerIntegrationTest {
     }
 
     @Test
-    public void addProductToOrder_ShouldRedirectToError_WhenRoleUserAndProductNotExists() throws Exception {
+    public void addProductToOrder_ShouldRedirectToErrorPage_WhenRoleUserAndProductNotExists() throws Exception {
         User authUser = UserDataBuilder.buildUserWithAllFields().build();
         Product product = ProductDataBuilder.buildProductWithAllFields().build();
         String product1 = String.valueOf(UUID.randomUUID());
@@ -595,34 +595,194 @@ class OrderControllerIntegrationTest {
         assertThat(modelAndView.getViewName()).isEqualTo("error");
     }
 
-//    @Test
-//    public void removeProductFromOrder_ShouldRemoveProductFromOrder_WhenRoleUserAndOrderOwner() throws Exception {
-//        User authUser = UserDataBuilder.buildUserWithAllFields().build();
-//        Product product = ProductDataBuilder.buildProductWithAllFields().build();
-//
-//        productRepository.save(product);
-//        Cookie cookie = authHelper.signIn(authUser, mockMvc);
-//
-//        Order order = OrderDataBuilder.buildOrderWithAllFields()
-//                .ownerId(authUser.getId())
-//                .productIds(Set.of(product.getId()))
-//                .build();
-//        orderRepository.save(order);
-//
-//        ModelAndView modelAndView = mockMvc.perform(delete("/orders/remove-product/{id}", product.getId())
-//                        .cookie(cookie))
-//                .andExpect(status().isOk())
-//                .andReturn().getModelAndView();
-//
-//        assertThat(modelAndView).isNotNull();
-//        assertThat(modelAndView.getViewName()).isNotNull();
-//        assertThat(modelAndView.getViewName()).isEqualTo("home");
-//
-//        Optional<Order> orderOptional = orderRepository.findById(order.getId());
-//        assertThat(orderOptional).isPresent();
-//        assertThat(orderOptional.get().getId()).isEqualTo(order.getId());
-//        assertThat(orderOptional.get().getProductIds()).isNotNull();
-//        assertThat(orderOptional.get().getProductIds().size()).isEqualTo(0);
-//    }
+    @Test
+    public void removeProductFromOrder_ShouldRemoveProductFromOrder_WhenRoleUserAndOrderOwner() throws Exception {
+        User authUser = UserDataBuilder.buildUserWithAllFields().build();
+        Product product = ProductDataBuilder.buildProductWithAllFields().build();
+        Product product1 = ProductDataBuilder.buildProductWithAllFields().build();
 
+        productRepository.save(product);
+        Cookie cookie = authHelper.signIn(authUser, mockMvc);
+
+        Order order = OrderDataBuilder.buildOrderWithAllFields()
+                .status(OrderStatus.IN_PROGRESS)
+                .ownerId(authUser.getId())
+                .productIds(Set.of(product.getId(), product1.getId()))
+                .build();
+        orderRepository.save(order);
+
+        ModelAndView modelAndView = mockMvc.perform(delete("/orders/remove-product/{id}", product.getId())
+                        .cookie(cookie))
+                .andExpect(status().isOk())
+                .andReturn().getModelAndView();
+
+        assertThat(modelAndView).isNotNull();
+        assertThat(modelAndView.getViewName()).isNotNull();
+        assertThat(modelAndView.getViewName()).isEqualTo("home");
+
+        Optional<Order> orderOptional = orderRepository.findById(order.getId());
+        assertThat(orderOptional).isPresent();
+        assertThat(orderOptional.get().getId()).isEqualTo(order.getId());
+        assertThat(orderOptional.get().getProductIds()).isNotNull();
+        assertThat(orderOptional.get().getProductIds().size()).isEqualTo(1);
+        assertThat(orderOptional.get().getProductIds().stream().anyMatch(productId -> productId.equals(product1.getId()))).isTrue();
+    }
+
+    @Test
+    public void removeProductFromOrder_ShouldDeleteOrderWhenTheLastProductRemoved_WhenRoleUserAndOrderOwner() throws Exception {
+        User authUser = UserDataBuilder.buildUserWithAllFields().build();
+        Product product = ProductDataBuilder.buildProductWithAllFields().build();
+
+        productRepository.save(product);
+        Cookie cookie = authHelper.signIn(authUser, mockMvc);
+
+        Order order = OrderDataBuilder.buildOrderWithAllFields()
+                .status(OrderStatus.IN_PROGRESS)
+                .ownerId(authUser.getId())
+                .productIds(Set.of(product.getId()))
+                .build();
+        orderRepository.save(order);
+
+        ModelAndView modelAndView = mockMvc.perform(delete("/orders/remove-product/{id}", product.getId())
+                        .cookie(cookie))
+                .andExpect(status().isOk())
+                .andReturn().getModelAndView();
+
+        assertThat(modelAndView).isNotNull();
+        assertThat(modelAndView.getViewName()).isNotNull();
+        assertThat(modelAndView.getViewName()).isEqualTo("home");
+
+        Optional<Order> orderOptional = orderRepository.findById(order.getId());
+        assertThat(orderOptional).isNotPresent();
+    }
+
+    @Test
+    public void removeProductFromOrder_ShouldRedirectToErrorPage_WhenRoleUserAndOrderNotExist() throws Exception {
+        User authUser = UserDataBuilder.buildUserWithAllFields().build();
+        Product product = ProductDataBuilder.buildProductWithAllFields().build();
+
+        productRepository.save(product);
+        Cookie cookie = authHelper.signIn(authUser, mockMvc);
+
+        MvcResult mvcResult = mockMvc.perform(delete("/orders/remove-product/{id}", product.getId())
+                        .cookie(cookie))
+                .andExpect(status().is4xxClientError())
+                .andReturn();
+
+        Map<String, Object> model = authHelper.requireModel(mvcResult);
+        String errorMessage = model.get("message").toString();
+
+        assertThat(mvcResult.getModelAndView().getViewName()).isNotNull();
+        assertThat(mvcResult.getModelAndView().getViewName()).isEqualTo("error");
+        assertThat(errorMessage).isNotNull();
+        assertThat(errorMessage).isEqualTo("Order not found!");
+    }
+
+    @Test
+    public void removeProductFromOrder_ShouldRedirectToErrorPage_WhenRoleUserAndOrderOwnerAndOrderCompleted() throws Exception {
+        User authUser = UserDataBuilder.buildUserWithAllFields().build();
+        Product product = ProductDataBuilder.buildProductWithAllFields().build();
+
+        productRepository.save(product);
+        Cookie cookie = authHelper.signIn(authUser, mockMvc);
+
+        Order order = OrderDataBuilder.buildOrderWithAllFields()
+                .status(OrderStatus.COMPLETED)
+                .ownerId(authUser.getId())
+                .productIds(Set.of(product.getId()))
+                .build();
+        orderRepository.save(order);
+
+        MvcResult mvcResult = mockMvc.perform(delete("/orders/remove-product/{id}", product.getId())
+                        .cookie(cookie))
+                .andExpect(status().is4xxClientError())
+                .andReturn();
+
+        Map<String, Object> model = authHelper.requireModel(mvcResult);
+        String errorMessage = model.get("message").toString();
+
+        assertThat(mvcResult.getModelAndView().getViewName()).isNotNull();
+        assertThat(mvcResult.getModelAndView().getViewName()).isEqualTo("error");
+        assertThat(errorMessage).isNotNull();
+        assertThat(errorMessage).isEqualTo("Order not found!");
+    }
+
+    @Test
+    public void payForOrder_ShouldPayForOrder_WhenUserRoleAndOrderOwner() throws Exception {
+        User authUser = UserDataBuilder.buildUserWithAllFields().build();
+        Product product = ProductDataBuilder.buildProductWithAllFields().build();
+
+        productRepository.save(product);
+        Cookie cookie = authHelper.signIn(authUser, mockMvc);
+
+        Order order = OrderDataBuilder.buildOrderWithAllFields()
+                .status(OrderStatus.IN_PROGRESS)
+                .ownerId(authUser.getId())
+                .productIds(Set.of(product.getId()))
+                .build();
+        orderRepository.save(order);
+
+        String redirectedUrl = mockMvc.perform(post("/orders/user-order/pay")
+                        .cookie(cookie))
+                .andExpect(status().is3xxRedirection())
+                .andReturn().getResponse().getRedirectedUrl();
+
+        assertThat(redirectedUrl).isNotNull();
+        assertThat(redirectedUrl).isEqualTo("/orders/user-order");
+
+        Optional<Order> orderOptional = orderRepository.findById(order.getId());
+        assertThat(orderOptional).isPresent();
+        assertThat(orderOptional.get().getStatus()).isEqualTo(OrderStatus.COMPLETED);
+    }
+
+    @Test
+    public void payForOrder_ShouldRedirectToErrorPage_WhenUserRoleAndOrderNotExist() throws Exception {
+        User authUser = UserDataBuilder.buildUserWithAllFields().build();
+        Product product = ProductDataBuilder.buildProductWithAllFields().build();
+
+        productRepository.save(product);
+        Cookie cookie = authHelper.signIn(authUser, mockMvc);
+
+        Order order = OrderDataBuilder.buildOrderWithAllFields()
+                .status(OrderStatus.COMPLETED)
+                .ownerId(authUser.getId())
+                .productIds(Set.of(product.getId()))
+                .build();
+        orderRepository.save(order);
+
+        MvcResult mvcResult = mockMvc.perform(post("/orders/user-order/pay")
+                        .cookie(cookie))
+                .andExpect(status().is4xxClientError())
+                .andReturn();
+
+        Map<String, Object> model = authHelper.requireModel(mvcResult);
+        String errorMessage = model.get("message").toString();
+
+        assertThat(mvcResult.getModelAndView().getViewName()).isNotNull();
+        assertThat(mvcResult.getModelAndView().getViewName()).isEqualTo("error");
+        assertThat(errorMessage).isNotNull();
+        assertThat(errorMessage).isEqualTo("Order not found!");
+    }
+
+    @Test
+    public void payForOrder_ShouldRedirectToErrorPage_WhenUserRoleAndOrderCompleted() throws Exception {
+        User authUser = UserDataBuilder.buildUserWithAllFields().build();
+        Product product = ProductDataBuilder.buildProductWithAllFields().build();
+
+        productRepository.save(product);
+        Cookie cookie = authHelper.signIn(authUser, mockMvc);
+
+        MvcResult mvcResult = mockMvc.perform(post("/orders/user-order/pay")
+                        .cookie(cookie))
+                .andExpect(status().is4xxClientError())
+                .andReturn();
+
+        Map<String, Object> model = authHelper.requireModel(mvcResult);
+        String errorMessage = model.get("message").toString();
+
+        assertThat(mvcResult.getModelAndView().getViewName()).isNotNull();
+        assertThat(mvcResult.getModelAndView().getViewName()).isEqualTo("error");
+        assertThat(errorMessage).isNotNull();
+        assertThat(errorMessage).isEqualTo("Order not found!");
+    }
 }

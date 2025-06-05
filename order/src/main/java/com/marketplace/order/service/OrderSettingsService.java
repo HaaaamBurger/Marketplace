@@ -8,15 +8,11 @@ import java.util.Optional;
 
 public interface OrderSettingsService {
 
-    Optional<Order> findActiveOrderByOwnerId();
-
-    Order findByOwnerIdOrCreate();
+    Order addProductToOrder(String productId);
 
     Optional<Order> findOrderByOwnerIdAndStatus(OrderStatus orderStatus);
 
     List<Order> findOrdersByOwnerIdAndStatusIn(List<OrderStatus> orderStatuses);
-
-    Order addProductToOrder(String productId);
 
     void removeProductFromOrder(String productId);
 
