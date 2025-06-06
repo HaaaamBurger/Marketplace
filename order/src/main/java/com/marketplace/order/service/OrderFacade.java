@@ -108,17 +108,18 @@ public class OrderFacade implements OrderCrudService, OrderSettingsService {
     @Override
     public void removeProductFromOrder(String productId) {
         Order order = findOrderByOwnerIdAndStatusOrThrow(OrderStatus.IN_PROGRESS);
+        Set<String> productIds = order.getProductIds();
 
-        Set<String> filteredProducts = order.getProductIds().stream()
-                .filter(orderProductId -> !orderProductId.equals(productId))
-                .collect(Collectors.toSet());
+        if (!productIds.contains(productId)) {
+            return;
+        }
 
-        if (filteredProducts.isEmpty()) {
+        productIds.remove(productId);
+        if (productIds.isEmpty()) {
             orderRepository.deleteById(order.getId());
             return;
         }
 
-        order.setProductIds(filteredProducts);
         orderRepository.save(order);
     }
 
