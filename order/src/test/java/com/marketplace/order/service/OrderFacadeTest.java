@@ -13,7 +13,9 @@ import com.marketplace.order.web.dto.OrderUpdateRequest;
 import com.marketplace.order.web.model.Order;
 import com.marketplace.order.web.model.OrderStatus;
 import com.marketplace.order.web.dto.OrderRequest;
+import com.marketplace.product.exception.ProductNotAvailableException;
 import com.marketplace.product.repository.ProductRepository;
+import com.marketplace.product.service.ProductCrudService;
 import com.marketplace.product.web.model.Product;
 import com.marketplace.usercore.model.User;
 import com.marketplace.usercore.model.UserRole;
@@ -49,6 +51,9 @@ class OrderFacadeTest {
     @MockitoBean
     private ProductRepository productRepository;
 
+    @MockitoBean
+    private ProductCrudService productCrudService;
+
     @Autowired
     private OrderCrudService orderCrudService;
 
@@ -64,7 +69,7 @@ class OrderFacadeTest {
     }
 
     @Test
-    public void create_ShouldCreateProduct() {
+    public void create_ShouldCreateOrder() {
         String mockProductId = "mockProductId";
         Product mockedProduct = mock(Product.class);
         OrderRequest orderRequest = OrderRequest.builder()
@@ -73,7 +78,7 @@ class OrderFacadeTest {
 
         User user = mockHelper.mockAuthenticationAndSetContext();
 
-        when(productRepository.findById(mockProductId)).thenReturn(Optional.of(mockedProduct));
+        when(productCrudService.getById(mockProductId)).thenReturn(mockedProduct);
         when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> invocation.getArgument(0));
         Order responseOrder = orderCrudService.create(orderRequest);
 
@@ -81,7 +86,7 @@ class OrderFacadeTest {
         assertThat(responseOrder.getOwnerId()).isEqualTo(user.getId());
         assertThat(responseOrder.getProductIds().stream().anyMatch(productId -> productId.equals(mockProductId))).isTrue();
 
-        verify(productRepository, times(1)).findById(mockProductId);
+        verify(productCrudService, times(1)).getById(mockProductId);
         verify(orderRepository, times(1)).save(any(Order.class));
     }
 
@@ -105,12 +110,12 @@ class OrderFacadeTest {
 
         mockHelper.mockAuthenticationAndSetContext();
 
-        when(productRepository.findById(mockProductId)).thenReturn(Optional.empty());
+        when(productCrudService.getById(mockProductId)).thenThrow(new EntityNotFoundException("Product not found!"));
 
         EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> orderCrudService.create(orderRequest));
         assertThat(exception.getMessage()).isEqualTo("Product not found!");
 
-        verify(productRepository, times(1)).findById(mockProductId);
+        verify(productCrudService, times(1)).getById(mockProductId);
     }
 
     @Test
@@ -317,7 +322,7 @@ class OrderFacadeTest {
                 .build();
         Product product = ProductDataBuilder.buildProductWithAllFields().build();
 
-        when(productRepository.findById(product.getId())).thenReturn(Optional.of(product));
+        when(productCrudService.getById(product.getId())).thenReturn(product);
         when(orderRepository.findOrderByOwnerId(order.getId())).thenReturn(Optional.of(order));
         when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -330,7 +335,7 @@ class OrderFacadeTest {
         assertThat(responseOrder.getProductIds().stream().anyMatch(productId -> productId.equals(product.getId()))).isTrue();
         assertThat(responseOrder.getStatus()).isEqualTo(OrderStatus.IN_PROGRESS);
 
-        verify(productRepository, times(1)).findById(product.getId());
+        verify(productCrudService, times(1)).getById(product.getId());
         verify(orderRepository, times(1)).findOrderByOwnerIdAndStatus(user.getId(), OrderStatus.IN_PROGRESS);
         verify(orderRepository, times(1)).save(any(Order.class));
     }
@@ -340,7 +345,7 @@ class OrderFacadeTest {
         User user = mockHelper.mockAuthenticationAndSetContext();
         Product product = ProductDataBuilder.buildProductWithAllFields().build();
 
-        when(productRepository.findById(product.getId())).thenReturn(Optional.of(product));
+        when(productCrudService.getById(product.getId())).thenReturn(product);
         when(orderRepository.findOrderByOwnerId(user.getId())).thenReturn(Optional.empty());
         when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -353,7 +358,7 @@ class OrderFacadeTest {
         assertThat(responseOrder.getProductIds().stream().anyMatch(productId -> productId.equals(product.getId()))).isTrue();
         assertThat(responseOrder.getStatus()).isEqualTo(OrderStatus.IN_PROGRESS);
 
-        verify(productRepository, times(1)).findById(product.getId());
+        verify(productCrudService, times(1)).getById(product.getId());
         verify(orderRepository, times(1)).findOrderByOwnerIdAndStatus(user.getId(), OrderStatus.IN_PROGRESS);
         verify(orderRepository, times(1)).save(any(Order.class));
     }
@@ -363,13 +368,13 @@ class OrderFacadeTest {
         mockHelper.mockAuthenticationAndSetContext();
         Product product = ProductDataBuilder.buildProductWithAllFields().build();
 
-        when(productRepository.findById(product.getId())).thenReturn(Optional.empty());
+        when(productCrudService.getById(product.getId())).thenThrow(new EntityNotFoundException("Product not found!"));
 
         assertThatThrownBy(() -> orderSettingsService.addProductToOrder(product.getId()))
                 .isInstanceOf(EntityNotFoundException.class)
                 .hasMessage("Product not found!");
 
-        verify(productRepository, times(1)).findById(product.getId());
+        verify(productCrudService, times(1)).getById(product.getId());
     }
 
     @Test
@@ -519,6 +524,7 @@ class OrderFacadeTest {
                 .build();
 
         when(orderRepository.findOrderByOwnerIdAndStatus(user.getId(), OrderStatus.IN_PROGRESS)).thenReturn(Optional.of(order));
+        when(productCrudService.getById(product.getId())).thenReturn(product);
         orderSettingsService.payForOrder();
 
         assertThat(order).isNotNull();
@@ -539,6 +545,30 @@ class OrderFacadeTest {
                 .hasMessage("Order not found!");
 
         verify(orderRepository, times(1)).findOrderByOwnerIdAndStatus(user.getId(), OrderStatus.IN_PROGRESS);
+        verify(orderRepository, never()).save(any());
+    }
+
+    @Test
+    public void payForOrder_ShouldThrowException_WhenProductAmountIsNotEnough() {
+        User user = mockHelper.mockAuthenticationAndSetContext();
+        Product product = ProductDataBuilder.buildProductWithAllFields()
+                .amount(0)
+                .build();
+        Order order = OrderDataBuilder.buildOrderWithAllFields()
+                .ownerId(user.getId())
+                .status(OrderStatus.IN_PROGRESS)
+                .productIds(Set.of(product.getId()))
+                .build();
+
+        when(orderRepository.findOrderByOwnerIdAndStatus(user.getId(), OrderStatus.IN_PROGRESS)).thenReturn(Optional.of(order));
+        when(productCrudService.getById(product.getId())).thenReturn(product);
+
+        assertThatThrownBy(() -> orderSettingsService.payForOrder())
+                .isInstanceOf(ProductNotAvailableException.class)
+                .hasMessage("Currently product not available!");
+
+        verify(orderRepository, times(1)).findOrderByOwnerIdAndStatus(user.getId(), OrderStatus.IN_PROGRESS);
+        verify(productCrudService, times(1)).getById(product.getId());
         verify(orderRepository, never()).save(any());
     }
 

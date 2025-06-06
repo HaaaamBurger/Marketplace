@@ -42,7 +42,6 @@ public class OrderController {
         return "orders";
     }
 
-    @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping("/{orderId}")
     public String getOrderById(
             Model model,

@@ -25,7 +25,6 @@ public class Order extends AuditableEntity {
     private String ownerId;
 
     @Size(min = 1, max = 50, message = "Order must contain at least 1 product and maximum 50")
-    // TODO change to Set
     private Set<String> productIds;
 
     private String address;

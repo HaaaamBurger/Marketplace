@@ -7,7 +7,8 @@ import com.marketplace.order.web.dto.OrderUpdateRequest;
 import com.marketplace.order.web.model.Order;
 import com.marketplace.order.web.model.OrderStatus;
 import com.marketplace.order.web.dto.OrderRequest;
-import com.marketplace.product.exception.ProductAmountNotEnoughException;
+import com.marketplace.product.exception.ProductNotAvailableException;
+import com.marketplace.product.repository.ProductRepository;
 import com.marketplace.product.service.ProductCrudService;
 import com.marketplace.product.web.model.Product;
 import com.marketplace.usercore.model.User;
@@ -23,7 +24,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -35,6 +35,8 @@ public class OrderFacade implements OrderCrudService, OrderSettingsService {
     private final AuthenticationUserService authenticationUserService;
 
     private final ProductCrudService productCrudService;
+
+    private final ProductRepository productRepository;
 
     private final UserSettingsService userSettingsService;
 
@@ -84,7 +86,7 @@ public class OrderFacade implements OrderCrudService, OrderSettingsService {
     @Transactional
     @Override
     public Order addProductToOrder(String productId) {
-        // TODO the same logic were done in validation so it has been duplicated (think about the way how to avoid duplication)...not only here...
+        // TODO the same logic were done in validation so it has been duplicated (think about the way how to avoid duplication)...not only here... better to avoid db calls in validators if possible
         Product product = productCrudService.getById(productId);
         validateEnoughAmountOrThrow(product.getAmount());
 
@@ -123,9 +125,23 @@ public class OrderFacade implements OrderCrudService, OrderSettingsService {
         orderRepository.save(order);
     }
 
+    @Transactional
     @Override
     public void payForOrder() {
         Order order = findActiveOrderByOwnerIdOrThrow();
+
+        //TODO Add validation for product access
+        order.getProductIds().stream().map(productCrudService::getById).forEach(product -> {
+
+            boolean hasAmountDecreased = product.decreaseAmount();
+            if (!hasAmountDecreased) {
+                log.warn("[ORDER_FACADE]: Product {} amount is 0", product.getId());
+                throw new ProductNotAvailableException("Currently product not available!");
+            }
+
+            productRepository.save(product);
+        });
+
         order.setStatus(OrderStatus.COMPLETED);
         orderRepository.save(order);
     }
@@ -179,7 +195,7 @@ public class OrderFacade implements OrderCrudService, OrderSettingsService {
 
     private void validateEnoughAmountOrThrow(int amount) {
         if (amount == 0) {
-            throw new ProductAmountNotEnoughException("There are no products available");
+            throw new ProductNotAvailableException("There are no products available");
         }
     }
 

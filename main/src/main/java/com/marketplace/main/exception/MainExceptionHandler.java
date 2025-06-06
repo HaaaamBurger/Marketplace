@@ -5,7 +5,7 @@ import com.marketplace.common.exception.EntityExistsException;
 import com.marketplace.common.exception.EntityNotFoundException;
 import com.marketplace.common.exception.ExceptionType;
 import com.marketplace.order.exception.OrderUpdateException;
-import com.marketplace.product.exception.ProductAmountNotEnoughException;
+import com.marketplace.product.exception.ProductNotAvailableException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.ConstraintViolation;
@@ -79,8 +79,8 @@ public class MainExceptionHandler {
         );
     }
 
-    @ExceptionHandler(ProductAmountNotEnoughException.class)
-    public ModelAndView handleProductAmountNotEnoughException(ProductAmountNotEnoughException exception, HttpServletResponse response, HttpServletRequest request) {
+    @ExceptionHandler(ProductNotAvailableException.class)
+    public ModelAndView handleProductAmountNotEnoughException(ProductNotAvailableException exception, HttpServletResponse response, HttpServletRequest request) {
 
         response.setStatus(400);
 
