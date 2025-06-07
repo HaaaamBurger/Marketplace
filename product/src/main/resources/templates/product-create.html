@@ -116,6 +116,14 @@
             <div th:if="${#fields.hasErrors('amount')}" class="text-danger small" th:errors="*{amount}"></div>
           </div>
 
+          <div class="mb-4 form-check">
+            <input type="checkbox"
+                   th:field="*{active}"
+                   class="form-check-input"
+                   id="active"/>
+            <label class="form-check-label" for="active">Active</label>
+          </div>
+
           <button type="submit" class="btn btn-primary-custom w-100 py-2">
             <i class="bi bi-plus-circle me-2"></i> Create Product
           </button>

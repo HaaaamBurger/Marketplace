@@ -1,10 +1,10 @@
 package com.marketplace.product.web.view;
 
+import com.marketplace.product.mapper.SimpleProductMapper;
 import com.marketplace.product.service.ProductCrudService;
 import com.marketplace.product.web.dto.ProductRequest;
 import com.marketplace.product.web.model.Product;
 
-import com.marketplace.product.mapper.ProductEntityMapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -21,12 +21,12 @@ public class ProductController {
 
     private final ProductCrudService productCrudService;
 
-    private final ProductEntityMapper productEntityMapper;
+    private final SimpleProductMapper simpleProductMapper;
 
     @GetMapping("/all")
     public String getAllProducts(Model model) {
         List<Product> products = productCrudService.findAll();
-        model.addAttribute("products", productEntityMapper.mapProductsToProductResponseDtos(products));
+        model.addAttribute("products", simpleProductMapper.mapProductsToProductResponseDtos(products));
         return "products";
     }
 
@@ -36,13 +36,15 @@ public class ProductController {
             @PathVariable String productId
     ) {
         Product product = productCrudService.getById(productId);
-        model.addAttribute("product", productEntityMapper.mapProductToProductResponseDto(product));
+        model.addAttribute("product", simpleProductMapper.mapProductToProductResponseDto(product));
         return "product";
     }
 
     @GetMapping("/create")
     public String getCreateProduct(Model model) {
-        model.addAttribute("productRequest", ProductRequest.builder().build());
+        model.addAttribute("productRequest", ProductRequest.builder()
+                .active(true)
+                .build());
         return "product-create";
     }
 
@@ -51,7 +53,6 @@ public class ProductController {
             @Valid @ModelAttribute ProductRequest productRequest,
             BindingResult bindingResult
     ) {
-
         if (bindingResult.hasErrors()) {
             return "product-create";
         }
@@ -68,7 +69,7 @@ public class ProductController {
         Product product = productCrudService.getById(productId);
 
         model.addAttribute("productId", productId);
-        model.addAttribute("productRequest", productEntityMapper.mapProductToProductRequestDto(product));
+        model.addAttribute("productRequest", simpleProductMapper.mapProductToProductRequestDto(product));
         return "product-update";
     }
 
@@ -83,15 +84,8 @@ public class ProductController {
         }
 
         Product product = productCrudService.update(productId, productRequest);
-        productEntityMapper.mapProductToProductResponseDto(product);
+        simpleProductMapper.mapProductToProductResponseDto(product);
 
         return "redirect:/products/" + productId;
-    }
-
-    // TODO on delete we need to remove product ids in orders as well　(better to use Kafka some day here)
-    @DeleteMapping("/{productId}/delete")
-    public String deleteProduct(@PathVariable String productId) {
-        productCrudService.delete(productId);
-        return "redirect:/products/all";
     }
 }

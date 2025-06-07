@@ -1,12 +1,12 @@
 package com.marketplace.order.web.view;
 
+import com.marketplace.order.mapper.SimpleOrderMapper;
 import com.marketplace.order.service.OrderCrudService;
 import com.marketplace.order.service.OrderSettingsService;
 import com.marketplace.order.web.dto.OrderUpdateRequest;
 import com.marketplace.order.web.model.Order;
-import com.marketplace.order.mapper.OrderEntityMapper;
 import com.marketplace.order.web.model.OrderStatus;
-import com.marketplace.product.mapper.ProductEntityMapper;
+import com.marketplace.product.mapper.SimpleProductMapper;
 import com.marketplace.product.service.ProductCrudService;
 import com.marketplace.product.web.model.Product;
 import lombok.RequiredArgsConstructor;
@@ -30,15 +30,15 @@ public class OrderController {
 
     private final OrderSettingsService orderSettingsService;
 
-    private final OrderEntityMapper orderEntityMapper;
+    private final SimpleOrderMapper simpleOrderMapper;
 
-    private final ProductEntityMapper productEntityMapper;
+    private final SimpleProductMapper simpleProductMapper;
 
     @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping("/all")
     public String getAllOrders(Model model) {
         List<Order> orders = orderCrudService.findAll();
-        model.addAttribute("orders", orderEntityMapper.mapOrdersToOrderResponseDtos(orders));
+        model.addAttribute("orders", simpleOrderMapper.mapOrdersToOrderResponseDtos(orders));
         return "orders";
     }
 
@@ -48,12 +48,22 @@ public class OrderController {
             @PathVariable String orderId
     ) {
         Order order = orderCrudService.findById(orderId);
+
+        model.addAttribute("isPayable", true);
         List<Product> products = order.getProductIds().stream()
-                .map(productCrudService::getById)
+                .map(productId -> {
+                    Product product = productCrudService.getById(productId);
+
+                    if (!product.getActive()) {
+                        model.addAttribute("isPayable", false);
+                    }
+
+                    return product;
+                })
                 .toList();
 
-        model.addAttribute("order", orderEntityMapper.mapOrderToOrderResponseDto(order));
-        model.addAttribute("products", productEntityMapper.mapProductsToProductResponseDtos(products));
+        model.addAttribute("order", simpleOrderMapper.mapOrderToOrderResponseDto(order));
+        model.addAttribute("products", simpleProductMapper.mapProductsToProductResponseDtos(products));
 
         return "order";
     }
@@ -64,12 +74,21 @@ public class OrderController {
     ) {
         Optional<Order> orderOptional = orderSettingsService.findOrderByOwnerIdAndStatus(OrderStatus.IN_PROGRESS);
         orderOptional.ifPresent(order -> {
-            model.addAttribute("currentOrder", orderEntityMapper.mapOrderToOrderResponseDto(order));
+            model.addAttribute("currentOrder", simpleOrderMapper.mapOrderToOrderResponseDto(order));
 
+            model.addAttribute("isPayable", true);
             List<Product> products = order.getProductIds().stream()
-                    .map(productCrudService::getById)
+                    .map(productId -> {
+                        Product product = productCrudService.getById(productId);
+
+                        if (!product.getActive()) {
+                            model.addAttribute("isPayable", false);
+                        }
+
+                        return product;
+                    })
                     .toList();
-            model.addAttribute("orderProducts", productEntityMapper.mapProductsToProductResponseDtos(products));
+            model.addAttribute("orderProducts", simpleProductMapper.mapProductsToProductResponseDtos(products));
 
             BigDecimal totalSum = products.stream()
                     .map(Product::getPrice)
@@ -79,7 +98,7 @@ public class OrderController {
         });
 
         List<Order> ordersByOwnerIdAndStatusIn = orderSettingsService.findOrdersByOwnerIdAndStatusIn(List.of(OrderStatus.COMPLETED, OrderStatus.CANCELLED));
-        model.addAttribute("historyOrders", orderEntityMapper.mapOrdersToOrderResponseDtos(ordersByOwnerIdAndStatusIn));
+        model.addAttribute("historyOrders", simpleOrderMapper.mapOrdersToOrderResponseDtos(ordersByOwnerIdAndStatusIn));
 
         return "user-order";
     }
@@ -91,7 +110,7 @@ public class OrderController {
             @PathVariable String orderId
     ) {
         Order order = orderCrudService.findById(orderId);
-        model.addAttribute("order", orderEntityMapper.mapOrderToOrderResponseDto(order));
+        model.addAttribute("order", simpleOrderMapper.mapOrderToOrderResponseDto(order));
 
         return "order-edit";
     }

@@ -5,7 +5,7 @@ import com.marketplace.user.service.validator.UserUpdateValidator;
 import com.marketplace.usercore.dto.UserRequest;
 import com.marketplace.usercore.dto.UserResponse;
 import com.marketplace.usercore.dto.UserUpdateRequest;
-import com.marketplace.usercore.mapper.UserEntityMapper;
+import com.marketplace.usercore.mapper.SimpleUserMapper;
 import com.marketplace.usercore.model.User;
 import com.marketplace.usercore.service.UserCrudService;
 import jakarta.validation.Valid;
@@ -28,11 +28,11 @@ public class UserController {
 
     private final UserCreateValidator userCreateValidator;
 
-    private final UserEntityMapper userEntityMapper;
+    private final SimpleUserMapper simpleUserMapper;
 
     @GetMapping("/all")
     public String getAllUsers(Model model) {
-        List<UserResponse> userResponses = userEntityMapper.mapUsersToUserResponseDtos(userCrudService.findAll());
+        List<UserResponse> userResponses = simpleUserMapper.mapUsersToUserResponseDtos(userCrudService.findAll());
         model.addAttribute("users", userResponses);
 
         return "users";
@@ -66,7 +66,7 @@ public class UserController {
     public String getUpdateUser(Model model, @PathVariable String userId) {
         User user = userCrudService.findById(userId);
 
-        UserUpdateRequest userUpdateRequest = userEntityMapper.mapUserEntityToUserUpdateRequestDto(user);
+        UserUpdateRequest userUpdateRequest = simpleUserMapper.mapUserToUserUpdateRequestDto(user);
         model.addAttribute("userUpdateRequest", userUpdateRequest);
 
         return "user-update";

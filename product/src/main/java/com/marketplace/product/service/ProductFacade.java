@@ -1,10 +1,10 @@
 package com.marketplace.product.service;
 
 import com.marketplace.common.exception.EntityNotFoundException;
+import com.marketplace.product.mapper.SimpleProductMapper;
 import com.marketplace.product.web.dto.ProductRequest;
 import com.marketplace.product.web.model.Product;
 import com.marketplace.product.repository.ProductRepository;
-import com.marketplace.product.mapper.ProductEntityMapper;
 import com.marketplace.usercore.model.User;
 import com.marketplace.usercore.security.AuthenticationUserService;
 import com.marketplace.usercore.service.UserSettingsService;
@@ -23,8 +23,7 @@ public final class ProductFacade implements ProductCrudService {
 
     private final ProductRepository productRepository;
 
-    // TODO think about DI about all mappers
-    private final ProductEntityMapper productEntityMapper;
+    private final SimpleProductMapper simpleProductMapper;
 
     private final AuthenticationUserService authenticationUserService;
 
@@ -34,7 +33,7 @@ public final class ProductFacade implements ProductCrudService {
     public Product create(ProductRequest productRequest) {
         User authenticatedUser = authenticationUserService.getAuthenticatedUser();
 
-        Product product = productEntityMapper.mapProductRequestDtoToProduct(productRequest).toBuilder()
+        Product product = simpleProductMapper.mapProductRequestDtoToProduct(productRequest).toBuilder()
                 .ownerId(authenticatedUser.getId())
                 .build();
 
@@ -64,6 +63,7 @@ public final class ProductFacade implements ProductCrudService {
         Optional.ofNullable(productRequest.getPrice()).ifPresent(product::setPrice);
         Optional.of(productRequest.getAmount()).ifPresent(product::setAmount);
         Optional.ofNullable(productRequest.getDescription()).ifPresent(product::setDescription);
+        Optional.ofNullable(productRequest.getActive()).ifPresent(product::setActive);
 
         return productRepository.save(product);
     }

@@ -3,12 +3,12 @@ package com.marketplace.usercore.service;
 import com.marketplace.common.exception.EntityExistsException;
 import com.marketplace.common.exception.EntityNotFoundException;
 import com.marketplace.usercore.dto.UserUpdateRequest;
+import com.marketplace.usercore.mapper.SimpleUserMapper;
 import com.marketplace.usercore.model.UserRole;
 import com.marketplace.usercore.security.AuthenticationUserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import com.marketplace.usercore.dto.UserRequest;
-import com.marketplace.usercore.mapper.UserEntityMapper;
 import com.marketplace.usercore.model.User;
 import com.marketplace.usercore.model.UserStatus;
 import com.marketplace.usercore.repository.UserRepository;
@@ -30,14 +30,14 @@ public final class UserFacade implements UserCrudService, UserSettingsService {
 
     private final AuthenticationUserService authenticationUserService;
 
-    private final UserEntityMapper userEntityMapper;
+    private final SimpleUserMapper simpleUserMapper;
 
     @Override
     public User create(UserRequest userRequest) {
         throwIfUserExistsByEmail(userRequest.getEmail());
 
         String encodedPassword = passwordEncoder.encode(userRequest.getPassword());
-        User user = userEntityMapper.mapUserRequestDtoToUser(userRequest).toBuilder()
+        User user = simpleUserMapper.mapUserRequestDtoToUser(userRequest).toBuilder()
                 .status(UserStatus.ACTIVE)
                 .password(encodedPassword)
                 .build();

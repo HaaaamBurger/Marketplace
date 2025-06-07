@@ -88,7 +88,7 @@ public class OrderFacade implements OrderCrudService, OrderSettingsService {
     public Order addProductToOrder(String productId) {
         // TODO the same logic were done in validation so it has been duplicated (think about the way how to avoid duplication)...not only here... better to avoid db calls in validators if possible
         Product product = productCrudService.getById(productId);
-        validateEnoughAmountOrThrow(product.getAmount());
+        validateProductOrThrow(product);
 
         Order order = findByOwnerIdOrCreate();
         order.getProductIds().add(productId);
@@ -125,20 +125,16 @@ public class OrderFacade implements OrderCrudService, OrderSettingsService {
         orderRepository.save(order);
     }
 
+    // TODO Think about race condition
     @Transactional
     @Override
     public void payForOrder() {
         Order order = findActiveOrderByOwnerIdOrThrow();
 
-        //TODO Add validation for product access
+        // TODO Add validation for product access
         order.getProductIds().stream().map(productCrudService::getById).forEach(product -> {
-
-            boolean hasAmountDecreased = product.decreaseAmount();
-            if (!hasAmountDecreased) {
-                log.warn("[ORDER_FACADE]: Product {} amount is 0", product.getId());
-                throw new ProductNotAvailableException("Currently product not available!");
-            }
-
+            validateProductOrThrow(product);
+            product.decreaseAmount();
             productRepository.save(product);
         });
 
@@ -193,9 +189,10 @@ public class OrderFacade implements OrderCrudService, OrderSettingsService {
         }
     }
 
-    private void validateEnoughAmountOrThrow(int amount) {
-        if (amount == 0) {
-            throw new ProductNotAvailableException("There are no products available");
+    private void validateProductOrThrow(Product product) {
+        if (product.getAmount() == 0 || !product.getActive()) {
+            log.warn("[ORDER_FACADE]: Product {} is not available because amount is 0 or not active", product.getId());
+            throw new ProductNotAvailableException("This product is not available");
         }
     }
 
