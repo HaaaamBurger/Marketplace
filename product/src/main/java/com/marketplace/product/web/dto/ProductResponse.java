@@ -20,6 +20,10 @@ public class ProductResponse {
 
     private BigDecimal price;
 
+    private Integer amount;
+
+    private Boolean active;
+
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;

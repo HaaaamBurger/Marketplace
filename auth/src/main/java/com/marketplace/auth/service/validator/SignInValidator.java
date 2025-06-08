@@ -28,7 +28,6 @@ public class SignInValidator implements Validator {
     @Override
     public void validate(Object target, Errors errors) {
         AuthRequest authRequest = (AuthRequest) target;
-
         Optional<User> userOptional = emailValidator.findUserOrRejectByEmail(authRequest.getEmail(), errors);
 
         userOptional.ifPresent(user -> {

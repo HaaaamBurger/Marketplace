@@ -5,13 +5,13 @@ import com.marketplace.product.web.model.Product;
 
 import java.util.List;
 
-public interface ProductService {
+public interface ProductCrudService {
 
     Product create(ProductRequest productRequest);
 
     List<Product> findAll();
 
-    Product findById(String productId);
+    Product getById(String productId);
 
     Product update(String productId, ProductRequest productRequest);
 

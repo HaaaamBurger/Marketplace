@@ -8,36 +8,46 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
-public class ProductEntityMapper {
+public class ProductEntityMapper implements SimpleProductMapper {
 
+    @Override
     public ProductResponse mapProductToProductResponseDto(Product product) {
         return ProductResponse.builder()
                 .id(product.getId())
                 .name(product.getName())
                 .ownerId(product.getOwnerId())
-                .price(product.getPrice())
                 .description(product.getDescription())
+                .price(product.getPrice())
+                .amount(product.getAmount())
+                .active(product.getActive())
                 .createdAt(product.getCreatedAt())
                 .updatedAt(product.getUpdatedAt())
                 .build();
     }
 
+    @Override
     public Product mapProductRequestDtoToProduct(ProductRequest productRequest) {
         return Product.builder()
                 .name(productRequest.getName())
                 .price(productRequest.getPrice())
                 .description(productRequest.getDescription())
+                .amount(productRequest.getAmount())
+                .active(productRequest.getActive())
                 .build();
     }
 
+    @Override
     public ProductRequest mapProductToProductRequestDto(Product product) {
         return ProductRequest.builder()
                 .name(product.getName())
                 .price(product.getPrice())
                 .description(product.getDescription())
+                .amount(product.getAmount())
+                .active(product.getActive())
                 .build();
     }
 
+    @Override
     public List<ProductResponse> mapProductsToProductResponseDtos(List<Product> products) {
         return products.stream()
                 .map(this::mapProductToProductResponseDto)

@@ -10,8 +10,9 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
-public class UserEntityMapper {
+public class UserEntityMapper implements SimpleUserMapper{
 
+    @Override
     public UserResponse mapUserToUserResponseDto(User user) {
         return UserResponse.builder()
                 .id(user.getId())
@@ -23,6 +24,7 @@ public class UserEntityMapper {
                 .build();
     }
 
+    @Override
     public User mapUserRequestDtoToUser(UserRequest userRequest) {
         return User.builder()
                 .email(userRequest.getEmail())
@@ -31,15 +33,8 @@ public class UserEntityMapper {
                 .build();
     }
 
-    public User mapUserUpdateRequestToUser(UserUpdateRequest userUpdateRequest) {
-        return User.builder()
-                .email(userUpdateRequest.getEmail())
-                .role(userUpdateRequest.getRole())
-                .status(userUpdateRequest.getStatus())
-                .build();
-    }
-
-    public UserUpdateRequest mapUserEntityToUserUpdateRequestDto(User user) {
+    @Override
+    public UserUpdateRequest mapUserToUserUpdateRequestDto(User user) {
         return UserUpdateRequest.builder()
                 .email(user.getEmail())
                 .status(user.getStatus())
@@ -47,12 +42,14 @@ public class UserEntityMapper {
                 .build();
     }
 
-    public ProfileUpdateRequest mapUserEntityToProfileUpdateRequestDto(User user) {
+    @Override
+    public ProfileUpdateRequest mapUserToProfileUpdateRequestDto(User user) {
         return ProfileUpdateRequest.builder()
                 .email(user.getEmail())
                 .build();
     }
 
+    @Override
     public List<UserResponse> mapUsersToUserResponseDtos(List<User> users) {
         return users.stream()
                 .map(this::mapUserToUserResponseDto)

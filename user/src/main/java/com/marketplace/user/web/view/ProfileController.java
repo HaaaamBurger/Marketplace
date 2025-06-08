@@ -2,7 +2,7 @@ package com.marketplace.user.web.view;
 
 import com.marketplace.user.service.validator.ProfileUpdateValidator;
 import com.marketplace.usercore.dto.ProfileUpdateRequest;
-import com.marketplace.usercore.mapper.UserEntityMapper;
+import com.marketplace.usercore.mapper.SimpleUserMapper;
 import com.marketplace.usercore.model.User;
 import com.marketplace.usercore.security.AuthenticationUserService;
 import com.marketplace.usercore.service.ProfileService;
@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class ProfileController {
 
-    private final UserEntityMapper userEntityMapper;
+    private final SimpleUserMapper simpleUserMapper;
 
     private final ProfileUpdateValidator profileUpdateValidator;
 
@@ -34,7 +34,7 @@ public class ProfileController {
     public String getUpdateProfile(Model model) {
         User authUser = (User) model.getAttribute("authUser");
 
-        ProfileUpdateRequest profileUpdateRequest = userEntityMapper.mapUserEntityToProfileUpdateRequestDto(authUser);
+        ProfileUpdateRequest profileUpdateRequest = simpleUserMapper.mapUserToProfileUpdateRequestDto(authUser);
         model.addAttribute("profileUpdateRequest", profileUpdateRequest);
 
         return "profile-update";

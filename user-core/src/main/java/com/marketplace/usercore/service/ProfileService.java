@@ -17,7 +17,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class ProfileService {
 
-    private final UserServiceFacade userServiceFacade;
+    private final UserSettingsService userSettingsService;
 
     private final AuthenticationUserService authenticationUserService;
 
@@ -31,9 +31,9 @@ public class ProfileService {
             throw new AccessDeniedException("Access denied!");
         }
 
-        User userForUpdate = userServiceFacade.throwIfUserNotFoundById(userId);
+        User userForUpdate = userSettingsService.throwIfUserNotFoundById(userId);
         if (!profileUpdateRequest.getEmail().equals(userForUpdate.getEmail())) {
-            userServiceFacade.throwIfUserWithSameEmailExists(profileUpdateRequest.getEmail());
+            userSettingsService.throwIfUserWithSameEmailExists(profileUpdateRequest.getEmail());
         }
 
         Optional.ofNullable(profileUpdateRequest.getEmail()).ifPresent(userForUpdate::setEmail);

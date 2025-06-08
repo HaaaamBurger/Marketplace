@@ -11,6 +11,7 @@ public class ProductRequestDataBuilder {
         return ProductRequest.builder()
                 .name(String.valueOf(UUID.randomUUID()))
                 .description(String.valueOf(UUID.randomUUID()))
+                .amount(1)
                 .price(BigDecimal.ONE);
     }
 

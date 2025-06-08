@@ -10,7 +10,7 @@ import com.marketplace.usercore.model.User;
 import com.marketplace.usercore.model.UserRole;
 import com.marketplace.usercore.model.UserStatus;
 import com.marketplace.usercore.repository.UserRepository;
-import com.marketplace.usercore.service.UserServiceFacade;
+import com.marketplace.usercore.service.UserSettingsService;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -22,13 +22,13 @@ import org.springframework.stereotype.Service;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class AuthenticationServiceFacade implements AuthenticationService {
+public class AuthenticationFacade implements AuthenticationService {
 
     private final UserRepository userRepository;
 
     private final PasswordEncoder passwordEncoder;
 
-    private final UserServiceFacade userServiceFacade;
+    private final UserSettingsService userSettingsService;
 
     private final JwtTokenManager jwtTokenManager;
 
@@ -52,7 +52,7 @@ public class AuthenticationServiceFacade implements AuthenticationService {
     @Override
     public void signUp(AuthRequest authRequest) {
 
-        userServiceFacade.throwIfUserExistsByEmail(authRequest.getEmail());
+        userSettingsService.throwIfUserExistsByEmail(authRequest.getEmail());
         String encodedPassword = passwordEncoder.encode(authRequest.getPassword());
 
         userRepository.save(User.builder()
@@ -84,7 +84,7 @@ public class AuthenticationServiceFacade implements AuthenticationService {
 
     private User findUserByEmailOrThrow(String email) {
         return userRepository.findByEmail(email).orElseThrow(() ->  {
-            log.error("[AUTHENTICATION_SERVICE_FACADE]: User does not exist with email: {}",email);
+            log.error("[AUTHENTICATION_SERVICE_FACADE]: User does not exist with email: {}", email);
             return new CredentialException("Wrong credentials!");
         });
     }

@@ -22,7 +22,6 @@ import org.springframework.context.annotation.Import;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.servlet.ModelAndView;
@@ -188,7 +187,7 @@ public class UserControllerIntegrationTest {
         Cookie cookie = authHelper.signIn(authUser, mockMvc);
         userRepository.saveAll(List.of(user1, user2));
 
-        MvcResult mvcResult = mockMvc.perform(get("/users")
+        MvcResult mvcResult = mockMvc.perform(get("/users/all")
                         .cookie(cookie))
                 .andExpect(status().isOk())
                 .andReturn();
@@ -214,7 +213,7 @@ public class UserControllerIntegrationTest {
         Cookie cookie = authHelper.signIn(authUser, mockMvc);
         userRepository.saveAll(List.of(user1, user2));
 
-        MvcResult mvcResult = mockMvc.perform(get("/users")
+        MvcResult mvcResult = mockMvc.perform(get("/users/all")
                         .cookie(cookie))
                 .andExpect(status().is3xxRedirection())
                 .andReturn();
@@ -237,7 +236,7 @@ public class UserControllerIntegrationTest {
         Cookie cookie = authHelper.signIn(authUser, mockMvc);
         userRepository.save(user);
 
-        MvcResult mvcResult = mockMvc.perform(put("/users/update/{userId}", user.getId())
+        MvcResult mvcResult = mockMvc.perform(put("/users/{userId}/update", user.getId())
                         .cookie(cookie)
                         .param("email", userUpdateRequest.getEmail())
                         .param("status", String.valueOf(userUpdateRequest.getStatus()))
@@ -247,7 +246,7 @@ public class UserControllerIntegrationTest {
 
         String redirectedUrl = mvcResult.getResponse().getRedirectedUrl();
         assertThat(redirectedUrl).isNotNull();
-        assertThat(redirectedUrl).isEqualTo("/users");
+        assertThat(redirectedUrl).isEqualTo("/users/all");
 
         Optional<User> optionalUser = userRepository.findByEmail(userUpdateRequest.getEmail());
         assertThat(optionalUser).isPresent();
@@ -262,7 +261,7 @@ public class UserControllerIntegrationTest {
 
         Cookie cookie = authHelper.signIn(authUser, mockMvc);
 
-        MvcResult mvcResult = mockMvc.perform(put("/users/update/{userId}", authUser.getId())
+        MvcResult mvcResult = mockMvc.perform(put("/users/{userId}/update", authUser.getId())
                         .cookie(cookie)
                         .param("email", userUpdateRequest.getEmail())
                         .param("status", String.valueOf(userUpdateRequest.getStatus()))
@@ -289,13 +288,13 @@ public class UserControllerIntegrationTest {
         Cookie cookie = authHelper.signIn(authUser, mockMvc);
         userRepository.save(user);
 
-        String redirectedUrl = mockMvc.perform(delete("/users/{userId}", user.getId())
+        String redirectedUrl = mockMvc.perform(delete("/users/{userId}/delete", user.getId())
                         .cookie(cookie))
                 .andExpect(status().is3xxRedirection())
                 .andReturn().getResponse().getRedirectedUrl();
 
         assertThat(redirectedUrl).isNotNull();
-        assertThat(redirectedUrl).isEqualTo("/users");
+        assertThat(redirectedUrl).isEqualTo("/users/all");
 
         Optional<User> optionalUser = userRepository.findById(user.getId());
         assertThat(optionalUser).isNotPresent();
@@ -310,7 +309,7 @@ public class UserControllerIntegrationTest {
         Cookie cookie = authHelper.signIn(authUser, mockMvc);
         userRepository.save(user);
 
-        String redirectedUrl = mockMvc.perform(delete("/users/{userId}", user.getId())
+        String redirectedUrl = mockMvc.perform(delete("/users/{userId}/delete", user.getId())
                         .cookie(cookie))
                 .andExpect(status().is3xxRedirection())
                 .andReturn()
@@ -333,7 +332,7 @@ public class UserControllerIntegrationTest {
 
         Cookie cookie = authHelper.signIn(authUser, mockMvc);
 
-        ModelAndView modelAndView = mockMvc.perform(delete("/users/{userId}", userId)
+        ModelAndView modelAndView = mockMvc.perform(delete("/users/{userId}/delete", userId)
                         .cookie(cookie))
                 .andExpect(status().isNotFound())
                 .andReturn()

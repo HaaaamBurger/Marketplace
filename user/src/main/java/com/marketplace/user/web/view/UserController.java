@@ -5,9 +5,9 @@ import com.marketplace.user.service.validator.UserUpdateValidator;
 import com.marketplace.usercore.dto.UserRequest;
 import com.marketplace.usercore.dto.UserResponse;
 import com.marketplace.usercore.dto.UserUpdateRequest;
-import com.marketplace.usercore.mapper.UserEntityMapper;
+import com.marketplace.usercore.mapper.SimpleUserMapper;
 import com.marketplace.usercore.model.User;
-import com.marketplace.usercore.service.UserService;
+import com.marketplace.usercore.service.UserCrudService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -22,17 +22,17 @@ import java.util.List;
 @RequiredArgsConstructor
 public class UserController {
 
-    private final UserService userService;
+    private final UserCrudService userCrudService;
 
     private final UserUpdateValidator userUpdateValidator;
 
     private final UserCreateValidator userCreateValidator;
 
-    private final UserEntityMapper userEntityMapper;
+    private final SimpleUserMapper simpleUserMapper;
 
-    @GetMapping
-    public String getAll(Model model) {
-        List<UserResponse> userResponses = userEntityMapper.mapUsersToUserResponseDtos(userService.findAll());
+    @GetMapping("/all")
+    public String getAllUsers(Model model) {
+        List<UserResponse> userResponses = simpleUserMapper.mapUsersToUserResponseDtos(userCrudService.findAll());
         model.addAttribute("users", userResponses);
 
         return "users";
@@ -57,22 +57,22 @@ public class UserController {
             return "user-create";
         }
 
-        userService.create(userRequest);
+        userCrudService.create(userRequest);
 
-        return "redirect:/users";
+        return "redirect:/users/all";
     }
 
-    @GetMapping("/update/{userId}")
+    @GetMapping("/{userId}/update")
     public String getUpdateUser(Model model, @PathVariable String userId) {
-        User user = userService.findById(userId);
+        User user = userCrudService.findById(userId);
 
-        UserUpdateRequest userUpdateRequest = userEntityMapper.mapUserEntityToUserUpdateRequestDto(user);
+        UserUpdateRequest userUpdateRequest = simpleUserMapper.mapUserToUserUpdateRequestDto(user);
         model.addAttribute("userUpdateRequest", userUpdateRequest);
 
         return "user-update";
     }
 
-    @PutMapping("/update/{userId}")
+    @PutMapping("/{userId}/update")
     public String updateUser(
             @ModelAttribute UserUpdateRequest userUpdateRequest,
             @PathVariable String userId,
@@ -85,14 +85,14 @@ public class UserController {
         }
 
         model.addAttribute("userId", userId);
-        userService.update(userId, userUpdateRequest);
+        userCrudService.update(userId, userUpdateRequest);
 
-        return "redirect:/users";
+        return "redirect:/users/all";
     }
 
-    @DeleteMapping("/{userId}")
+    @DeleteMapping("/{userId}/delete")
     public String deleteUser(@PathVariable String userId) {
-        userService.delete(userId);
-        return "redirect:/users";
+        userCrudService.delete(userId);
+        return "redirect:/users/all";
     }
 }

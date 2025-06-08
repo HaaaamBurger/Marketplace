@@ -7,7 +7,7 @@ import com.marketplace.usercore.model.User;
 
 import java.util.List;
 
-public interface UserService {
+public interface UserCrudService {
 
     User create(UserRequest userRequest);
 
@@ -18,6 +18,4 @@ public interface UserService {
     User update(String userId, UserUpdateRequest userUpdateRequest);
 
     void delete(String userId);
-
-    boolean validateEntityOwnerOrAdmin(User authUser, String userId);
 }
