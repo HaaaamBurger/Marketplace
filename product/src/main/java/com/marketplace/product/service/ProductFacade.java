@@ -15,11 +15,12 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public final class ProductFacade implements ProductCrudService {
+public final class ProductFacade implements ProductCrudService, ProductSettingsService {
 
     private final ProductRepository productRepository;
 
@@ -74,6 +75,16 @@ public final class ProductFacade implements ProductCrudService {
         productRepository.delete(product);
     }
 
+    @Override
+    public List<Product> findAllByIdIn(Set<String> productIds) {
+        return productRepository.findAllByIdIn(productIds);
+    }
+
+    @Override
+    public boolean containsInactiveProduct(List<Product> products) {
+        return products.stream().anyMatch(product -> !product.getActive());
+    }
+
     private Product validateProductAccessOrThrow(String productId) {
         User authenticatedUser = authenticationUserService.getAuthenticatedUser();
         Product product = getById(productId);
@@ -85,5 +96,4 @@ public final class ProductFacade implements ProductCrudService {
         log.error("[PRODUCT_SERVICE_FACADE]: User {} is not owner of the product: {} or not ADMIN", authenticatedUser.getId(), productId);
         throw new AccessDeniedException("Access denied!");
     }
-
 }

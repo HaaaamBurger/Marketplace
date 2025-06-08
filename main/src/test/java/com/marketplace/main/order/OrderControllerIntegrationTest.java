@@ -73,9 +73,9 @@ class OrderControllerIntegrationTest {
                 .andReturn();
 
         Map<String, Object> model = authHelper.requireModel(mvcResult);
+        String viewName = authHelper.requireViewName(mvcResult);
 
-        assertThat(mvcResult.getModelAndView().getViewName()).isNotNull();
-        assertThat(mvcResult.getModelAndView().getViewName()).isEqualTo("orders");
+        assertThat(viewName).isEqualTo("orders");
         List<OrderResponse> orderResponses = (List<OrderResponse>) model.get("orders");
         assertThat(orderResponses).isNotNull();
         assertThat(orderResponses.size()).isEqualTo(1);
@@ -134,9 +134,9 @@ class OrderControllerIntegrationTest {
                 .andReturn();
 
         Map<String, Object> model = authHelper.requireModel(mvcResult);
+        String viewName = authHelper.requireViewName(mvcResult);
 
-        assertThat(mvcResult.getModelAndView().getViewName()).isNotNull();
-        assertThat(mvcResult.getModelAndView().getViewName()).isEqualTo("order");
+        assertThat(viewName).isEqualTo("order");
 
         OrderResponse orderResponse = (OrderResponse) model.get("order");
         assertThat(orderResponse).isNotNull();
@@ -211,9 +211,9 @@ class OrderControllerIntegrationTest {
                 .andReturn();
 
         Map<String, Object> model = authHelper.requireModel(mvcResult);
+        String viewName = authHelper.requireViewName(mvcResult);
 
-        assertThat(mvcResult.getModelAndView().getViewName()).isNotNull();
-        assertThat(mvcResult.getModelAndView().getViewName()).isEqualTo("user-order");
+        assertThat(viewName).isEqualTo("user-order");
 
         OrderResponse orderResponse = (OrderResponse) model.get("currentOrder");
         assertThat(orderResponse).isNotNull();
@@ -281,9 +281,9 @@ class OrderControllerIntegrationTest {
                 .andReturn();
 
         Map<String, Object> model = authHelper.requireModel(mvcResult);
+        String viewName = authHelper.requireViewName(mvcResult);
 
-        assertThat(mvcResult.getModelAndView().getViewName()).isNotNull();
-        assertThat(mvcResult.getModelAndView().getViewName()).isEqualTo("user-order");
+        assertThat(viewName).isEqualTo("user-order");
 
         OrderResponse orderResponse = (OrderResponse) model.get("currentOrder");
         assertThat(orderResponse).isNull();
@@ -321,9 +321,9 @@ class OrderControllerIntegrationTest {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        assertThat(mvcResult.getModelAndView()).isNotNull();
-        assertThat(mvcResult.getModelAndView().getViewName()).isNotNull();
-        assertThat(mvcResult.getModelAndView().getViewName()).isEqualTo("order-edit");
+        String viewName = authHelper.requireViewName(mvcResult);
+
+        assertThat(viewName).isEqualTo("order-edit");
 
         Map<String, Object> model = authHelper.requireModel(mvcResult);
         OrderResponse orderResponse = (OrderResponse) model.get("order");
@@ -481,14 +481,14 @@ class OrderControllerIntegrationTest {
                 .build();
         orderRepository.save(order);
 
-        ModelAndView modelAndView = mockMvc.perform(put("/orders/add-product/{id}", product1)
+        MvcResult mvcResult = mockMvc.perform(put("/orders/add-product/{id}", product1)
                         .cookie(cookie))
                 .andExpect(status().is4xxClientError())
-                .andReturn().getModelAndView();
+                .andReturn();
 
-        assertThat(modelAndView).isNotNull();
-        assertThat(modelAndView.getViewName()).isNotNull();
-        assertThat(modelAndView.getViewName()).isEqualTo("error");
+        String viewName = authHelper.requireViewName(mvcResult);
+
+        assertThat(viewName).isEqualTo("error");
     }
 
     @Test
@@ -501,14 +501,14 @@ class OrderControllerIntegrationTest {
         Cookie cookie = authHelper.signIn(authUser, mockMvc);
         productRepository.save(product);
 
-        ModelAndView modelAndView = mockMvc.perform(put("/orders/add-product/{id}", product.getId())
+        MvcResult mvcResult = mockMvc.perform(put("/orders/add-product/{id}", product.getId())
                         .cookie(cookie))
                 .andExpect(status().is4xxClientError())
-                .andReturn().getModelAndView();
+                .andReturn();
 
-        assertThat(modelAndView).isNotNull();
-        assertThat(modelAndView.getViewName()).isNotNull();
-        assertThat(modelAndView.getViewName()).isEqualTo("error");
+        String viewName = authHelper.requireViewName(mvcResult);
+
+        assertThat(viewName).isEqualTo("error");
 
         Optional<Order> orderOptional = orderRepository.findOrderByOwnerId(authUser.getId());
         assertThat(orderOptional).isNotPresent();
@@ -585,14 +585,14 @@ class OrderControllerIntegrationTest {
 
         Cookie cookie = authHelper.signIn(authUser, mockMvc);
 
-        ModelAndView modelAndView = mockMvc.perform(delete("/orders/{id}/delete", orderId)
+        MvcResult mvcResult = mockMvc.perform(delete("/orders/{id}/delete", orderId)
                         .cookie(cookie))
                 .andExpect(status().is4xxClientError())
-                .andReturn().getModelAndView();
+                .andReturn();
 
-        assertThat(modelAndView).isNotNull();
-        assertThat(modelAndView.getViewName()).isNotNull();
-        assertThat(modelAndView.getViewName()).isEqualTo("error");
+        String viewName = authHelper.requireViewName(mvcResult);
+
+        assertThat(viewName).isEqualTo("error");
     }
 
     @Test
@@ -611,14 +611,12 @@ class OrderControllerIntegrationTest {
                 .build();
         orderRepository.save(order);
 
-        ModelAndView modelAndView = mockMvc.perform(delete("/orders/remove-product/{id}", product.getId())
+        String redirectedUrl = mockMvc.perform(delete("/orders/remove-product/{id}", product.getId())
                         .cookie(cookie))
-                .andExpect(status().isOk())
-                .andReturn().getModelAndView();
+                .andExpect(status().is3xxRedirection())
+                .andReturn().getResponse().getRedirectedUrl();
 
-        assertThat(modelAndView).isNotNull();
-        assertThat(modelAndView.getViewName()).isNotNull();
-        assertThat(modelAndView.getViewName()).isEqualTo("home");
+        assertThat(redirectedUrl).isEqualTo("/home");
 
         Optional<Order> orderOptional = orderRepository.findById(order.getId());
         assertThat(orderOptional).isPresent();
@@ -643,14 +641,12 @@ class OrderControllerIntegrationTest {
                 .build();
         orderRepository.save(order);
 
-        ModelAndView modelAndView = mockMvc.perform(delete("/orders/remove-product/{id}", product.getId())
+        String redirectedUrl = mockMvc.perform(delete("/orders/remove-product/{id}", product.getId())
                         .cookie(cookie))
-                .andExpect(status().isOk())
-                .andReturn().getModelAndView();
+                .andExpect(status().is3xxRedirection())
+                .andReturn().getResponse().getRedirectedUrl();
 
-        assertThat(modelAndView).isNotNull();
-        assertThat(modelAndView.getViewName()).isNotNull();
-        assertThat(modelAndView.getViewName()).isEqualTo("home");
+        assertThat(redirectedUrl).isEqualTo("/home");
 
         Optional<Order> orderOptional = orderRepository.findById(order.getId());
         assertThat(orderOptional).isNotPresent();
@@ -671,9 +667,9 @@ class OrderControllerIntegrationTest {
 
         Map<String, Object> model = authHelper.requireModel(mvcResult);
         String errorMessage = model.get("message").toString();
+        String viewName = authHelper.requireViewName(mvcResult);
 
-        assertThat(mvcResult.getModelAndView().getViewName()).isNotNull();
-        assertThat(mvcResult.getModelAndView().getViewName()).isEqualTo("error");
+        assertThat(viewName).isEqualTo("error");
         assertThat(errorMessage).isNotNull();
         assertThat(errorMessage).isEqualTo("Order not found!");
     }
@@ -700,9 +696,9 @@ class OrderControllerIntegrationTest {
 
         Map<String, Object> model = authHelper.requireModel(mvcResult);
         String errorMessage = model.get("message").toString();
+        String viewName = authHelper.requireViewName(mvcResult);
 
-        assertThat(mvcResult.getModelAndView().getViewName()).isNotNull();
-        assertThat(mvcResult.getModelAndView().getViewName()).isEqualTo("error");
+        assertThat(viewName).isEqualTo("error");
         assertThat(errorMessage).isNotNull();
         assertThat(errorMessage).isEqualTo("Order not found!");
     }
@@ -757,9 +753,9 @@ class OrderControllerIntegrationTest {
 
         Map<String, Object> model = authHelper.requireModel(mvcResult);
         String errorMessage = model.get("message").toString();
+        String viewName = authHelper.requireViewName(mvcResult);
 
-        assertThat(mvcResult.getModelAndView().getViewName()).isNotNull();
-        assertThat(mvcResult.getModelAndView().getViewName()).isEqualTo("error");
+        assertThat(viewName).isEqualTo("error");
         assertThat(errorMessage).isNotNull();
         assertThat(errorMessage).isEqualTo("Order not found!");
     }
@@ -779,10 +775,87 @@ class OrderControllerIntegrationTest {
 
         Map<String, Object> model = authHelper.requireModel(mvcResult);
         String errorMessage = model.get("message").toString();
+        String viewName = authHelper.requireViewName(mvcResult);
 
-        assertThat(mvcResult.getModelAndView().getViewName()).isNotNull();
-        assertThat(mvcResult.getModelAndView().getViewName()).isEqualTo("error");
+        assertThat(viewName).isEqualTo("error");
         assertThat(errorMessage).isNotNull();
         assertThat(errorMessage).isEqualTo("Order not found!");
+    }
+
+    @Test
+    public void payForOrder_ShouldRedirectToErrorPage_WhenOrderHasUnactiveProduct() throws Exception {
+        User authUser = UserDataBuilder.buildUserWithAllFields().build();
+        Product product = ProductDataBuilder.buildProductWithAllFields()
+                .active(false)
+                .build();
+
+        productRepository.save(product);
+        Cookie cookie = authHelper.signIn(authUser, mockMvc);
+
+        Order order = OrderDataBuilder.buildOrderWithAllFields()
+                .status(OrderStatus.IN_PROGRESS)
+                .ownerId(authUser.getId())
+                .productIds(Set.of(product.getId()))
+                .build();
+        orderRepository.save(order);
+
+        MvcResult mvcResult = mockMvc.perform(post("/orders/user-order/pay")
+                        .cookie(cookie))
+                .andExpect(status().is4xxClientError())
+                .andReturn();
+
+        Map<String, Object> model = authHelper.requireModel(mvcResult);
+        String errorMessage = model.get("message").toString();
+        String viewName = authHelper.requireViewName(mvcResult);
+
+        assertThat(viewName).isEqualTo("error");
+        assertThat(errorMessage).isNotNull();
+        assertThat(errorMessage).isEqualTo("This product is not available");
+    }
+
+    @Test
+    public void payForOrder_ShouldPayForOrder_WhenOrderHasUnactiveProductButUnactiveProductWasRemoved() throws Exception {
+        User authUser = UserDataBuilder.buildUserWithAllFields().build();
+        Product product = ProductDataBuilder.buildProductWithAllFields()
+                .active(false)
+                .build();
+        Product product1 = ProductDataBuilder.buildProductWithAllFields().build();
+
+        productRepository.saveAll(List.of(product, product1));
+        Cookie cookie = authHelper.signIn(authUser, mockMvc);
+
+        Order order = OrderDataBuilder.buildOrderWithAllFields()
+                .status(OrderStatus.IN_PROGRESS)
+                .ownerId(authUser.getId())
+                .productIds(Set.of(product.getId(), product1.getId()))
+                .build();
+        orderRepository.save(order);
+
+        MvcResult mvcResult = mockMvc.perform(post("/orders/user-order/pay")
+                        .cookie(cookie))
+                .andExpect(status().is4xxClientError())
+                .andReturn();
+
+        Map<String, Object> model = authHelper.requireModel(mvcResult);
+        String errorMessage = model.get("message").toString();
+        String viewName = authHelper.requireViewName(mvcResult);
+
+        assertThat(viewName).isEqualTo("error");
+        assertThat(errorMessage).isNotNull();
+        assertThat(errorMessage).isEqualTo("This product is not available");
+
+        String redirectedUrl = mockMvc.perform(delete("/orders/remove-product/{id}", product.getId())
+                        .cookie(cookie))
+                .andExpect(status().is3xxRedirection())
+                .andReturn().getResponse().getRedirectedUrl();
+
+        assertThat(redirectedUrl).isEqualTo("/home");
+
+        Optional<Order> orderOptional = orderRepository.findById(order.getId());
+        assertThat(orderOptional).isPresent();
+        assertThat(orderOptional.get().getId()).isEqualTo(order.getId());
+        assertThat(orderOptional.get().getProductIds()).isNotNull();
+        assertThat(orderOptional.get().getProductIds().size()).isEqualTo(1);
+        assertThat(orderOptional.get().getProductIds().stream().anyMatch(productId -> productId.equals(product1.getId()))).isTrue();
     }
 }

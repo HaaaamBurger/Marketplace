@@ -86,7 +86,6 @@ public class OrderFacade implements OrderCrudService, OrderSettingsService {
     @Transactional
     @Override
     public Order addProductToOrder(String productId) {
-        // TODO the same logic were done in validation so it has been duplicated (think about the way how to avoid duplication)...not only here... better to avoid db calls in validators if possible
         Product product = productCrudService.getById(productId);
         validateProductOrThrow(product);
 
@@ -131,11 +130,12 @@ public class OrderFacade implements OrderCrudService, OrderSettingsService {
     public void payForOrder() {
         Order order = findActiveOrderByOwnerIdOrThrow();
 
-        // TODO Add validation for product access
-        order.getProductIds().stream().map(productCrudService::getById).forEach(product -> {
-            validateProductOrThrow(product);
-            product.decreaseAmount();
-            productRepository.save(product);
+        order.getProductIds().stream()
+                .map(productCrudService::getById)
+                .forEach(product -> {
+                    validateProductOrThrow(product);
+                    product.decreaseAmount();
+                    productRepository.save(product);
         });
 
         order.setStatus(OrderStatus.COMPLETED);

@@ -59,4 +59,13 @@ public class AuthHelper {
         return model;
     }
 
+    public String requireViewName(MvcResult mvcResult) {
+        ModelAndView modelAndView = mvcResult.getModelAndView();
+
+        assertThat(modelAndView).isNotNull();
+        assertThat(modelAndView.getViewName()).isNotNull();
+
+        return modelAndView.getViewName();
+    }
+
 }

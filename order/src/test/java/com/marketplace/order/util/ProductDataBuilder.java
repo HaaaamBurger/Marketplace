@@ -14,6 +14,7 @@ public class ProductDataBuilder {
                 .name("Test Product")
                 .price(BigDecimal.valueOf(99.99))
                 .amount(1)
+                .active(true)
                 .description("Test Description");
     }
 

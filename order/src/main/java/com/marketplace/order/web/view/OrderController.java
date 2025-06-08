@@ -7,7 +7,7 @@ import com.marketplace.order.web.dto.OrderUpdateRequest;
 import com.marketplace.order.web.model.Order;
 import com.marketplace.order.web.model.OrderStatus;
 import com.marketplace.product.mapper.SimpleProductMapper;
-import com.marketplace.product.service.ProductCrudService;
+import com.marketplace.product.service.ProductSettingsService;
 import com.marketplace.product.web.model.Product;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -24,11 +24,11 @@ import java.util.Optional;
 @RequestMapping("/orders")
 public class OrderController {
 
-    private final ProductCrudService productCrudService;
-
     private final OrderCrudService orderCrudService;
 
     private final OrderSettingsService orderSettingsService;
+
+    private final ProductSettingsService productSettingsService;
 
     private final SimpleOrderMapper simpleOrderMapper;
 
@@ -47,20 +47,15 @@ public class OrderController {
             Model model,
             @PathVariable String orderId
     ) {
+        model.addAttribute("isPayable", true);
         Order order = orderCrudService.findById(orderId);
 
-        model.addAttribute("isPayable", true);
-        List<Product> products = order.getProductIds().stream()
-                .map(productId -> {
-                    Product product = productCrudService.getById(productId);
+        List<Product> products = productSettingsService.findAllByIdIn(order.getProductIds());
+        boolean containsInactiveProduct = productSettingsService.containsInactiveProduct(products);
 
-                    if (!product.getActive()) {
-                        model.addAttribute("isPayable", false);
-                    }
-
-                    return product;
-                })
-                .toList();
+        if (containsInactiveProduct) {
+            model.addAttribute("isPayable", false);
+        }
 
         model.addAttribute("order", simpleOrderMapper.mapOrderToOrderResponseDto(order));
         model.addAttribute("products", simpleProductMapper.mapProductsToProductResponseDtos(products));
@@ -74,20 +69,16 @@ public class OrderController {
     ) {
         Optional<Order> orderOptional = orderSettingsService.findOrderByOwnerIdAndStatus(OrderStatus.IN_PROGRESS);
         orderOptional.ifPresent(order -> {
+            model.addAttribute("isPayable", true);
             model.addAttribute("currentOrder", simpleOrderMapper.mapOrderToOrderResponseDto(order));
 
-            model.addAttribute("isPayable", true);
-            List<Product> products = order.getProductIds().stream()
-                    .map(productId -> {
-                        Product product = productCrudService.getById(productId);
+            List<Product> products = productSettingsService.findAllByIdIn(order.getProductIds());
+            boolean containsInactiveProduct = productSettingsService.containsInactiveProduct(products);
 
-                        if (!product.getActive()) {
-                            model.addAttribute("isPayable", false);
-                        }
+            if (containsInactiveProduct) {
+                model.addAttribute("isPayable", false);
+            }
 
-                        return product;
-                    })
-                    .toList();
             model.addAttribute("orderProducts", simpleProductMapper.mapProductsToProductResponseDtos(products));
 
             BigDecimal totalSum = products.stream()
@@ -145,7 +136,7 @@ public class OrderController {
             @PathVariable String productId
     ) {
         orderSettingsService.removeProductFromOrder(productId);
-        return "home";
+        return "redirect:/home";
     }
 
     @PostMapping("/user-order/pay")
