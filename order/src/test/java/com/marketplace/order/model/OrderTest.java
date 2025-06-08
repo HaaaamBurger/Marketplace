@@ -10,7 +10,6 @@ import jakarta.validation.ValidatorFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
 import java.util.Set;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -52,7 +51,7 @@ public class OrderTest {
     @Test
     public void testOrderWithEmptyProductIds() {
         Order order = OrderDataBuilder.buildOrderWithAllFields()
-                .productIds(List.of())
+                .productIds(Set.of())
                 .build();
 
         Set<ConstraintViolation<Order>> violations = validator.validate(order);

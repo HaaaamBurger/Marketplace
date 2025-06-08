@@ -1,6 +1,6 @@
 package com.marketplace.auth.security;
 
-import com.marketplace.auth.repository.UserRepository;
+import com.marketplace.usercore.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -24,5 +24,4 @@ public class CustomUserDetailsService implements UserDetailsService {
                     return new UsernameNotFoundException("User does not exist!");
                 });
     }
-
 }

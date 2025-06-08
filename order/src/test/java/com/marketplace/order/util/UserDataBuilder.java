@@ -1,8 +1,8 @@
 package com.marketplace.order.util;
 
-import com.marketplace.auth.web.model.User;
-import com.marketplace.auth.web.model.UserRole;
-import com.marketplace.auth.web.model.UserStatus;
+import com.marketplace.usercore.model.User;
+import com.marketplace.usercore.model.UserRole;
+import com.marketplace.usercore.model.UserStatus;
 
 import java.util.UUID;
 

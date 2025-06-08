@@ -1,8 +1,5 @@
 package com.marketplace.auth.security;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.marketplace.auth.exception.ExceptionResponse;
-import com.marketplace.auth.exception.ExceptionType;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -18,20 +15,9 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class RestAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
-    private final ObjectMapper objectMapper;
-
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException {
         log.error("[REST_AUTHENTICATION_ENTRY_POINT]: {}", authException.getMessage());
-
-        ExceptionResponse exceptionResponse = ExceptionResponse.builder()
-                .status(HttpServletResponse.SC_UNAUTHORIZED)
-                .type(ExceptionType.AUTHORIZATION)
-                .path(request.getRequestURI())
-                .message("Authentication required, please sign in")
-                .build();
-
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-        response.getWriter().write(objectMapper.writeValueAsString(exceptionResponse));
+        response.sendRedirect("/home");
     }
 }

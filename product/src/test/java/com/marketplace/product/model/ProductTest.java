@@ -19,13 +19,13 @@ class ProductTest {
     private static Validator validator;
 
     @BeforeAll
-    static void initValidator() {
+    public static void initValidator() {
         ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
         validator = factory.getValidator();
     }
 
     @Test
-    void whenProductIsValid_thenNoViolations() {
+    public void whenProductIsValid_thenNoViolations() {
         Product product = ProductDataBuilder.buildProductWithAllFields().build();
 
         Set<ConstraintViolation<Product>> violations = validator.validate(product);
@@ -33,7 +33,7 @@ class ProductTest {
     }
 
     @Test
-    void whenNameIsBlank_thenValidationFails() {
+    public void whenNameIsBlank_thenValidationFails() {
         Product product = ProductDataBuilder.buildProductWithAllFields()
                 .name(" ")
                 .build();
@@ -44,7 +44,7 @@ class ProductTest {
     }
 
     @Test
-    void whenNameIsTooShort_thenValidationFails() {
+    public void whenNameIsTooShort_thenValidationFails() {
         Product product = ProductDataBuilder.buildProductWithAllFields()
                 .name("t")
                 .build();
@@ -55,7 +55,7 @@ class ProductTest {
     }
 
     @Test
-    void whenDescriptionTooShort_thenValidationFails() {
+    public void whenDescriptionTooShort_thenValidationFails() {
         Product product = ProductDataBuilder.buildProductWithAllFields()
                 .description("test")
                 .build();
@@ -66,7 +66,7 @@ class ProductTest {
     }
 
     @Test
-    void whenPriceIsNull_thenValidationFails() {
+    public void whenPriceIsNull_thenValidationFails() {
         Product product = ProductDataBuilder.buildProductWithAllFields()
                 .price(null)
                 .build();
@@ -78,7 +78,7 @@ class ProductTest {
     }
 
     @Test
-    void whenPriceIsNegative_thenValidationFails() {
+    public void whenPriceIsNegative_thenValidationFails() {
         Product product = ProductDataBuilder.buildProductWithAllFields()
                 .price(BigDecimal.valueOf(-5.00))
                 .build();
@@ -89,7 +89,7 @@ class ProductTest {
     }
 
     @Test
-    void whenPriceTooPrecise_thenValidationFails() {
+    public void whenPriceTooPrecise_thenValidationFails() {
         Product product = ProductDataBuilder.buildProductWithAllFields()
                 .price(new BigDecimal("123456789.999"))
                 .build();
@@ -98,4 +98,49 @@ class ProductTest {
         assertFalse(violations.isEmpty());
         assertTrue(violations.stream().anyMatch(v -> v.getMessage().contains("digits")));
     }
+
+    @Test
+    public void whenAmountIsNull_thenValidationFails() {
+        Product product = ProductDataBuilder.buildProductWithAllFields()
+                .amount(null)
+                .build();
+
+        Set<ConstraintViolation<Product>> violations = validator.validate(product);
+        assertFalse(violations.isEmpty());
+        assertTrue(violations.stream().anyMatch(v -> v.getMessage().contains("Amount is required")));
+    }
+
+    @Test
+    public void whenAmountIsNegative_thenValidationFails() {
+        Product product = ProductDataBuilder.buildProductWithAllFields()
+                .amount(-1)
+                .build();
+
+        Set<ConstraintViolation<Product>> violations = validator.validate(product);
+        assertFalse(violations.isEmpty());
+        assertTrue(violations.stream().anyMatch(v -> v.getMessage().contains("Amount cannot be negative value")));
+    }
+
+    @Test
+    public void decreaseAmount_ShouldDecreaseAmount() {
+        Product product = ProductDataBuilder.buildProductWithAllFields()
+                .amount(1)
+                .build();
+
+        boolean hasDecreasedAmount = product.decreaseAmount();
+        assertTrue(hasDecreasedAmount);
+        assertEquals(0, (int) product.getAmount());
+    }
+
+    @Test
+    public void decreaseAmount_ShouldNotDecreaseAmount() {
+        Product product = ProductDataBuilder.buildProductWithAllFields()
+                .amount(0)
+                .build();
+
+        boolean hasDecreasedAmount = product.decreaseAmount();
+        assertFalse(hasDecreasedAmount);
+        assertEquals(0, (int) product.getAmount());
+    }
+
 }

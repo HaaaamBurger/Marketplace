@@ -1,6 +1,7 @@
 package com.marketplace.auth.web.model;
 
 import com.marketplace.auth.web.util.UserDataBuilder;
+import com.marketplace.usercore.model.User;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
@@ -39,7 +40,7 @@ public class UserTest {
         Set<ConstraintViolation<User>> violations = validator.validate(user);
         assertEquals(1, violations.size());
 
-        assertTrue(violations.stream().anyMatch(v -> v.getMessage().contains("Password is required")));
+        assertTrue(violations.stream().anyMatch(v -> v.getMessage().contains("Email is required")));
     }
 
     @Test
@@ -54,6 +55,30 @@ public class UserTest {
         assertTrue(violations.stream().anyMatch(v -> v.getMessage().contains("Must be a valid e-mail address")));
     }
 
+    @Test
+    public void whenRoleIsInvalid_thenValidationFails() {
+        User user = UserDataBuilder.buildUserWithAllFields()
+                .role(null)
+                .build();
+
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+        assertEquals(1, violations.size());
+
+        assertTrue(violations.stream().anyMatch(v -> v.getMessage().contains("Role is required")));
+    }
+
+    @Test
+    public void whenStatusIsInvalid_thenValidationFails() {
+        User user = UserDataBuilder.buildUserWithAllFields()
+                .status(null)
+                .build();
+
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+        assertEquals(1, violations.size());
+
+        assertTrue(violations.stream().anyMatch(v -> v.getMessage().contains("Status is required")));
+    }
+
 
     @Test
     public void whenPasswordIsInvalid_thenValidationFails() {
@@ -64,8 +89,19 @@ public class UserTest {
         Set<ConstraintViolation<User>> violations = validator.validate(user);
         assertEquals(2, violations.size());
 
+        assertTrue(violations.stream().anyMatch(v -> v.getMessage().contains("Password must be between 8 and 32 characters")));
+    }
+
+    @Test
+    public void whenEveryFieldIsInvalid_thenValidationFails() {
+        User user = new User();
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+        assertEquals(4, violations.size());
+
         assertTrue(violations.stream().anyMatch(v -> v.getMessage().contains("Password is required")));
-        assertTrue(violations.stream().anyMatch(v -> v.getMessage().contains("Password length must be between 8 to 32 characters")));
+        assertTrue(violations.stream().anyMatch(v -> v.getMessage().contains("Status is required")));
+        assertTrue(violations.stream().anyMatch(v -> v.getMessage().contains("Email is required")));
+        assertTrue(violations.stream().anyMatch(v -> v.getMessage().contains("Role is required")));
     }
 
 }

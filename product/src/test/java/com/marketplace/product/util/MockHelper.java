@@ -1,6 +1,6 @@
 package com.marketplace.product.util;
 
-import com.marketplace.auth.web.model.User;
+import com.marketplace.usercore.model.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;

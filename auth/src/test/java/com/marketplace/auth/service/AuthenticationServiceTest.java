@@ -2,21 +2,22 @@ package com.marketplace.auth.service;
 
 import com.marketplace.auth.config.AuthApplicationConfig;
 import com.marketplace.auth.exception.CredentialException;
-import com.marketplace.auth.exception.EntityExistsException;
+import com.marketplace.common.exception.EntityExistsException;
 import com.marketplace.auth.exception.TokenNotValidException;
-import com.marketplace.auth.repository.UserRepository;
-import com.marketplace.auth.security.JwtService;
-import com.marketplace.auth.web.model.User;
-import com.marketplace.auth.web.rest.dto.AuthRefreshRequest;
-import com.marketplace.auth.web.rest.dto.AuthRequest;
-import com.marketplace.auth.web.rest.dto.AuthResponse;
+import com.marketplace.auth.security.CustomUserDetailsService;
+import com.marketplace.auth.security.token.JwtService;
+import com.marketplace.auth.web.dto.AuthRefreshRequest;
+import com.marketplace.auth.web.dto.AuthRequest;
+import com.marketplace.auth.web.dto.AuthResponse;
 import com.marketplace.auth.web.util.AuthRequestDataBuilder;
-import com.marketplace.auth.web.model.UserStatus;
+import com.marketplace.usercore.model.User;
+import com.marketplace.usercore.model.UserStatus;
+import com.marketplace.usercore.repository.UserRepository;
+import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
@@ -32,7 +33,7 @@ import static org.mockito.Mockito.*;
 public class AuthenticationServiceTest {
 
     @MockitoBean
-    private UserDetailsService userDetailsService;
+    private CustomUserDetailsService customUserDetailsService;
 
     @MockitoBean
     private UserRepository userRepository;
@@ -49,6 +50,7 @@ public class AuthenticationServiceTest {
     @Test
     public void signIn_shouldReturnPairOfTokens() {
         AuthRequest authRequest = AuthRequestDataBuilder.withAllFields().build();
+        HttpServletResponse httpServletResponse = mock(HttpServletResponse.class);
         User mockUser = mock(User.class);
         String mockAccessToken = "mockAccessToken";
         String mockRefreshToken = "mockRefreshToken";
@@ -60,7 +62,7 @@ public class AuthenticationServiceTest {
         when(jwtService.generateAccessToken(mockUser)).thenReturn(mockAccessToken);
         when(jwtService.generateRefreshToken(mockUser)).thenReturn(mockRefreshToken);
 
-        AuthResponse authResponse = authenticationService.signIn(authRequest);
+        AuthResponse authResponse = authenticationService.signIn(authRequest, httpServletResponse);
 
         assertNotNull(authResponse);
         assertThat(mockAccessToken).isEqualTo(authResponse.getAccessToken());
@@ -70,10 +72,11 @@ public class AuthenticationServiceTest {
     @Test
     public void signIn_shouldThrowException_WhenUserNotFound() {
         AuthRequest authRequest = AuthRequestDataBuilder.withAllFields().build();
+        HttpServletResponse httpServletResponse = mock(HttpServletResponse.class);
 
         when(userRepository.findByEmail((authRequest.getEmail()))).thenReturn(Optional.empty());
 
-        String exceptionMessage = assertThrows(CredentialException.class, () -> authenticationService.signIn(authRequest)).getMessage();
+        String exceptionMessage = assertThrows(CredentialException.class, () -> authenticationService.signIn(authRequest, httpServletResponse)).getMessage();
         assertThat(exceptionMessage).isNotBlank();
         assertThat(exceptionMessage).isEqualTo("Wrong credentials!");
     }
@@ -82,13 +85,15 @@ public class AuthenticationServiceTest {
     public void signIn_shouldThrowException_WhenPasswordNotMatched() {
         User mockUser = mock(User.class);
         String mockEncodedPassword = "mockEncodedPassword";
+        HttpServletResponse httpServletResponse = mock(HttpServletResponse.class);
+
         AuthRequest authRequest = AuthRequestDataBuilder.withAllFields().build();
 
         when(userRepository.findByEmail((authRequest.getEmail()))).thenReturn(Optional.of(mockUser));
         when(mockUser.getPassword()).thenReturn(mockEncodedPassword);
         when(passwordEncoder.matches(authRequest.getPassword(), mockEncodedPassword)).thenReturn(false);
 
-        String exceptionMessage = assertThrows(CredentialException.class, () -> authenticationService.signIn(authRequest)).getMessage();
+        String exceptionMessage = assertThrows(CredentialException.class, () -> authenticationService.signIn(authRequest, httpServletResponse)).getMessage();
         assertThat(exceptionMessage).isNotBlank();
         assertThat(exceptionMessage).isEqualTo("Wrong credentials!");
     }
@@ -135,7 +140,7 @@ public class AuthenticationServiceTest {
                 .build();
 
         when(jwtService.extractSubject(mockValidRefreshToken)).thenReturn(mockSubject);
-        when(userDetailsService.loadUserByUsername(mockSubject)).thenReturn(mockUser);
+        when(customUserDetailsService.loadUserByUsername(mockSubject)).thenReturn(mockUser);
         when(jwtService.isTokenValid(mockValidRefreshToken, mockUser)).thenReturn(true);
         when(jwtService.generateAccessToken(mockUser)).thenReturn(mockAccessToken);
         when(jwtService.generateRefreshToken(mockUser)).thenReturn(mockRefreshToken);
@@ -158,7 +163,7 @@ public class AuthenticationServiceTest {
                 .build();
 
         when(jwtService.extractSubject(mockValidRefreshToken)).thenReturn(mockSubject);
-        when(userDetailsService.loadUserByUsername(mockSubject)).thenReturn(mockUser);
+        when(customUserDetailsService.loadUserByUsername(mockSubject)).thenReturn(mockUser);
         when(jwtService.isTokenValid(mockValidRefreshToken, mockUser)).thenReturn(false);
 
         assertThatThrownBy(() -> authenticationService.refreshToken(authRefreshRequest))
