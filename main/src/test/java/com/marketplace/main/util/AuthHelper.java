@@ -29,10 +29,12 @@ public class AuthHelper {
     private PasswordEncoder passwordEncoder;
 
     public Cookie signIn(User user, MockMvc mockMvc) throws Exception {
-        AuthRequest authRequest = AuthRequestDataBuilder.withAllFields().build();
+        AuthRequest authRequest = AuthRequestDataBuilder.withAllFields()
+                .email(user.getEmail())
+                .password(user.getPassword())
+                .build();
 
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-
         userRepository.save(user);
 
         MvcResult mvcResult = mockMvc.perform(post("/sign-in")
