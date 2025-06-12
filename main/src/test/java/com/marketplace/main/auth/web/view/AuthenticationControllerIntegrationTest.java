@@ -1,4 +1,4 @@
-package com.marketplace.main.auth;
+package com.marketplace.main.auth.web.view;
 
 import com.marketplace.auth.web.dto.AuthRequest;
 import com.marketplace.main.exception.MainExceptionHandler;

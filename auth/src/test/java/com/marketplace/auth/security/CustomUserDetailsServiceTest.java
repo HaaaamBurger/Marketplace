@@ -1,7 +1,6 @@
-package com.marketplace.auth.service;
+package com.marketplace.auth.security;
 
 import com.marketplace.auth.config.AuthApplicationConfig;
-import com.marketplace.auth.security.CustomUserDetailsService;
 import com.marketplace.auth.web.util.UserDataBuilder;
 import com.marketplace.usercore.model.User;
 import com.marketplace.usercore.repository.UserRepository;
