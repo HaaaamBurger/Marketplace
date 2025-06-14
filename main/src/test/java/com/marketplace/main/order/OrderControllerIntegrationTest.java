@@ -13,7 +13,6 @@ import com.marketplace.product.web.dto.ProductResponse;
 import com.marketplace.product.web.model.Product;
 import com.marketplace.usercore.model.User;
 import com.marketplace.usercore.model.UserRole;
-import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +22,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.web.servlet.ModelAndView;
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -64,7 +62,7 @@ class OrderControllerIntegrationTest {
                 .build();
         Order order = OrderDataBuilder.buildOrderWithAllFields().build();
 
-        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
         orderRepository.save(order);
 
         MvcResult mvcResult = mockMvc.perform(get("/orders/all")
@@ -87,7 +85,7 @@ class OrderControllerIntegrationTest {
         User authUser = UserDataBuilder.buildUserWithAllFields().build();
         Order order = OrderDataBuilder.buildOrderWithAllFields().build();
 
-        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
         orderRepository.save(order);
 
         String redirectedUrl = mockMvc.perform(get("/orders/all")
@@ -125,7 +123,7 @@ class OrderControllerIntegrationTest {
                 .productIds(Set.of(product.getId()))
                 .build();
 
-        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
         orderRepository.save(order);
 
         MvcResult mvcResult = mockMvc.perform(get("/orders/{id}", order.getId())
@@ -158,7 +156,7 @@ class OrderControllerIntegrationTest {
                 .productIds(Set.of(product.getId()))
                 .build();
 
-        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
         orderRepository.save(order);
 
         String redirectedUrl = mockMvc.perform(get("/orders/{id}", order.getId())
@@ -194,7 +192,7 @@ class OrderControllerIntegrationTest {
         User authUser = UserDataBuilder.buildUserWithAllFields().build();
         Product product = ProductDataBuilder.buildProductWithAllFields().build();
 
-        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
         productRepository.save(product);
 
         Order order = OrderDataBuilder.buildOrderWithAllFields()
@@ -234,7 +232,7 @@ class OrderControllerIntegrationTest {
         User authUser = UserDataBuilder.buildUserWithAllFields().build();
         Product product = ProductDataBuilder.buildProductWithAllFields().build();
 
-        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
         productRepository.save(product);
 
         MvcResult mvcResult = mockMvc.perform(get("/orders/user-order")
@@ -264,7 +262,7 @@ class OrderControllerIntegrationTest {
         User authUser = UserDataBuilder.buildUserWithAllFields().build();
         Product product = ProductDataBuilder.buildProductWithAllFields().build();
 
-        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
         productRepository.save(product);
 
         Order order = OrderDataBuilder.buildOrderWithAllFields()
@@ -313,7 +311,7 @@ class OrderControllerIntegrationTest {
                 .productIds(Set.of(product.getId()))
                 .build();
 
-        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
         orderRepository.save(order);
 
         MvcResult mvcResult = mockMvc.perform(get("/orders/{id}/update", order.getId())
@@ -342,7 +340,7 @@ class OrderControllerIntegrationTest {
                 .productIds(Set.of(product.getId()))
                 .build();
 
-        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
         orderRepository.save(order);
 
         String redirectedUrl = mockMvc.perform(get("/orders/{id}/update", order.getId())
@@ -366,7 +364,7 @@ class OrderControllerIntegrationTest {
                 .productIds(Set.of(product.getId()))
                 .build();
 
-        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
         orderRepository.save(order);
 
         String redirectedUrl = mockMvc.perform(put("/orders/{id}/update", order.getId())
@@ -394,7 +392,7 @@ class OrderControllerIntegrationTest {
                 .productIds(Set.of(product.getId()))
                 .build();
 
-        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
         orderRepository.save(order);
 
         String redirectedUrl = mockMvc.perform(put("/orders/{id}/update", order.getId())
@@ -417,7 +415,7 @@ class OrderControllerIntegrationTest {
         User authUser = UserDataBuilder.buildUserWithAllFields().build();
         Product product = ProductDataBuilder.buildProductWithAllFields().build();
 
-        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
         productRepository.save(product);
 
         String redirectedUrl = mockMvc.perform(put("/orders/add-product/{id}", product.getId())
@@ -442,7 +440,7 @@ class OrderControllerIntegrationTest {
         Product product = ProductDataBuilder.buildProductWithAllFields().build();
         Product product1 = ProductDataBuilder.buildProductWithAllFields().build();
 
-        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
         productRepository.saveAll(List.of(product, product1));
         Order order = OrderDataBuilder.buildOrderWithAllFields()
                 .ownerId(authUser.getId())
@@ -472,7 +470,7 @@ class OrderControllerIntegrationTest {
         Product product = ProductDataBuilder.buildProductWithAllFields().build();
         String product1 = String.valueOf(UUID.randomUUID());
 
-        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
         productRepository.saveAll(List.of(product));
         Order order = OrderDataBuilder.buildOrderWithAllFields()
                 .ownerId(authUser.getId())
@@ -498,7 +496,7 @@ class OrderControllerIntegrationTest {
                 .amount(0)
                 .build();
 
-        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
         productRepository.save(product);
 
         MvcResult mvcResult = mockMvc.perform(put("/orders/add-product/{id}", product.getId())
@@ -521,7 +519,7 @@ class OrderControllerIntegrationTest {
                 .build();
         Order order = OrderDataBuilder.buildOrderWithAllFields().build();
 
-        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
         orderRepository.save(order);
 
         String redirectedUrl = mockMvc.perform(delete("/orders/{id}/delete", order.getId())
@@ -540,7 +538,7 @@ class OrderControllerIntegrationTest {
     public void deleteOrder_ShouldDeleteOrder_WhenRoleUserAndOrderOwner() throws Exception {
         User authUser = UserDataBuilder.buildUserWithAllFields().build();
 
-        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
         Order order = OrderDataBuilder.buildOrderWithAllFields()
                 .ownerId(authUser.getId())
                 .build();
@@ -563,7 +561,7 @@ class OrderControllerIntegrationTest {
         User authUser = UserDataBuilder.buildUserWithAllFields().build();
         Order order = OrderDataBuilder.buildOrderWithAllFields().build();
 
-        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
         orderRepository.save(order);
 
         String redirectedUrl = mockMvc.perform(delete("/orders/{id}/delete", order.getId())
@@ -583,7 +581,7 @@ class OrderControllerIntegrationTest {
         User authUser = UserDataBuilder.buildUserWithAllFields().build();
         String orderId = String.valueOf(UUID.randomUUID());
 
-        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
 
         MvcResult mvcResult = mockMvc.perform(delete("/orders/{id}/delete", orderId)
                         .cookie(jwtCookiePayload.getAccessCookie()))
@@ -602,7 +600,7 @@ class OrderControllerIntegrationTest {
         Product product1 = ProductDataBuilder.buildProductWithAllFields().build();
 
         productRepository.save(product);
-        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
 
         Order order = OrderDataBuilder.buildOrderWithAllFields()
                 .status(OrderStatus.IN_PROGRESS)
@@ -632,7 +630,7 @@ class OrderControllerIntegrationTest {
         Product product = ProductDataBuilder.buildProductWithAllFields().build();
 
         productRepository.save(product);
-        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
 
         Order order = OrderDataBuilder.buildOrderWithAllFields()
                 .status(OrderStatus.IN_PROGRESS)
@@ -658,7 +656,7 @@ class OrderControllerIntegrationTest {
         Product product = ProductDataBuilder.buildProductWithAllFields().build();
 
         productRepository.save(product);
-        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
 
         MvcResult mvcResult = mockMvc.perform(delete("/orders/remove-product/{id}", product.getId())
                         .cookie(jwtCookiePayload.getAccessCookie()))
@@ -680,7 +678,7 @@ class OrderControllerIntegrationTest {
         Product product = ProductDataBuilder.buildProductWithAllFields().build();
 
         productRepository.save(product);
-        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
 
         Order order = OrderDataBuilder.buildOrderWithAllFields()
                 .status(OrderStatus.COMPLETED)
@@ -709,7 +707,7 @@ class OrderControllerIntegrationTest {
         Product product = ProductDataBuilder.buildProductWithAllFields().build();
 
         productRepository.save(product);
-        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
 
         Order order = OrderDataBuilder.buildOrderWithAllFields()
                 .status(OrderStatus.IN_PROGRESS)
@@ -737,7 +735,7 @@ class OrderControllerIntegrationTest {
         Product product = ProductDataBuilder.buildProductWithAllFields().build();
 
         productRepository.save(product);
-        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
 
         Order order = OrderDataBuilder.buildOrderWithAllFields()
                 .status(OrderStatus.COMPLETED)
@@ -766,7 +764,7 @@ class OrderControllerIntegrationTest {
         Product product = ProductDataBuilder.buildProductWithAllFields().build();
 
         productRepository.save(product);
-        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
 
         MvcResult mvcResult = mockMvc.perform(post("/orders/user-order/pay")
                         .cookie(jwtCookiePayload.getAccessCookie()))
@@ -790,7 +788,7 @@ class OrderControllerIntegrationTest {
                 .build();
 
         productRepository.save(product);
-        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
 
         Order order = OrderDataBuilder.buildOrderWithAllFields()
                 .status(OrderStatus.IN_PROGRESS)
@@ -822,7 +820,7 @@ class OrderControllerIntegrationTest {
         Product product1 = ProductDataBuilder.buildProductWithAllFields().build();
 
         productRepository.saveAll(List.of(product, product1));
-        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
 
         Order order = OrderDataBuilder.buildOrderWithAllFields()
                 .status(OrderStatus.IN_PROGRESS)

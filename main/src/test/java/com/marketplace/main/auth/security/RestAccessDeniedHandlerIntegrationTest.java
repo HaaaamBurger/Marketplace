@@ -4,7 +4,6 @@ import com.marketplace.main.util.AuthHelper;
 import com.marketplace.main.util.builder.UserDataBuilder;
 import com.marketplace.usercore.model.User;
 import com.marketplace.usercore.repository.UserRepository;
-import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,7 +39,7 @@ public class RestAccessDeniedHandlerIntegrationTest {
     public void handle_ShouldRedirectToErrorPage_WhenAccessNotDenied() throws Exception {
         User authUser = UserDataBuilder.buildUserWithAllFields().build();
 
-        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
 
         MvcResult mvcResult = mockMvc.perform(get("/users")
                         .cookie(jwtCookiePayload.getAccessCookie()))

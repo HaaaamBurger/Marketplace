@@ -11,7 +11,6 @@ import com.marketplace.usercore.dto.UserUpdateRequest;
 import com.marketplace.usercore.model.User;
 import com.marketplace.usercore.model.UserRole;
 import com.marketplace.usercore.repository.UserRepository;
-import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,7 +56,7 @@ public class UserControllerIntegrationTest {
     public void getProfile_ThenReturnUser() throws Exception {
         User authUser = UserDataBuilder.buildUserWithAllFields().build();
 
-        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
         MvcResult mvcResult = mockMvc.perform(get("/profile")
                         .cookie(jwtCookiePayload.getAccessCookie()))
                 .andExpect(status().isOk())
@@ -79,7 +78,7 @@ public class UserControllerIntegrationTest {
                 .email("test1@gmail.com")
                 .build();
 
-        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
         mockMvc.perform(post("/users/create")
                         .cookie(jwtCookiePayload.getAccessCookie())
                         .param("email", userRequest.getEmail())
@@ -100,7 +99,7 @@ public class UserControllerIntegrationTest {
                 .email("test1@gmail.com")
                 .build();
 
-        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
 
         MvcResult mvcResult = mockMvc.perform(post("/users/create")
                         .cookie(jwtCookiePayload.getAccessCookie())
@@ -126,7 +125,7 @@ public class UserControllerIntegrationTest {
                 .email("test1@gmail.com")
                 .build();
 
-        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
         userRepository.save(user);
 
         MvcResult mvcResult = mockMvc.perform(post("/users/create")
@@ -151,7 +150,7 @@ public class UserControllerIntegrationTest {
                 .email("test1@gmail.com")
                 .build();
 
-        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
 
         MvcResult mvcResult = mockMvc.perform(post("/users/create")
                         .cookie(jwtCookiePayload.getAccessCookie())
@@ -178,7 +177,7 @@ public class UserControllerIntegrationTest {
                 .email("test2@gmail.com")
                 .build();
 
-        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
         userRepository.saveAll(List.of(user1, user2));
 
         MvcResult mvcResult = mockMvc.perform(get("/users/all")
@@ -204,7 +203,7 @@ public class UserControllerIntegrationTest {
                 .email("test2@gmail.com")
                 .build();
 
-        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
         userRepository.saveAll(List.of(user1, user2));
 
         MvcResult mvcResult = mockMvc.perform(get("/users/all")
@@ -227,7 +226,7 @@ public class UserControllerIntegrationTest {
                 .email("test2@gmail.com")
                 .build();
 
-        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
         userRepository.save(user);
 
         MvcResult mvcResult = mockMvc.perform(put("/users/{userId}/update", user.getId())
@@ -253,7 +252,7 @@ public class UserControllerIntegrationTest {
                 .email("test2@gmail.com")
                 .build();
 
-        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
 
         MvcResult mvcResult = mockMvc.perform(put("/users/{userId}/update", authUser.getId())
                         .cookie(jwtCookiePayload.getAccessCookie())
@@ -279,7 +278,7 @@ public class UserControllerIntegrationTest {
                 .role(UserRole.ADMIN)
                 .build();
 
-        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
         userRepository.save(user);
 
         String redirectedUrl = mockMvc.perform(delete("/users/{userId}/delete", user.getId())
@@ -300,7 +299,7 @@ public class UserControllerIntegrationTest {
         User authUser = UserDataBuilder.buildUserWithAllFields()
                 .build();
 
-        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
         userRepository.save(user);
 
         String redirectedUrl = mockMvc.perform(delete("/users/{userId}/delete", user.getId())
@@ -324,7 +323,7 @@ public class UserControllerIntegrationTest {
                 .role(UserRole.ADMIN)
                 .build();
 
-        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
 
         ModelAndView modelAndView = mockMvc.perform(delete("/users/{userId}/delete", userId)
                         .cookie(jwtCookiePayload.getAccessCookie()))
