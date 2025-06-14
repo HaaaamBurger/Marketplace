@@ -65,7 +65,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
 
             jwtCookieManager.deleteTokensFromCookie(response);
-            filterChain.doFilter(request, response);
+            response.sendRedirect("/sign-in");
             return;
         } catch (UsernameNotFoundException | AccessDeniedException exception) {
             log.error("[JWT_AUTHENTICATION_FILTER]: {}", exception.getMessage());
@@ -74,6 +74,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             response.sendRedirect("/sign-in");
             return;
         } catch (CookieNotFoundException exception) {
+            log.warn("[JWT_AUTHENTICATION_FILTER]: {}", exception.getMessage());
             filterChain.doFilter(request, response);
             return;
         }

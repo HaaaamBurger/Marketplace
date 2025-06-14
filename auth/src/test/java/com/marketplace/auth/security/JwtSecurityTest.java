@@ -3,7 +3,7 @@ package com.marketplace.auth.security;
 import com.marketplace.auth.config.AuthApplicationConfig;
 import com.marketplace.auth.security.token.JwtService;
 import com.marketplace.auth.util.JwtServiceHelper;
-import com.marketplace.auth.web.util.UserDataBuilder;
+import com.marketplace.auth.web.util.builders.UserDataBuilder;
 import com.marketplace.usercore.model.User;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

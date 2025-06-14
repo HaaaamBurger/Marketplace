@@ -61,9 +61,9 @@ public final class UserFacade implements UserCrudService, UserSettingsService {
 
         if (!userUpdateRequest.getEmail().equals(userForUpdate.getEmail())) {
             throwIfUserWithSameEmailExists(userUpdateRequest.getEmail());
+            Optional.ofNullable(userUpdateRequest.getEmail()).ifPresent(userForUpdate::setEmail);
         }
 
-        Optional.ofNullable(userUpdateRequest.getEmail()).ifPresent(userForUpdate::setEmail);
         Optional.ofNullable(userUpdateRequest.getRole()).ifPresent(userForUpdate::setRole);
         Optional.ofNullable(userUpdateRequest.getStatus()).ifPresent(userForUpdate::setStatus);
 
@@ -106,12 +106,6 @@ public final class UserFacade implements UserCrudService, UserSettingsService {
 
     @Override
     public void throwIfUserWithSameEmailExists(String email) {
-        User authenticatedUser = authenticationUserService.getAuthenticatedUser();
-
-        if (authenticatedUser.getEmail().equals(email)) {
-            return;
-        }
-
         if (userRepository.existsByEmail(email)) {
             throw new EntityExistsException("User with this email already exists");
         }

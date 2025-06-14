@@ -40,10 +40,10 @@ public class RestAccessDeniedHandlerIntegrationTest {
     public void handle_ShouldRedirectToErrorPage_WhenAccessNotDenied() throws Exception {
         User authUser = UserDataBuilder.buildUserWithAllFields().build();
 
-        Cookie cookie = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signIn(authUser, mockMvc);
 
         MvcResult mvcResult = mockMvc.perform(get("/users")
-                        .cookie(cookie))
+                        .cookie(jwtCookiePayload.getAccessCookie()))
                 .andExpect(status().is3xxRedirection())
                 .andReturn();
 

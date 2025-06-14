@@ -32,9 +32,12 @@ public class ProfileService {
         }
 
         User userForUpdate = userSettingsService.throwIfUserNotFoundById(userId);
-        if (!profileUpdateRequest.getEmail().equals(userForUpdate.getEmail())) {
-            userSettingsService.throwIfUserWithSameEmailExists(profileUpdateRequest.getEmail());
+
+        if (profileUpdateRequest.getEmail().equals(userForUpdate.getEmail())) {
+            return userForUpdate;
         }
+
+        userSettingsService.throwIfUserWithSameEmailExists(profileUpdateRequest.getEmail());
 
         Optional.ofNullable(profileUpdateRequest.getEmail()).ifPresent(userForUpdate::setEmail);
         return userRepository.save(userForUpdate);

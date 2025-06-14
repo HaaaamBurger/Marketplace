@@ -34,7 +34,6 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -66,11 +65,11 @@ class ProductControllerIntegrationTest {
         Product product = ProductDataBuilder.buildProductWithAllFields().build();
         Product product1 = ProductDataBuilder.buildProductWithAllFields().build();
 
-        Cookie cookie = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signIn(authUser, mockMvc);
         productRepository.saveAll(List.of(product, product1));
 
         MvcResult mvcResult = mockMvc.perform(get("/products/all")
-                        .cookie(cookie))
+                        .cookie(jwtCookiePayload.getAccessCookie()))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -104,11 +103,11 @@ class ProductControllerIntegrationTest {
         User authUser = UserDataBuilder.buildUserWithAllFields().build();
         Product product = ProductDataBuilder.buildProductWithAllFields().build();
 
-        Cookie cookie = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signIn(authUser, mockMvc);
         productRepository.save(product);
 
         MvcResult mvcResult = mockMvc.perform(get("/products/{productId}", product.getId())
-                        .cookie(cookie))
+                        .cookie(jwtCookiePayload.getAccessCookie()))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -126,10 +125,10 @@ class ProductControllerIntegrationTest {
         User authUser = UserDataBuilder.buildUserWithAllFields().build();
         Product product = ProductDataBuilder.buildProductWithAllFields().build();
 
-        Cookie cookie = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signIn(authUser, mockMvc);
 
         ModelAndView modelAndView = mockMvc.perform(get("/products/{productId}", product.getId())
-                        .cookie(cookie))
+                        .cookie(jwtCookiePayload.getAccessCookie()))
                 .andExpect(status().isNotFound())
                 .andReturn().getModelAndView();
 
@@ -161,10 +160,10 @@ class ProductControllerIntegrationTest {
         User authUser = UserDataBuilder.buildUserWithAllFields().build();
         ProductRequest productRequest = ProductRequestDataBuilder.buildProductWithAllFields().build();
 
-        Cookie cookie = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signIn(authUser, mockMvc);
 
         String redirectedUrl = mockMvc.perform(post("/products/create")
-                        .cookie(cookie)
+                        .cookie(jwtCookiePayload.getAccessCookie())
                         .param("name", productRequest.getName())
                         .param("description", productRequest.getDescription())
                         .param("amount", String.valueOf(productRequest.getAmount()))
@@ -187,10 +186,10 @@ class ProductControllerIntegrationTest {
         ProductRequest productRequest = ProductRequestDataBuilder.buildProductWithAllFields()
                 .build();
 
-        Cookie cookie = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signIn(authUser, mockMvc);
 
         MvcResult mvcResult = mockMvc.perform(post("/products/create")
-                        .cookie(cookie)
+                        .cookie(jwtCookiePayload.getAccessCookie())
                         .param("name", productRequest.getName())
                         .param("description", productRequest.getDescription())
                         .param("amount", String.valueOf(productRequest.getAmount()))
@@ -237,14 +236,14 @@ class ProductControllerIntegrationTest {
         User authUser = UserDataBuilder.buildUserWithAllFields().build();
         ProductRequest productRequest = ProductRequestDataBuilder.buildProductWithAllFields().build();
 
-        Cookie cookie = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signIn(authUser, mockMvc);
         Product product = ProductDataBuilder.buildProductWithAllFields()
                 .ownerId(authUser.getId())
                 .build();
         productRepository.save(product);
 
         String redirectedUrl = mockMvc.perform(put("/products/{productId}/update", product.getId())
-                        .cookie(cookie)
+                        .cookie(jwtCookiePayload.getAccessCookie())
                         .param("name", productRequest.getName())
                         .param("description", productRequest.getDescription())
                         .param("amount", String.valueOf(productRequest.getAmount()))
@@ -275,11 +274,11 @@ class ProductControllerIntegrationTest {
                 .ownerId(String.valueOf(UUID.randomUUID()))
                 .build();
 
-        Cookie cookie = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signIn(authUser, mockMvc);
         productRepository.save(product);
 
         String redirectedUrl = mockMvc.perform(put("/products/{productId}/update", product.getId())
-                        .cookie(cookie)
+                        .cookie(jwtCookiePayload.getAccessCookie())
                         .param("name", productRequest.getName())
                         .param("description", productRequest.getDescription())
                         .param("amount", String.valueOf(productRequest.getAmount()))
@@ -309,11 +308,11 @@ class ProductControllerIntegrationTest {
                 .ownerId(String.valueOf(UUID.randomUUID()))
                 .build();
 
-        Cookie cookie = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signIn(authUser, mockMvc);
         productRepository.save(product);
 
         String redirectedUrl = mockMvc.perform(put("/products/{productId}/update", product.getId())
-                        .cookie(cookie)
+                        .cookie(jwtCookiePayload.getAccessCookie())
                         .param("name", productRequest.getName())
                         .param("description", productRequest.getDescription())
                         .param("amount", String.valueOf(productRequest.getAmount()))
@@ -342,11 +341,11 @@ class ProductControllerIntegrationTest {
                 .ownerId(String.valueOf(UUID.randomUUID()))
                 .build();
 
-        Cookie cookie = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signIn(authUser, mockMvc);
         productRepository.save(product);
 
         MvcResult mvcResult = mockMvc.perform(put("/products/{productId}/update", product.getId())
-                        .cookie(cookie)
+                        .cookie(jwtCookiePayload.getAccessCookie())
                         .param("name", "")
                         .param("description", productRequest.getDescription())
                         .param("amount", String.valueOf(productRequest.getAmount()))
