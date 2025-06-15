@@ -81,7 +81,7 @@ class OrderControllerIntegrationTest {
     }
 
     @Test
-    public void getAllOrders_ShouldRedirectToErrorPage_WhenRoleUser() throws Exception {
+    public void getAllOrders_ShouldRedirectToHomePage_WhenRoleUser() throws Exception {
         User authUser = UserDataBuilder.buildUserWithAllFields().build();
         Order order = OrderDataBuilder.buildOrderWithAllFields().build();
 
@@ -94,7 +94,7 @@ class OrderControllerIntegrationTest {
                 .andReturn().getResponse().getRedirectedUrl();
 
         assertThat(redirectedUrl).isNotNull();
-        assertThat(redirectedUrl).isEqualTo("/error");
+        assertThat(redirectedUrl).isEqualTo("/home");
     }
 
     @Test
@@ -147,7 +147,7 @@ class OrderControllerIntegrationTest {
     }
 
     @Test
-    public void getOrderById_ShouldRedirectToErrorPage_WhenRoleUser() throws Exception {
+    public void getOrderById_ShouldRedirectToHomePage_WhenRoleUser() throws Exception {
         User authUser = UserDataBuilder.buildUserWithAllFields().build();
         Product product = ProductDataBuilder.buildProductWithAllFields().build();
 
@@ -165,7 +165,7 @@ class OrderControllerIntegrationTest {
                 .andReturn().getResponse().getRedirectedUrl();
 
         assertThat(redirectedUrl).isNotNull();
-        assertThat(redirectedUrl).isEqualTo("/error");
+        assertThat(redirectedUrl).isEqualTo("/home");
     }
 
     @Test
@@ -331,7 +331,7 @@ class OrderControllerIntegrationTest {
     }
 
     @Test
-    public void getUpdateOrder_ShouldRedirectToErrorPage_WhenRoleUser() throws Exception {
+    public void getUpdateOrder_ShouldRedirectToHomePage_WhenRoleUser() throws Exception {
         User authUser = UserDataBuilder.buildUserWithAllFields().build();
         Product product = ProductDataBuilder.buildProductWithAllFields().build();
 
@@ -349,7 +349,7 @@ class OrderControllerIntegrationTest {
                 .andReturn().getResponse().getRedirectedUrl();
 
         assertThat(redirectedUrl).isNotNull();
-        assertThat(redirectedUrl).isEqualTo("/error");
+        assertThat(redirectedUrl).isEqualTo("/home");
     }
 
     @Test
@@ -383,7 +383,7 @@ class OrderControllerIntegrationTest {
     }
 
     @Test
-    public void updateOrder_ShouldRedirectToErrorPage_WhenRoleUser() throws Exception {
+    public void updateOrder_ShouldRedirectToHomePage_WhenRoleUser() throws Exception {
         User authUser = UserDataBuilder.buildUserWithAllFields().build();
         Product product = ProductDataBuilder.buildProductWithAllFields().build();
 
@@ -402,7 +402,7 @@ class OrderControllerIntegrationTest {
                 .andReturn().getResponse().getRedirectedUrl();
 
         assertThat(redirectedUrl).isNotNull();
-        assertThat(redirectedUrl).isEqualTo("/error");
+        assertThat(redirectedUrl).isEqualTo("/home");
 
         Optional<Order> orderOptional = orderRepository.findById(order.getId());
         assertThat(orderOptional).isPresent();
@@ -557,7 +557,7 @@ class OrderControllerIntegrationTest {
     }
 
     @Test
-    public void deleteOrder_ShouldRedirectToErrorPage_WhenRoleUserAndNotOrderOwner() throws Exception {
+    public void deleteOrder_ShouldRedirectToHomePage_WhenRoleUserAndNotOrderOwner() throws Exception {
         User authUser = UserDataBuilder.buildUserWithAllFields().build();
         Order order = OrderDataBuilder.buildOrderWithAllFields().build();
 
@@ -570,7 +570,7 @@ class OrderControllerIntegrationTest {
                 .andReturn().getResponse().getRedirectedUrl();
 
         assertThat(redirectedUrl).isNotNull();
-        assertThat(redirectedUrl).isEqualTo("/error");
+        assertThat(redirectedUrl).isEqualTo("/home");
 
         Optional<Order> orderOptional = orderRepository.findById(order.getId());
         assertThat(orderOptional).isPresent();

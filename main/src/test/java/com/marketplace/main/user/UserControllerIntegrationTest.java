@@ -93,7 +93,7 @@ public class UserControllerIntegrationTest {
     }
 
     @Test
-    public void createUser_WhenRoleUser_ShouldRedirectToErrorPage() throws Exception {
+    public void createUser_WhenRoleUser_ShouldRedirectToHomePage() throws Exception {
         User authUser = UserDataBuilder.buildUserWithAllFields().build();
         UserRequest userRequest = UserRequestDataBuilder.withAllFields()
                 .email("test1@gmail.com")
@@ -110,7 +110,7 @@ public class UserControllerIntegrationTest {
 
         String redirectedUrl = mvcResult.getResponse().getRedirectedUrl();
         assertThat(redirectedUrl).isNotNull();
-        assertThat(redirectedUrl).isEqualTo("/error");
+        assertThat(redirectedUrl).isEqualTo("/home");
     }
 
     @Test
@@ -144,7 +144,7 @@ public class UserControllerIntegrationTest {
 
 
     @Test
-    public void createUser_WhenRoleUser_ThenRedirectToErrorPage() throws Exception {
+    public void createUser_WhenRoleUser_ThenRedirectToHomePage() throws Exception {
         User authUser = UserDataBuilder.buildUserWithAllFields().build();
         UserRequest userRequest = UserRequestDataBuilder.withAllFields()
                 .email("test1@gmail.com")
@@ -162,7 +162,7 @@ public class UserControllerIntegrationTest {
 
         String redirectedUrl = mvcResult.getResponse().getRedirectedUrl();
         assertThat(redirectedUrl).isNotNull();
-        assertThat(redirectedUrl).isEqualTo("/error");
+        assertThat(redirectedUrl).isEqualTo("/home");
     }
 
     @Test
@@ -194,7 +194,7 @@ public class UserControllerIntegrationTest {
     }
 
     @Test
-    public void findAll_WhenRoleUser_ShouldRedirectToErrorPage() throws Exception {
+    public void findAll_WhenRoleUser_ShouldRedirectToHomePage() throws Exception {
         User authUser = UserDataBuilder.buildUserWithAllFields().build();
         User user1 = UserDataBuilder.buildUserWithAllFields()
                 .email("test1@gmail.com")
@@ -213,7 +213,7 @@ public class UserControllerIntegrationTest {
 
         String redirectedUrl = mvcResult.getResponse().getRedirectedUrl();
         assertThat(redirectedUrl).isNotNull();
-        assertThat(redirectedUrl).isEqualTo("/error");
+        assertThat(redirectedUrl).isEqualTo("/home");
     }
 
     @Test
@@ -246,7 +246,7 @@ public class UserControllerIntegrationTest {
     }
 
     @Test
-    public void updateUser_WhenRoleUser_ThenRedirectToErrorPage() throws Exception {
+    public void updateUser_WhenRoleUser_ThenRedirectToHomePage() throws Exception {
         User authUser = UserDataBuilder.buildUserWithAllFields().build();
         UserUpdateRequest userUpdateRequest = UserUpdateRequestDataBuilder.buildUserWithAllFields()
                 .email("test2@gmail.com")
@@ -264,7 +264,7 @@ public class UserControllerIntegrationTest {
 
         String redirectedUrl = mvcResult.getResponse().getRedirectedUrl();
         assertThat(redirectedUrl).isNotNull();
-        assertThat(redirectedUrl).isEqualTo("/error");
+        assertThat(redirectedUrl).isEqualTo("/home");
 
         Optional<User> optionalUser = userRepository.findByEmail(authUser.getEmail());
         assertThat(optionalUser).isPresent();
@@ -294,7 +294,7 @@ public class UserControllerIntegrationTest {
     }
 
     @Test
-    public void deleteUser_WhenRoleUser_ShouldRedirectToErrorPage() throws Exception {
+    public void deleteUser_WhenRoleUser_ShouldRedirectToHomePage() throws Exception {
         User user = UserDataBuilder.buildUserWithAllFields().email("test1@gmail.com").build();
         User authUser = UserDataBuilder.buildUserWithAllFields()
                 .build();
@@ -310,7 +310,7 @@ public class UserControllerIntegrationTest {
                 .getRedirectedUrl();
 
         assertThat(redirectedUrl).isNotNull();
-        assertThat(redirectedUrl).isEqualTo("/error");
+        assertThat(redirectedUrl).isEqualTo("/home");
 
         Optional<User> optionalUser = userRepository.findById(user.getId());
         assertThat(optionalUser).isPresent();

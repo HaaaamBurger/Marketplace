@@ -36,7 +36,7 @@ public class RestAccessDeniedHandlerIntegrationTest {
     }
 
     @Test
-    public void handle_ShouldRedirectToErrorPage_WhenAccessNotDenied() throws Exception {
+    public void handle_ShouldRedirectToHomePage_WhenAccessNotDenied() throws Exception {
         User authUser = UserDataBuilder.buildUserWithAllFields().build();
 
         AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
@@ -47,14 +47,7 @@ public class RestAccessDeniedHandlerIntegrationTest {
                 .andReturn();
 
         assertThat(mvcResult.getResponse().getRedirectedUrl()).isNotNull();
-        assertThat(mvcResult.getResponse().getRedirectedUrl()).isEqualTo("/error");
-
-        Integer status = (Integer) mvcResult.getRequest().getSession().getAttribute("status");
-        assertThat(status).isNotNull();
-        assertThat(status).isEqualTo(SC_FORBIDDEN);
-        String message = mvcResult.getRequest().getSession().getAttribute("message").toString();
-        assertThat(message).isNotNull();
-        assertThat(message).isEqualTo("Access Denied");
+        assertThat(mvcResult.getResponse().getRedirectedUrl()).isEqualTo("/home");
     }
 
 }

@@ -56,7 +56,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             addAuthenticationToContext(userDetails);
 
         } catch (JwtException exception) {
-            log.error("[JWT_AUTHENTICATION_FILTER]: {}", exception.getMessage());
+            log.error("[JWT_EXCEPTION_FILTER]: {}", exception.getMessage());
 
             boolean refreshValid = updateTokensIfRefreshValid(response, request);
             if (refreshValid) {
@@ -68,13 +68,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             response.sendRedirect("/sign-in");
             return;
         } catch (UsernameNotFoundException | AccessDeniedException exception) {
-            log.error("[JWT_AUTHENTICATION_FILTER]: {}", exception.getMessage());
+            log.error("[USERNAME_NOT_FOUND_OR_ACCESS_DENIED_FILTER]: {}", exception.getMessage());
 
             jwtCookieManager.deleteTokensFromCookie(response);
-            response.sendRedirect("/sign-in");
             return;
         } catch (CookieNotFoundException exception) {
-            log.warn("[JWT_AUTHENTICATION_FILTER]: {}", exception.getMessage());
             filterChain.doFilter(request, response);
             return;
         }

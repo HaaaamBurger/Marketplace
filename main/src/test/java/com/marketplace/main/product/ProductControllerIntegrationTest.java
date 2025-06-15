@@ -299,7 +299,7 @@ class ProductControllerIntegrationTest {
     }
 
     @Test
-    public void updateProduct_ShouldRedirectToErrorPage_WhenUserNotAdminAndNotOwner() throws Exception {
+    public void updateProduct_ShouldRedirectToHomePage_WhenUserNotAdminAndNotOwner() throws Exception {
         User authUser = UserDataBuilder.buildUserWithAllFields()
                 .build();
         ProductRequest productRequest = ProductRequestDataBuilder.buildProductWithAllFields().build();
@@ -321,7 +321,7 @@ class ProductControllerIntegrationTest {
                 .getResponse()
                 .getRedirectedUrl();
 
-        assertThat(redirectedUrl).isEqualTo("/error");
+        assertThat(redirectedUrl).isEqualTo("/home");
 
         Optional<Product> productByOwnerId = productRepository.findProductByOwnerId(product.getOwnerId());
         assertThat(productByOwnerId).isPresent();
