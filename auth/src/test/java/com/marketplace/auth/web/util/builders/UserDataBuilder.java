@@ -1,4 +1,4 @@
-package com.marketplace.auth.web.util;
+package com.marketplace.auth.web.util.builders;
 
 import com.marketplace.usercore.model.User;
 import com.marketplace.usercore.model.UserRole;

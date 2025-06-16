@@ -21,8 +21,13 @@ public class DataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-
-        createUser(User.builder()
+        initUser(User.builder()
+                .email("user@gmail.com")
+                .password(passwordEncoder.encode("userPassword1"))
+                .status(UserStatus.ACTIVE)
+                .role(UserRole.USER)
+                .build());
+        initUser(User.builder()
                 .email("admin@gmail.com")
                 .password(passwordEncoder.encode("adminPassword1"))
                 .status(UserStatus.ACTIVE)
@@ -30,13 +35,13 @@ public class DataInitializer implements CommandLineRunner {
                 .build());
     }
 
-    private void createUser(User user) {
+    private void initUser(User user) {
         if (userRepository.existsByEmail(user.getEmail())) {
-            log.info("[DATA_INITIALIZER]: Admin is already exist. Skipping creation.");
+            log.info("[DATA_INITIALIZER]: {} is already exist. Skipping creation.", user.getEmail());
             return;
         }
 
         userRepository.save(user);
-        log.info("[DATA_INITIALIZER]: Admin has been created.");
+        log.info("[DATA_INITIALIZER]: {} has been created.", user.getEmail());
     }
 }

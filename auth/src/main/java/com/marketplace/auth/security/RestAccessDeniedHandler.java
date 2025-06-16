@@ -20,11 +20,7 @@ public class RestAccessDeniedHandler implements AccessDeniedHandler {
     @Override
     public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException accessDeniedException) throws IOException {
         log.error("[REST_ACCESS_DENIED_HANDLER]: {}", accessDeniedException.getMessage());
-
-        request.getSession().setAttribute("message", accessDeniedException.getMessage());
-        request.getSession().setAttribute("status", SC_FORBIDDEN);
-
-        response.sendRedirect("/error");
+        response.sendRedirect("/home");
     }
 
 }

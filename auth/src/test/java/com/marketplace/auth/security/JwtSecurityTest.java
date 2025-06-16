@@ -2,7 +2,8 @@ package com.marketplace.auth.security;
 
 import com.marketplace.auth.config.AuthApplicationConfig;
 import com.marketplace.auth.security.token.JwtService;
-import com.marketplace.auth.web.util.UserDataBuilder;
+import com.marketplace.auth.util.JwtServiceHelper;
+import com.marketplace.auth.web.util.builders.UserDataBuilder;
 import com.marketplace.usercore.model.User;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,8 +20,11 @@ public class JwtSecurityTest {
     @Autowired
     private JwtService jwtService;
 
+    @Autowired
+    private JwtServiceHelper jwtServiceHelper;
+
     @Test
-    public void isTokenValid_ShouldReturnTrue_WhenAccessToken() {
+    public void isTokenValid_ShouldReturnTrue_WhenAccessTokenIsValid() {
         User user = UserDataBuilder.buildUserWithAllFields().build();
 
         String accessToken = jwtService.generateAccessToken(user);
@@ -30,7 +34,7 @@ public class JwtSecurityTest {
     }
 
     @Test
-    public void isTokenValid_ShouldReturnFalse_WhenAccessToken() {
+    public void isTokenValid_ShouldReturnFalse_WhenAccessTokenIsNotValid() {
         User user = UserDataBuilder.buildUserWithAllFields().build();
 
         String accessToken = jwtService.generateAccessToken(user);
@@ -41,20 +45,20 @@ public class JwtSecurityTest {
     }
 
     @Test
-    public void isTokenExpired_ShouldReturnTrue_WhenAccessToken() {
+    public void isTokenExpired_ShouldReturnTrue_WhenAccessTokenExpired() {
         User user = UserDataBuilder.buildUserWithAllFields().build();
 
-        String refreshToken = jwtService.generateAccessTokenWithExpiration(user, 0);
+        String refreshToken = jwtServiceHelper.generateAccessTokenWithExpiration(user, 0);
 
         assertThat(refreshToken).isNotBlank();
         assertThat(jwtService.isTokenExpired(refreshToken)).isTrue();
     }
 
     @Test
-    public void isTokenExpired_ShouldReturnFalse_WhenRefreshToken() {
+    public void isTokenExpired_ShouldReturnFalse_WhenAccessTokenNotExpired() {
         User user = UserDataBuilder.buildUserWithAllFields().build();
 
-        String refreshToken = jwtService.generateRefreshToken(user);
+        String refreshToken = jwtServiceHelper.generateAccessTokenWithExpiration(user, 10000);
 
         assertThat(refreshToken).isNotBlank();
         assertThat(jwtService.isTokenExpired(refreshToken)).isFalse();
@@ -64,10 +68,20 @@ public class JwtSecurityTest {
     public void isTokenExpired_ShouldReturnTrue_WhenRefreshToken() {
         User user = UserDataBuilder.buildUserWithAllFields().build();
 
-        String refreshToken = jwtService.generateRefreshTokenWithExpiration(user, 0);
+        String refreshToken = jwtServiceHelper.generateRefreshTokenWithExpiration(user, 0);
 
         assertThat(refreshToken).isNotBlank();
         assertThat(jwtService.isTokenExpired(refreshToken)).isTrue();
+    }
+
+    @Test
+    public void isTokenExpired_ShouldReturnFalse_WhenRefreshTokenNotExpired() {
+        User user = UserDataBuilder.buildUserWithAllFields().build();
+
+        String refreshToken = jwtServiceHelper.generateAccessTokenWithExpiration(user, 10000);
+
+        assertThat(refreshToken).isNotBlank();
+        assertThat(jwtService.isTokenExpired(refreshToken)).isFalse();
     }
 
     @Test
@@ -98,7 +112,7 @@ public class JwtSecurityTest {
     }
 
     @Test
-    public void extractClaim_shouldReturnNullValue() {
+    public void extractClaim_shouldReturnNullValue_WhenNoClaim() {
         User user = UserDataBuilder.buildUserWithAllFields().build();
 
         String accessToken = jwtService.generateAccessToken(user, Map.of(ROLES_CLAIM, "ADMIN"));
@@ -122,6 +136,19 @@ public class JwtSecurityTest {
 
         assertThat(subject).isNotBlank();
         assertThat(subject).isEqualTo(user.getEmail());
+    }
+
+    @Test
+    public void extractSubject_shouldReturnNullValue_WhenNoSubject() {
+        User user = UserDataBuilder.buildUserWithAllFields()
+                .email(null)
+                .build();
+
+        String accessToken = jwtService.generateAccessToken(user);
+
+        String subject = jwtService.extractSubject(accessToken);
+
+        assertThat(subject).isNull();
     }
 
     @Test
@@ -168,15 +195,5 @@ public class JwtSecurityTest {
         assertThat(refreshToken).isNotBlank();
         assertThat(jwtService.extractSubject(refreshToken)).isEqualTo(fakeUser.getUsername());
         assertThat(jwtService.isTokenValid(refreshToken, user)).isFalse();
-    }
-
-    @Test
-    public void generateRefreshTokenWithExpiration_shouldGenerateExpiredRefreshToken() {
-        User user = UserDataBuilder.buildUserWithAllFields().build();
-
-        String refreshToken = jwtService.generateRefreshTokenWithExpiration(user, 0);
-
-        assertThat(refreshToken).isNotBlank();
-        assertThat(jwtService.isTokenExpired(refreshToken)).isTrue();
     }
 }

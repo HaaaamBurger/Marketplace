@@ -5,6 +5,8 @@ import com.marketplace.main.util.builder.AuthRequestDataBuilder;
 import com.marketplace.usercore.model.User;
 import com.marketplace.usercore.repository.UserRepository;
 import jakarta.servlet.http.Cookie;
+import lombok.Builder;
+import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -15,6 +17,7 @@ import org.springframework.web.servlet.ModelAndView;
 import java.util.Map;
 
 import static com.marketplace.auth.security.cookie.CookieService.COOKIE_ACCESS_TOKEN;
+import static com.marketplace.auth.security.cookie.CookieService.COOKIE_REFRESH_TOKEN;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -28,11 +31,13 @@ public class AuthHelper {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    public Cookie signIn(User user, MockMvc mockMvc) throws Exception {
-        AuthRequest authRequest = AuthRequestDataBuilder.withAllFields().build();
+    public JwtCookiePayload signUp(User user, MockMvc mockMvc) throws Exception {
+        AuthRequest authRequest = AuthRequestDataBuilder.withAllFields()
+                .email(user.getEmail())
+                .password(user.getPassword())
+                .build();
 
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-
         userRepository.save(user);
 
         MvcResult mvcResult = mockMvc.perform(post("/sign-in")
@@ -43,11 +48,28 @@ public class AuthHelper {
                 .andExpect(redirectedUrl("/home"))
                 .andReturn();
 
-        Cookie accessCookieAccess = mvcResult.getResponse().getCookie(COOKIE_ACCESS_TOKEN);
-        assertThat(accessCookieAccess).isNotNull();
+        Cookie accessCookie = mvcResult.getResponse().getCookie(COOKIE_ACCESS_TOKEN);
+        Cookie refreshCookie = mvcResult.getResponse().getCookie(COOKIE_REFRESH_TOKEN);
 
-        return accessCookieAccess;
+        assertThat(accessCookie).isNotNull();
+        assertThat(refreshCookie).isNotNull();
+
+        return JwtCookiePayload.builder()
+                .accessCookie(accessCookie)
+                .refreshCookie(refreshCookie)
+                .build();
     }
+
+    @Data
+    @Builder
+    public static class JwtCookiePayload {
+
+        private Cookie accessCookie;
+
+        private Cookie refreshCookie;
+
+    }
+
 
     public Map<String, Object> requireModel(MvcResult mvcResult) {
         ModelAndView modelAndView = mvcResult.getModelAndView();

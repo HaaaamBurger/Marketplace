@@ -30,7 +30,7 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
-    private static final String[] PERMITTED_ROUTES = new String[] {
+    public static final String[] PERMITTED_ROUTES = new String[] {
             "/sign-in",
             "/sign-up",
             "/logout",
