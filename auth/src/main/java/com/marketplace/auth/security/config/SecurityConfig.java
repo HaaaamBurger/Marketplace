@@ -37,8 +37,6 @@ public class SecurityConfig {
             "/home",
             "/products/**",
             "/error",
-            "/swagger-ui/**",
-            "/v3/api-docs*/**",
             "/favicon.ico",
             "/.well-known/appspecific/com.chrome.devtools.json"
     };
