@@ -44,8 +44,8 @@ public class AuthHelper {
                         .param("email", authRequest.getEmail())
                         .param("password", authRequest.getPassword()))
                 .andExpect(status().is3xxRedirection())
-                .andExpect(view().name("redirect:/home"))
-                .andExpect(redirectedUrl("/home"))
+                .andExpect(view().name("redirect:/products/all"))
+                .andExpect(redirectedUrl("/products/all"))
                 .andReturn();
 
         Cookie accessCookie = mvcResult.getResponse().getCookie(COOKIE_ACCESS_TOKEN);

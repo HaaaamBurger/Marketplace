@@ -67,7 +67,7 @@ class AuthenticationControllerIntegrationTest {
     }
 
     @Test
-    public void signIn_shouldReturnCookie_ThenRedirectToHome() throws Exception {
+    public void signIn_shouldReturnCookie_ThenRedirectToProducts() throws Exception {
         User user = UserDataBuilder.buildUserWithAllFields()
                 .password(passwordEncoder.encode("testPassword1"))
                 .build();
@@ -79,8 +79,8 @@ class AuthenticationControllerIntegrationTest {
                         .param("email", authRequest.getEmail())
                         .param("password", authRequest.getPassword()))
                 .andExpect(status().is3xxRedirection())
-                .andExpect(view().name("redirect:/home"))
-                .andExpect(redirectedUrl("/home"))
+                .andExpect(view().name("redirect:/products/all"))
+                .andExpect(redirectedUrl("/products/all"))
                 .andReturn();
 
         Cookie accessCookieAccess = mvcResult.getResponse().getCookie(COOKIE_ACCESS_TOKEN);
