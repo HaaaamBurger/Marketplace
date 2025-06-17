@@ -20,6 +20,11 @@ public class UserCreateValidator implements Validator {
 
     @Override
     public void validate(Object target, Errors errors) {
+
+        if (errors.hasErrors()) {
+            return;
+        }
+
         UserRequest userRequest = (UserRequest) target;
         emailValidator.validateUserExistenceByEmail(userRequest.getEmail(), errors);
     }

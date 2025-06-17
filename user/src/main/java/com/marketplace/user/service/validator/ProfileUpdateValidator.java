@@ -17,6 +17,11 @@ public class ProfileUpdateValidator {
     private final UserCrudService userCrudService;
 
     public void validate(String userId, ProfileUpdateRequest profileUpdateRequest, Errors errors) {
+
+        if (errors.hasErrors()) {
+            return;
+        }
+
         User user = userCrudService.findById(userId);
         emailValidator.validateEmailUniqueness(profileUpdateRequest.getEmail(), user.getEmail(), errors);
     }
