@@ -69,8 +69,8 @@
       </div>
       <div class="card-body p-4">
 
-        <a th:href="@{/products/all}" class="btn btn-outline-secondary mb-3">
-          <i class="bi bi-arrow-left"></i> Back to list
+        <a onclick="history.go(-1)" class="btn btn-outline-secondary mb-3">
+          <i class="bi bi-arrow-left"></i> Back
         </a>
 
         <form method="post" th:action="@{/products/create}" th:object="${productRequest}">
