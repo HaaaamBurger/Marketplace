@@ -17,6 +17,11 @@ public class UserUpdateValidator {
     private final EmailValidator emailValidator;
 
     public void validateUserUpdateRequest(String userId, UserUpdateRequest userUpdateRequest, Errors errors) {
+
+        if (errors.hasErrors()) {
+            return;
+        }
+
         User user = userCrudService.findById(userId);
         emailValidator.validateEmailUniqueness(userUpdateRequest.getEmail(), user.getEmail(), errors);
     }

@@ -37,6 +37,7 @@ public class AuthenticationController {
             HttpServletResponse response
     ) {
         signInValidator.validate(authRequest, bindingResult);
+
         if (bindingResult.hasErrors()) {
             return "sign-in";
         }

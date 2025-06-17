@@ -20,6 +20,11 @@ public class SignUpValidator implements Validator {
 
     @Override
     public void validate(Object target, Errors errors) {
+
+        if (errors.hasErrors()) {
+            return;
+        }
+
         AuthRequest authRequest = (AuthRequest) target;
         emailValidator.validateUserExistenceByEmail(authRequest.getEmail(), errors);
     }
