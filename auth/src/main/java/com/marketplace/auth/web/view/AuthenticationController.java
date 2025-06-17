@@ -44,7 +44,7 @@ public class AuthenticationController {
 
         authenticationService.signIn(authRequest, response);
 
-        return "redirect:/home";
+        return "redirect:/products/all";
     }
 
     @GetMapping("/sign-up")
