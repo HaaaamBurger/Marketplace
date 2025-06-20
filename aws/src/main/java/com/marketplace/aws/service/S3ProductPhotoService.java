@@ -13,6 +13,7 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -31,9 +32,9 @@ public class S3ProductPhotoService implements S3FileUploadService {
     private String AWS_S3_BUCKET_BASE_URL;
 
     @Override
-    public URL uploadFile(InputStreamSource file, String fileName) {
+    public Optional<URL> uploadFile(InputStreamSource file, String fileName) {
 
-        if (!(file instanceof MultipartFile multipartFile)) {
+        if (!(file instanceof MultipartFile multipartFile) || multipartFile.isEmpty()) {
             throw new IllegalArgumentException("Cannot upload not multipart photo");
         }
 
@@ -46,7 +47,7 @@ public class S3ProductPhotoService implements S3FileUploadService {
             s3Client.putObject(putObjectRequest, RequestBody.fromInputStream(multipartFile.getInputStream(), multipartFile.getSize()));
             log.info("[S3_PRODUCT_PHOTO_SERVICE]: Photo successfully uploaded");
 
-            return new URL(buildProductPhotoUrl(fileName));
+            return Optional.of(new URL(buildProductPhotoUrl(fileName)));
         } catch (IOException e) {
             log.error("[S3_PRODUCT_PHOTO_SERVICE]: {}", e.getMessage());
             throw new AwsPhotoUploadException("Photo upload failed");

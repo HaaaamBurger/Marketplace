@@ -12,6 +12,7 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Controller
@@ -26,7 +27,6 @@ public class ProductController {
     @GetMapping("/all")
     public String getAllProducts(Model model) {
         List<Product> products = productCrudService.findAll();
-        System.out.println(products);
         model.addAttribute("products", simpleProductMapper.mapProductsToProductResponseDtos(products));
         return "products";
     }
@@ -45,13 +45,15 @@ public class ProductController {
     public String getCreateProduct(Model model) {
         model.addAttribute("productRequest", ProductRequest.builder()
                 .active(true)
+                .price(BigDecimal.ZERO)
+                .amount(1)
                 .build());
         return "product-create";
     }
 
     @PostMapping("/create")
     public String createProduct(
-            @Valid @ModelAttribute ProductRequest productRequest,
+            @Valid @ModelAttribute("productRequest") ProductRequest productRequest,
             BindingResult bindingResult
     ) {
 

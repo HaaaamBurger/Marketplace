@@ -11,8 +11,6 @@ import com.marketplace.usercore.security.AuthenticationUserService;
 import com.marketplace.usercore.service.UserSettingsService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import com.marketplace.aws.service.S3ProductPhotoService;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -47,10 +45,8 @@ public class ProductFacade implements ProductCrudService, ProductSettingsService
                 .ownerId(authenticatedUser.getId())
                 .build();
 
-        if (productRequest.getImage() != null) {
-            URL url = s3FileUploadService.uploadFile(productRequest.getImage(), String.valueOf(UUID.randomUUID()));
-            product.setPhotoUrl(url.toString());
-        }
+        Optional<URL> optionalURL = s3FileUploadService.uploadFile(productRequest.getImage(), String.valueOf(UUID.randomUUID()));
+        optionalURL.ifPresent(url -> product.setPhotoUrl(url.toString()));
 
         return productRepository.save(product);
     }

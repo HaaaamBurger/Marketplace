@@ -5,14 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Marketplace</title>
 
-  <link
-          href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css"
-          rel="stylesheet"
-  />
-  <link
-          href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css"
-          rel="stylesheet"
-  />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet" />
 
   <style>
     body {
@@ -30,9 +24,8 @@
       box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
     }
 
-    label.form-label {
-      font-weight: 600;
-      color: #333;
+    .input-with-icon {
+      position: relative;
     }
 
     .form-icon {
@@ -45,17 +38,12 @@
       font-size: 1.25rem;
     }
 
-    .input-with-icon {
-      position: relative;
-    }
-
     input.form-control,
     textarea.form-control {
       border-radius: 8px;
       border: 1.5px solid #ced4da;
       padding: 10px 14px 10px 2.5rem;
       font-size: 1rem;
-      transition: border-color 0.3s ease;
     }
 
     input.form-control:focus,
@@ -65,8 +53,7 @@
       outline: none;
     }
 
-    .invalid-feedback,
-    .text-danger {
+    .invalid-feedback {
       font-size: 0.85rem;
       color: #d9534f;
       margin-top: 0.25rem;
@@ -76,11 +63,10 @@
       border: 2.5px dashed #6c757d;
       border-radius: 14px;
       padding: 40px 20px;
-      color: #6c757d;
-      background-color: #f8f9fa;
-      transition: background-color 0.3s ease, border-color 0.3s ease;
-      user-select: none;
       text-align: center;
+      background-color: #f8f9fa;
+      color: #6c757d;
+      transition: 0.3s;
       cursor: pointer;
       margin-bottom: 1rem;
     }
@@ -98,46 +84,43 @@
     }
 
     .dropzone i.bi {
-      margin-bottom: 12px;
       font-size: 2.5rem;
+      margin-bottom: 12px;
     }
 
-    .preview img {
+    .preview-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      background: #f1f3f5;
       border-radius: 10px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
-      object-fit: cover;
-      margin-right: 10px;
-      margin-bottom: 10px;
-      width: 100px;
-      height: 100px;
-      transition: transform 0.2s ease;
+      border: 1px solid #ced4da;
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: #333;
     }
 
-    .preview img:hover {
-      transform: scale(1.05);
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+    .preview-item i.bi-check-circle-fill {
+      color: #198754;
     }
 
-    .form-check-input {
-      width: 22px;
-      height: 22px;
-      border-radius: 6px;
-      border: 2px solid #0056b3;
-      box-shadow: 0 2px 6px rgba(0, 86, 179, 0.4);
-      cursor: pointer;
-      transition: background-color 0.3s ease, border-color 0.3s ease;
+    .form-switch .form-check-input {
+      width: 50px;
+      height: 26px;
+      background-color: #dee2e6;
+      border-radius: 20px;
+      transition: background-color 0.3s ease;
     }
 
-    .form-check-input:checked {
-      background-color: #0056b3;
-      border-color: #004085;
+    .form-switch .form-check-input:checked {
+      background-color: #0d6efd;
     }
 
-    .form-check-label {
+    .form-switch .form-check-label {
+      margin-left: 12px;
       font-weight: 600;
-      font-size: 1rem;
       cursor: pointer;
-      user-select: none;
     }
 
     button.btn-primary {
@@ -147,7 +130,7 @@
       font-weight: 600;
       font-size: 1.1rem;
       border-radius: 8px;
-      transition: background-color 0.3s ease, border-color 0.3s ease;
+      transition: background-color 0.3s ease;
     }
 
     button.btn-primary:hover {
@@ -158,7 +141,7 @@
 </head>
 <body>
 
-<form method="POST" th:action="@{/products/create}" enctype="multipart/form-data" novalidate th:object="${productRequest}">
+<form method="POST" th:action="@{/products/create}" enctype="multipart/form-data" th:object="${productRequest}">
   <a onclick="history.go(-1)" class="btn btn-outline-secondary mb-3" style="cursor: pointer;">
     <i class="bi bi-arrow-left"></i> Back
   </a>
@@ -167,72 +150,36 @@
     <label for="name" class="form-label">Product Name</label>
     <div class="input-with-icon">
       <i class="bi bi-box form-icon"></i>
-      <input
-              type="text"
-              th:field="*{name}"
-              id="name"
-              minlength="2"
-              maxlength="100"
-              required
-              placeholder="Enter product name"
-              class="form-control"
-      />
+      <input type="text" th:field="*{name}" id="name" minlength="2" maxlength="100" required placeholder="Enter product name" class="form-control" />
     </div>
-    <div class="invalid-feedback" th:if="${#fields.hasErrors('name')}" th:errors="*{name}">Name is required (2-100 characters)</div>
+    <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></div>
   </div>
 
   <div class="mb-3">
     <label for="description" class="form-label">Description</label>
     <div class="input-with-icon">
       <i class="bi bi-card-text form-icon"></i>
-      <textarea
-              th:field="*{description}"
-              id="description"
-              minlength="5"
-              maxlength="250"
-              required
-              rows="3"
-              placeholder="Enter description"
-              class="form-control"
-      ></textarea>
+      <textarea th:field="*{description}" id="description" minlength="5" maxlength="250" required rows="3" placeholder="Enter description" class="form-control"></textarea>
     </div>
-    <div class="invalid-feedback" th:if="${#fields.hasErrors('description')}" th:errors="*{description}">Description is required (5-250 characters)</div>
+    <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('description')}" th:errors="*{description}"></div>
   </div>
 
   <div class="mb-3">
     <label for="price" class="form-label">Price (greater than 0)</label>
     <div class="input-with-icon">
       <i class="bi bi-currency-dollar form-icon"></i>
-      <input
-              type="number"
-              step="0.01"
-              min="0.01"
-              max="99999999.99"
-              th:field="*{price}"
-              id="price"
-              required
-              placeholder="Enter price"
-              class="form-control"
-      />
+      <input type="number" step="0.01" min="0.00" max="99999999.99" th:field="*{price}" id="price" required placeholder="Enter price" class="form-control" />
     </div>
-    <div class="invalid-feedback" th:if="${#fields.hasErrors('price')}" th:errors="*{price}">Price is required and must be greater than 0</div>
+    <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('price')}" th:errors="*{price}"></div>
   </div>
 
   <div class="mb-3">
     <label for="amount" class="form-label">Amount (≥ 0)</label>
     <div class="input-with-icon">
       <i class="bi bi-stack form-icon"></i>
-      <input
-              type="number"
-              min="0"
-              th:field="*{amount}"
-              id="amount"
-              required
-              placeholder="Enter amount"
-              class="form-control"
-      />
+      <input type="number" min="0" th:field="*{amount}" id="amount" required placeholder="Enter amount" class="form-control" />
     </div>
-    <div class="invalid-feedback" th:if="${#fields.hasErrors('amount')}" th:errors="*{amount}">Amount cannot be negative</div>
+    <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('amount')}" th:errors="*{amount}"></div>
   </div>
 
   <div class="mb-3">
@@ -254,22 +201,13 @@
               class="d-none"
               onchange="previewImages(event)"
       />
-
     </div>
-    <div class="preview d-flex flex-wrap mt-3 gap-2" id="imagePreview"></div>
+    <div class="preview" id="imagePreview"></div>
   </div>
 
-
-  <div class="form-check mb-4" style="user-select:none;">
-    <input
-            type="checkbox"
-            th:field="*{active}"
-            class="form-check-input"
-            id="activeCheck"
-    />
-    <label class="form-check-label fw-semibold" for="activeCheck">
-      Active
-    </label>
+  <div class="form-check form-switch mb-4">
+    <input type="checkbox" th:field="*{active}" class="form-check-input" id="activeCheck" />
+    <label class="form-check-label" for="activeCheck">Active</label>
   </div>
 
   <button type="submit" class="btn btn-primary w-100">
@@ -310,15 +248,24 @@
     const file = files[0];
     if (!file.type.startsWith('image/')) return;
 
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const img = document.createElement('img');
-      img.src = e.target.result;
-      preview.appendChild(img);
-    };
-    reader.readAsDataURL(file);
-  }
+    const container = document.createElement('div');
+    container.className = 'preview-item';
 
+    const icon = document.createElement('i');
+    icon.className = 'bi bi-file-image text-primary fs-4';
+
+    const fileName = document.createElement('span');
+    fileName.textContent = file.name;
+
+    const check = document.createElement('i');
+    check.className = 'bi bi-check-circle-fill ms-auto fs-5';
+
+    container.appendChild(icon);
+    container.appendChild(fileName);
+    container.appendChild(check);
+
+    preview.appendChild(container);
+  }
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js"></script>
