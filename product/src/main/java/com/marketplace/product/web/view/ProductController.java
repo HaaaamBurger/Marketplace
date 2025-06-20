@@ -26,6 +26,7 @@ public class ProductController {
     @GetMapping("/all")
     public String getAllProducts(Model model) {
         List<Product> products = productCrudService.findAll();
+        System.out.println(products);
         model.addAttribute("products", simpleProductMapper.mapProductsToProductResponseDtos(products));
         return "products";
     }
@@ -53,6 +54,7 @@ public class ProductController {
             @Valid @ModelAttribute ProductRequest productRequest,
             BindingResult bindingResult
     ) {
+
         if (bindingResult.hasErrors()) {
             return "product-create";
         }

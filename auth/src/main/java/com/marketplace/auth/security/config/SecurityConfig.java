@@ -38,6 +38,7 @@ public class SecurityConfig {
             "/products/**",
             "/error",
             "/favicon.ico",
+            "/images/**",
             "/.well-known/appspecific/com.chrome.devtools.json"
     };
 

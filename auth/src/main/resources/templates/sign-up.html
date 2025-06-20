@@ -85,6 +85,7 @@
             <div class="input-with-icon">
               <i class="bi bi-lock form-icon"></i>
               <input type="password"
+                     pattern="^(?=\S{8,32}$).*$"
                      th:field="*{password}"
                      class="form-control"
                      id="password"

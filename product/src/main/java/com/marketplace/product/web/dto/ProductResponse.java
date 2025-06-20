@@ -22,6 +22,8 @@ public class ProductResponse {
 
     private Integer amount;
 
+    private String photoUrl;
+
     private Boolean active;
 
     private LocalDateTime createdAt;

@@ -10,7 +10,7 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>product</artifactId>
+    <artifactId>aws</artifactId>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
@@ -18,22 +18,5 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
-    <dependencies>
-        <dependency>
-            <groupId>com.marketplace</groupId>
-            <artifactId>common</artifactId>
-            <version>0.0.1</version>
-        </dependency>
-        <dependency>
-            <groupId>com.marketplace</groupId>
-            <artifactId>auth</artifactId>
-            <version>0.0.1</version>
-        </dependency>
-        <dependency>
-            <groupId>com.marketplace</groupId>
-            <artifactId>aws</artifactId>
-            <version>0.0.1</version>
-        </dependency>
-    </dependencies>
 
 </project>

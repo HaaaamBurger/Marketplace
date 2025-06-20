@@ -41,6 +41,8 @@ public class Product extends AuditableEntity {
     @Min(value = 0, message = "Amount cannot be negative value")
     private Integer amount;
 
+    private String photoUrl;
+
     private Boolean active;
 
     public boolean decreaseAmount() {

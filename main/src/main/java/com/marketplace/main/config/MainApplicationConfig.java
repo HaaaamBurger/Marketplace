@@ -12,7 +12,8 @@ import org.springframework.data.mongodb.repository.config.EnableMongoRepositorie
         "com.marketplace.product",
         "com.marketplace.user",
         "com.marketplace.order",
-        "com.marketplace.auth"
+        "com.marketplace.auth",
+        "com.marketplace.aws"
 })
 public class MainApplicationConfig {
 }

@@ -3,6 +3,8 @@ package com.marketplace.product.web.dto;
 import jakarta.validation.constraints.*;
 import lombok.Builder;
 import lombok.Data;
+import org.springframework.lang.Nullable;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 
@@ -26,6 +28,9 @@ public class ProductRequest {
     @NotNull(message = "Amount is required")
     @Min(value = 0, message = "Amount cannot be negative value")
     private Integer amount;
+
+    @Nullable
+    private MultipartFile image;
 
     private Boolean active;
 
