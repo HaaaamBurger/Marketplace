@@ -1,15 +1,14 @@
 package com.marketplace.main.exception;
 
-import com.marketplace.auth.exception.*;
+import com.marketplace.common.exception.CommonExceptionService;
 import com.marketplace.common.exception.EntityExistsException;
 import com.marketplace.common.exception.EntityNotFoundException;
 import com.marketplace.common.exception.ExceptionType;
-import com.marketplace.order.exception.OrderUpdateException;
-import com.marketplace.product.exception.ProductNotAvailableException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -23,73 +22,52 @@ import static com.marketplace.common.constants.Delimiters.COLON_DELIMITER;
 
 @Slf4j
 @ControllerAdvice
+@RequiredArgsConstructor
 public class MainExceptionHandler {
 
+    private final CommonExceptionService commonExceptionService;
+
     @ExceptionHandler(ConstraintViolationException.class)
-    public ModelAndView handleConstraintViolationException(ConstraintViolationException exception, HttpServletRequest request) {
+    public ModelAndView handleConstraintViolationException(ConstraintViolationException exception, HttpServletRequest request, HttpServletResponse response) {
 
         String invalidFields = exception.getConstraintViolations().stream()
                 .map(ConstraintViolation::getMessage)
                 .collect(Collectors.joining(COMMA_DELIMITER));
 
-        return buildErrorResponseModelAndView(
-                400,
-                invalidFields,
-                ExceptionType.WEB,
-                request.getRequestURI()
-        );
+        response.setStatus(400);
+        return commonExceptionService.buildErrorResponseModelAndView(CommonExceptionService.ErrorModelPayload.builder()
+                    .modelView("error")
+                    .status(400)
+                    .message(invalidFields)
+                    .exceptionType(ExceptionType.WEB)
+                    .path(request.getRequestURI())
+                .build());
     }
 
     @ExceptionHandler(EntityExistsException.class)
     public ModelAndView handleEntityExistsException(EntityExistsException exception, HttpServletRequest request, HttpServletResponse response) {
 
         response.setStatus(400);
-
-        return buildErrorResponseModelAndView(
-                400,
-                exception.getMessage(),
-                ExceptionType.WEB,
-                request.getRequestURI()
-        );
+        return commonExceptionService.buildErrorResponseModelAndView(CommonExceptionService.ErrorModelPayload.builder()
+                .modelView("error")
+                .status(400)
+                .message(exception.getMessage())
+                .exceptionType(ExceptionType.WEB)
+                .path(request.getRequestURI())
+                .build());
     }
 
     @ExceptionHandler(EntityNotFoundException.class)
     public ModelAndView handleEntityNotFoundException(EntityNotFoundException exception, HttpServletRequest request, HttpServletResponse response) {
 
         response.setStatus(404);
-
-        return buildErrorResponseModelAndView(
-                404,
-                exception.getMessage(),
-                ExceptionType.WEB,
-                request.getRequestURI()
-        );
-    }
-
-    @ExceptionHandler(CredentialException.class)
-    public ModelAndView handleCredentialsException(CredentialException exception, HttpServletResponse response, HttpServletRequest request) {
-
-        response.setStatus(401);
-
-        return buildErrorResponseModelAndView(
-                401,
-                exception.getMessage(),
-                ExceptionType.AUTHORIZATION,
-                request.getRequestURI()
-        );
-    }
-
-    @ExceptionHandler(ProductNotAvailableException.class)
-    public ModelAndView handleProductAmountNotEnoughException(ProductNotAvailableException exception, HttpServletResponse response, HttpServletRequest request) {
-
-        response.setStatus(400);
-
-        return buildErrorResponseModelAndView(
-                400,
-                exception.getMessage(),
-                ExceptionType.WEB,
-                request.getRequestURI()
-        );
+        return commonExceptionService.buildErrorResponseModelAndView(CommonExceptionService.ErrorModelPayload.builder()
+                .modelView("error")
+                .status(404)
+                .message(exception.getMessage())
+                .exceptionType(ExceptionType.WEB)
+                .path(request.getRequestURI())
+                .build());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -102,37 +80,12 @@ public class MainExceptionHandler {
                 .collect(Collectors.joining(COMMA_DELIMITER));
 
         response.setStatus(400);
-
-        return buildErrorResponseModelAndView(
-                400,
-                invalidFields,
-                ExceptionType.WEB,
-                request.getRequestURI()
-        );
+        return commonExceptionService.buildErrorResponseModelAndView(CommonExceptionService.ErrorModelPayload.builder()
+                .modelView("error")
+                .status(400)
+                .message(invalidFields)
+                .exceptionType(ExceptionType.WEB)
+                .path(request.getRequestURI())
+                .build());
     }
-
-    @ExceptionHandler(OrderUpdateException.class)
-    protected ModelAndView handleOrderUpdateException(OrderUpdateException exception, HttpServletResponse response, HttpServletRequest request) {
-
-        response.setStatus(400);
-
-        return buildErrorResponseModelAndView(
-                400,
-                exception.getMessage(),
-                ExceptionType.WEB,
-                request.getRequestURI()
-        );
-    }
-
-    private ModelAndView buildErrorResponseModelAndView(int status, String message, ExceptionType exceptionType, String path) {
-        log.error("[MAIN_EXCEPTION_HANDLER]: {}", message);
-
-        ModelAndView modelAndView = new ModelAndView("error");
-        modelAndView.addObject("status", status);
-        modelAndView.addObject("message", message);
-        modelAndView.addObject("type", exceptionType);
-        modelAndView.addObject("path", path);
-        return modelAndView;
-    }
-
 }

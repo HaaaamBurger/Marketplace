@@ -8,7 +8,8 @@ import org.springframework.context.annotation.Configuration;
 @EnableAutoConfiguration
 @ComponentScan(basePackages = {
         "com.marketplace.auth",
-        "com.marketplace.usercore"
+        "com.marketplace.usercore",
+        "com.marketplace.common"
 })
 public class AuthApplicationConfig {
 }
