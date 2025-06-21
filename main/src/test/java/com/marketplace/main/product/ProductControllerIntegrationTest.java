@@ -192,7 +192,7 @@ class ProductControllerIntegrationTest {
                         .param("name", productRequest.getName())
                         .param("description", productRequest.getDescription())
                         .param("amount", String.valueOf(productRequest.getAmount()))
-                        .param("price", "0"))
+                        .param("price", "-1"))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -205,7 +205,7 @@ class ProductControllerIntegrationTest {
         FieldError fieldError = ((BindingResult) modelAndView.getModel().get("org.springframework.validation.BindingResult.productRequest")).getFieldError();
         assertThat(fieldError).isNotNull();
         assertThat(fieldError.getDefaultMessage()).isNotNull();
-        assertThat(fieldError.getDefaultMessage()).isEqualTo("Price must be greater than 0");
+        assertThat(fieldError.getDefaultMessage()).isEqualTo("Price must be greater or equal to 0");
     }
 
     @Test
