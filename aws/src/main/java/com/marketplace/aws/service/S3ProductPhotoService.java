@@ -12,8 +12,9 @@ import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Optional;
+import java.util.Arrays;
 
 @Slf4j
 @Service
@@ -22,8 +23,10 @@ public class S3ProductPhotoService implements S3FileUploadService {
 
     private final S3Client s3Client;
 
+    private static final String[] PHOTO_EXTENSIONS = new String[]{".png", ".jpeg", ".jpg", ".gif"};
+
     @Value("${aws.s3.products-photo-location}")
-    private String PRODUCTS_PHOTO_LOCATION;
+    private String AWS_S3_PRODUCTS_PHOTO_LOCATION;
 
     @Value("${aws.s3.bucket-name}")
     private String AWS_S3_BUCKET_NAME;
@@ -32,22 +35,24 @@ public class S3ProductPhotoService implements S3FileUploadService {
     private String AWS_S3_BUCKET_BASE_URL;
 
     @Override
-    public Optional<URL> uploadFile(InputStreamSource file, String fileName) {
+    public URL uploadFile(InputStreamSource file, String fileName) {
 
         if (!(file instanceof MultipartFile multipartFile) || multipartFile.isEmpty()) {
-            throw new IllegalArgumentException("Cannot upload not multipart photo");
+            throw new AwsPhotoUploadException("Cannot upload not multipart photo");
         }
+
+        String extension = validateAndGetExtensionFromFilename(multipartFile.getOriginalFilename());
 
         PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                 .bucket(AWS_S3_BUCKET_NAME)
-                .key(String.format("%s/%s", PRODUCTS_PHOTO_LOCATION, fileName + ".png"))
+                .key(buildProductPhotoPath(fileName, extension))
                 .build();
 
         try {
             s3Client.putObject(putObjectRequest, RequestBody.fromInputStream(multipartFile.getInputStream(), multipartFile.getSize()));
             log.info("[S3_PRODUCT_PHOTO_SERVICE]: Photo successfully uploaded");
 
-            return Optional.of(new URL(buildProductPhotoUrl(fileName)));
+            return buildProductPhotoUrl(fileName, extension);
         } catch (IOException e) {
             log.error("[S3_PRODUCT_PHOTO_SERVICE]: {}", e.getMessage());
             throw new AwsPhotoUploadException("Photo upload failed");
@@ -55,11 +60,22 @@ public class S3ProductPhotoService implements S3FileUploadService {
     }
 
     @Override
-    public void downloadFile(String targetLocation, String fileName) {
+    public String validateAndGetExtensionFromFilename(String fileName) {
+        String originalPhotoExtension = fileName == null ? ".png" : fileName.substring(fileName.lastIndexOf('.'));
 
+        boolean isValidPhotoExtension = Arrays.asList(PHOTO_EXTENSIONS).contains(originalPhotoExtension);
+        if (isValidPhotoExtension) {
+            return originalPhotoExtension;
+        }
+
+        throw new AwsPhotoUploadException("Unsupported photo extension: " + originalPhotoExtension);
     }
 
-    private String buildProductPhotoUrl(String fileName) {
-        return AWS_S3_BUCKET_BASE_URL + "/" + PRODUCTS_PHOTO_LOCATION + "/" + fileName + ".png";
+    private URL buildProductPhotoUrl(String fileName, String extension) throws MalformedURLException {
+        return new URL(AWS_S3_BUCKET_BASE_URL + "/" + buildProductPhotoPath(fileName, extension));
+    }
+
+    private String buildProductPhotoPath(String fileName, String extension) {
+        return AWS_S3_PRODUCTS_PHOTO_LOCATION + '/' + fileName + extension;
     }
 }

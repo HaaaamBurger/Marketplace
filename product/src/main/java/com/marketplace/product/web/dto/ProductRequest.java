@@ -27,7 +27,7 @@ public class ProductRequest {
     @Min(value = 0, message = "Amount cannot be negative value")
     private Integer amount;
 
-    private MultipartFile image;
+    private MultipartFile photo;
 
     private Boolean active;
 

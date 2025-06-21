@@ -183,26 +183,27 @@
   </div>
 
   <div class="mb-3">
-    <label class="form-label fw-semibold mb-2">Product Image</label>
+    <label class="form-label fw-semibold mb-2">Product Photo</label>
     <div
             class="dropzone"
-            onclick="document.getElementById('images').click()"
+            onclick="document.getElementById('photo').click()"
             ondragover="event.preventDefault(); this.classList.add('dragover')"
             ondragleave="this.classList.remove('dragover')"
             ondrop="handleDrop(event)"
     >
       <i class="bi bi-cloud-arrow-up"></i>
-      <p class="mb-0">Drag & Drop image or click to upload</p>
+      <p class="mb-0">Drag & Drop photo or click to upload</p>
       <input
               type="file"
-              id="images"
+              id="photo"
               accept="image/*"
-              th:field="*{image}"
+              th:field="*{photo}"
               class="d-none"
-              onchange="previewImages(event)"
+              onchange="previewPhoto(event)"
       />
     </div>
-    <div class="preview" id="imagePreview"></div>
+    <div class="preview" id="photoPreview"></div>
+    <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('photo')}" th:errors="*{photo}"></div>
   </div>
 
   <div class="form-check form-switch mb-4">
@@ -223,29 +224,28 @@
     dropzone.classList.remove('dragover');
 
     const files = event.dataTransfer.files;
-    const input = document.getElementById('images');
+    const input = document.getElementById('photo');
 
     if (files.length > 0) {
       const dataTransfer = new DataTransfer();
       dataTransfer.items.add(files[0]);
       input.files = dataTransfer.files;
 
-      showPreviews([files[0]]);
+      showPreview(files[0]);
     }
   }
 
-  function previewImages(event) {
+  function previewPhoto(event) {
     const file = event.target.files[0];
     if (file) {
-      showPreviews([file]);
+      showPreview(file);
     }
   }
 
-  function showPreviews(files) {
-    const preview = document.getElementById('imagePreview');
+  function showPreview(file) {
+    const preview = document.getElementById('photoPreview');
     preview.innerHTML = '';
 
-    const file = files[0];
     if (!file.type.startsWith('image/')) return;
 
     const container = document.createElement('div');

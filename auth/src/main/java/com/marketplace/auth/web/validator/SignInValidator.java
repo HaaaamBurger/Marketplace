@@ -1,9 +1,9 @@
-package com.marketplace.auth.service.validator;
+package com.marketplace.auth.web.validator;
 
 import com.marketplace.auth.web.dto.AuthRequest;
 import com.marketplace.usercore.model.User;
 import com.marketplace.usercore.model.UserStatus;
-import com.marketplace.usercore.service.validator.EmailValidator;
+import com.marketplace.usercore.validator.EmailValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;

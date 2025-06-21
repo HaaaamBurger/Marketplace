@@ -45,8 +45,10 @@ public class ProductFacade implements ProductCrudService, ProductSettingsService
                 .ownerId(authenticatedUser.getId())
                 .build();
 
-        Optional<URL> optionalURL = s3FileUploadService.uploadFile(productRequest.getImage(), String.valueOf(UUID.randomUUID()));
-        optionalURL.ifPresent(url -> product.setPhotoUrl(url.toString()));
+        if (productRequest.getPhoto() != null && !productRequest.getPhoto().isEmpty()) {
+            URL url = s3FileUploadService.uploadFile(productRequest.getPhoto(), String.valueOf(UUID.randomUUID()));
+            product.setPhotoUrl(url.toString());
+        }
 
         return productRepository.save(product);
     }

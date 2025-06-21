@@ -5,6 +5,7 @@ import com.marketplace.product.service.ProductCrudService;
 import com.marketplace.product.web.dto.ProductRequest;
 import com.marketplace.product.web.model.Product;
 
+import com.marketplace.product.web.validator.ProductCreateValidator;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -21,6 +22,8 @@ import java.util.List;
 public class ProductController {
 
     private final ProductCrudService productCrudService;
+
+    private final ProductCreateValidator productCreateValidator;
 
     private final SimpleProductMapper simpleProductMapper;
 
@@ -56,7 +59,7 @@ public class ProductController {
             @Valid @ModelAttribute("productRequest") ProductRequest productRequest,
             BindingResult bindingResult
     ) {
-
+        productCreateValidator.validate(productRequest, bindingResult);
         if (bindingResult.hasErrors()) {
             return "product-create";
         }

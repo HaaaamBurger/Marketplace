@@ -1,4 +1,4 @@
-package com.marketplace.usercore.service.validator;
+package com.marketplace.usercore.validator;
 
 import com.marketplace.usercore.model.User;
 import com.marketplace.usercore.repository.UserRepository;

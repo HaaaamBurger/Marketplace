@@ -1,6 +1,6 @@
 package com.marketplace.user.web.view;
 
-import com.marketplace.user.service.validator.ProfileUpdateValidator;
+import com.marketplace.user.web.validator.ProfileUpdateValidator;
 import com.marketplace.usercore.dto.ProfileUpdateRequest;
 import com.marketplace.usercore.mapper.SimpleUserMapper;
 import com.marketplace.usercore.model.User;
