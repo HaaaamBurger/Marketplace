@@ -1,4 +1,4 @@
-# Martekpalce Backend
+# Marketplace Backend
 
 ## Requirements
 
