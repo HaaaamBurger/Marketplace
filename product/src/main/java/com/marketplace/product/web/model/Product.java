@@ -43,6 +43,7 @@ public class Product extends AuditableEntity {
 
     private String photoUrl;
 
+    @NotNull(message = "Active is required")
     private Boolean active;
 
     public boolean decreaseAmount() {

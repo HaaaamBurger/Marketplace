@@ -26,13 +26,13 @@ public class S3ProductPhotoService implements S3FileUploadService {
     private static final String[] PHOTO_EXTENSIONS = new String[]{".png", ".jpeg", ".jpg", ".gif"};
 
     @Value("${aws.s3.products-photo-location}")
-    private String AWS_S3_PRODUCTS_PHOTO_LOCATION;
+    public String AWS_S3_PRODUCTS_PHOTO_LOCATION;
 
     @Value("${aws.s3.bucket-name}")
     private String AWS_S3_BUCKET_NAME;
 
     @Value("${aws.s3.bucket-base-url}")
-    private String AWS_S3_BUCKET_BASE_URL;
+    public String AWS_S3_BUCKET_BASE_URL;
 
     @Override
     public URL uploadFile(InputStreamSource file, String fileName) {
@@ -61,7 +61,12 @@ public class S3ProductPhotoService implements S3FileUploadService {
 
     @Override
     public String validateAndGetExtensionFromFilename(String fileName) {
-        String originalPhotoExtension = fileName == null ? ".png" : fileName.substring(fileName.lastIndexOf('.'));
+
+        if (fileName == null || fileName.lastIndexOf('.') == -1) {
+            throw new AwsPhotoUploadException("File name is missing or has no valid extension");
+        }
+
+        String originalPhotoExtension = fileName.substring(fileName.lastIndexOf('.'));
 
         boolean isValidPhotoExtension = Arrays.asList(PHOTO_EXTENSIONS).contains(originalPhotoExtension);
         if (isValidPhotoExtension) {

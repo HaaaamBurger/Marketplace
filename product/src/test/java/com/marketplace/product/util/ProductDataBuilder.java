@@ -12,6 +12,7 @@ public class ProductDataBuilder {
                 .id(String.valueOf(UUID.randomUUID()))
                 .ownerId(String.valueOf(UUID.randomUUID()))
                 .name("Test Product")
+                .active(true)
                 .amount(1)
                 .description("Test Description")
                 .photoUrl(String.valueOf(UUID.randomUUID()))

@@ -29,6 +29,7 @@ public class ProductRequest {
 
     private MultipartFile photo;
 
+    @NotNull(message = "Active is required")
     private Boolean active;
 
 }

@@ -18,21 +18,18 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.servlet.ModelAndView;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.net.URL;
+import java.util.*;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -155,15 +152,17 @@ class ProductControllerIntegrationTest {
     }
 
     @Test
-    public void createProduct_WhenUserAuthenticated_ShouldRedirectToProducts() throws Exception {
+    public void createProduct_ShouldRedirectToProducts_WhenUserAuthenticated() throws Exception {
         User authUser = UserDataBuilder.buildUserWithAllFields().build();
         ProductRequest productRequest = ProductRequestDataBuilder.buildProductWithAllFields().build();
 
         AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
 
-        String redirectedUrl = mockMvc.perform(post("/products/create")
+        String redirectedUrl = mockMvc.perform(multipart("/products/create")
+                        .file((MockMultipartFile) productRequest.getPhoto())
                         .cookie(jwtCookiePayload.getAccessCookie())
                         .param("name", productRequest.getName())
+                        .param("active", String.valueOf(productRequest.getActive()))
                         .param("description", productRequest.getDescription())
                         .param("amount", String.valueOf(productRequest.getAmount()))
                         .param("price", String.valueOf(productRequest.getPrice())))
@@ -177,6 +176,72 @@ class ProductControllerIntegrationTest {
 
         Optional<Product> productByOwnerId = productRepository.findProductByOwnerId(authUser.getId());
         assertThat(productByOwnerId).isPresent();
+        assertThat(productByOwnerId.get().getName()).isEqualTo(productRequest.getName());
+        assertThat(productByOwnerId.get().getAmount()).isEqualTo(productRequest.getAmount());
+        assertThat(productByOwnerId.get().getOwnerId()).isEqualTo(authUser.getId());
+        assertThat(productByOwnerId.get().getDescription()).isEqualTo(productRequest.getDescription());
+        assertThat(productByOwnerId.get().getActive()).isNotNull();
+        assertThat(productByOwnerId.get().getActive()).isTrue();
+        assertThat(productByOwnerId.get().getPhotoUrl()).isNotNull();
+        assertThat(new URL(productByOwnerId.get().getPhotoUrl())).isNotNull();
+    }
+
+    @Test
+    public void createProduct_ShouldRedirectToProduct_WhenPhotoExtensionIsUnsupported() throws Exception {
+        User authUser = UserDataBuilder.buildUserWithAllFields().build();
+        ProductRequest productRequest = ProductRequestDataBuilder.buildProductWithAllFields()
+                .photo(new MockMultipartFile("photo", "photo.svg", "image/svg", "photo".getBytes()))
+                .build();
+
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
+
+        MvcResult mvcResult = mockMvc.perform(multipart("/products/create")
+                        .file((MockMultipartFile) productRequest.getPhoto())
+                        .cookie(jwtCookiePayload.getAccessCookie())
+                        .param("name", productRequest.getName())
+                        .param("active", String.valueOf(productRequest.getActive()))
+                        .param("description", productRequest.getDescription())
+                        .param("amount", String.valueOf(productRequest.getAmount()))
+                        .param("price", String.valueOf(productRequest.getPrice())))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        ModelAndView modelAndView = mvcResult.getModelAndView();
+        assertThat(modelAndView).isNotNull();
+
+        FieldError fieldError = ((BindingResult) modelAndView.getModel().get("org.springframework.validation.BindingResult.productRequest")).getFieldError();
+        assertThat(fieldError).isNotNull();
+        assertThat(fieldError.getDefaultMessage()).isNotNull();
+        assertThat(fieldError.getDefaultMessage()).isEqualTo("Unsupported photo extension: .svg");
+    }
+
+    @Test
+    public void createProduct_ShouldRedirectToProduct_WhenPhotoWithoutExtension() throws Exception {
+        User authUser = UserDataBuilder.buildUserWithAllFields().build();
+        ProductRequest productRequest = ProductRequestDataBuilder.buildProductWithAllFields()
+                .photo(new MockMultipartFile("photo", "photo", "image/svg", "photo".getBytes()))
+                .build();
+
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
+
+        MvcResult mvcResult = mockMvc.perform(multipart("/products/create")
+                        .file((MockMultipartFile) productRequest.getPhoto())
+                        .cookie(jwtCookiePayload.getAccessCookie())
+                        .param("name", productRequest.getName())
+                        .param("active", String.valueOf(productRequest.getActive()))
+                        .param("description", productRequest.getDescription())
+                        .param("amount", String.valueOf(productRequest.getAmount()))
+                        .param("price", String.valueOf(productRequest.getPrice())))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        ModelAndView modelAndView = mvcResult.getModelAndView();
+        assertThat(modelAndView).isNotNull();
+
+        FieldError fieldError = ((BindingResult) modelAndView.getModel().get("org.springframework.validation.BindingResult.productRequest")).getFieldError();
+        assertThat(fieldError).isNotNull();
+        assertThat(fieldError.getDefaultMessage()).isNotNull();
+        assertThat(fieldError.getDefaultMessage()).isEqualTo("File name is missing or has no valid extension");
     }
 
     @Test
@@ -190,6 +255,7 @@ class ProductControllerIntegrationTest {
         MvcResult mvcResult = mockMvc.perform(post("/products/create")
                         .cookie(jwtCookiePayload.getAccessCookie())
                         .param("name", productRequest.getName())
+                        .param("active", String.valueOf(productRequest.getActive()))
                         .param("description", productRequest.getDescription())
                         .param("amount", String.valueOf(productRequest.getAmount()))
                         .param("price", "-1"))
@@ -215,6 +281,7 @@ class ProductControllerIntegrationTest {
 
         String redirectedUrl = mockMvc.perform(post("/products/create")
                         .param("name", productRequest.getName())
+                        .param("active", String.valueOf(productRequest.getActive()))
                         .param("description", productRequest.getDescription())
                         .param("amount", String.valueOf(productRequest.getAmount()))
                         .param("price", String.valueOf(productRequest.getPrice())))
@@ -244,6 +311,7 @@ class ProductControllerIntegrationTest {
         String redirectedUrl = mockMvc.perform(put("/products/{productId}/update", product.getId())
                         .cookie(jwtCookiePayload.getAccessCookie())
                         .param("name", productRequest.getName())
+                        .param("active", String.valueOf(productRequest.getActive()))
                         .param("description", productRequest.getDescription())
                         .param("amount", String.valueOf(productRequest.getAmount()))
                         .param("price", String.valueOf(productRequest.getPrice())))
@@ -279,6 +347,7 @@ class ProductControllerIntegrationTest {
         String redirectedUrl = mockMvc.perform(put("/products/{productId}/update", product.getId())
                         .cookie(jwtCookiePayload.getAccessCookie())
                         .param("name", productRequest.getName())
+                        .param("active", String.valueOf(productRequest.getActive()))
                         .param("description", productRequest.getDescription())
                         .param("amount", String.valueOf(productRequest.getAmount()))
                         .param("price", String.valueOf(productRequest.getPrice())))
@@ -313,6 +382,7 @@ class ProductControllerIntegrationTest {
         String redirectedUrl = mockMvc.perform(put("/products/{productId}/update", product.getId())
                         .cookie(jwtCookiePayload.getAccessCookie())
                         .param("name", productRequest.getName())
+                        .param("active", String.valueOf(productRequest.getActive()))
                         .param("description", productRequest.getDescription())
                         .param("amount", String.valueOf(productRequest.getAmount()))
                         .param("price", String.valueOf(productRequest.getPrice())))
@@ -346,6 +416,7 @@ class ProductControllerIntegrationTest {
         MvcResult mvcResult = mockMvc.perform(put("/products/{productId}/update", product.getId())
                         .cookie(jwtCookiePayload.getAccessCookie())
                         .param("name", "")
+                        .param("active", String.valueOf(productRequest.getActive()))
                         .param("description", productRequest.getDescription())
                         .param("amount", String.valueOf(productRequest.getAmount()))
                         .param("price", String.valueOf(productRequest.getPrice())))
