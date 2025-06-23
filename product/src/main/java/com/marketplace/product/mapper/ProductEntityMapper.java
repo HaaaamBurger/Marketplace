@@ -19,6 +19,7 @@ public class ProductEntityMapper implements SimpleProductMapper {
                 .description(product.getDescription())
                 .price(product.getPrice())
                 .amount(product.getAmount())
+                .photoUrl(product.getPhotoUrl())
                 .active(product.getActive())
                 .createdAt(product.getCreatedAt())
                 .updatedAt(product.getUpdatedAt())

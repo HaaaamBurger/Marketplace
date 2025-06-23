@@ -1,0 +1,10 @@
+spring:
+  application:
+    name: aws
+aws:
+  s3:
+    bucket-name: ${AWS_S3_BUCKET_NAME}
+    bucket-base-url: ${AWS_S3_BUCKET_BASE_URL}
+    access-key: ${AWS_S3_ACCESS_KEY}
+    secret-key: ${AWS_S3_SECRET_KEY}
+    products-photo-location: ${AWS_S3_PRODUCTS_PHOTO_LOCATION}

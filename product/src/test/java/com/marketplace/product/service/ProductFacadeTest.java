@@ -12,6 +12,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.ActiveProfiles;
@@ -65,9 +66,11 @@ class ProductFacadeTest {
     @Test
     public void create_shouldCreateProduct() {
         Product product = ProductDataBuilder.buildProductWithAllFields().build();
+        MockMultipartFile mockMultipartFile = new MockMultipartFile("data", "photo.png", "image/*", "photo_content".getBytes());
         ProductRequest productRequest = ProductRequest.builder()
                 .name(product.getName())
                 .description(product.getDescription())
+                .photo(mockMultipartFile)
                 .price(product.getPrice())
                 .build();
 

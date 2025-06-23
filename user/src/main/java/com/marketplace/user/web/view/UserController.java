@@ -1,7 +1,7 @@
 package com.marketplace.user.web.view;
 
-import com.marketplace.user.service.validator.UserCreateValidator;
-import com.marketplace.user.service.validator.UserUpdateValidator;
+import com.marketplace.user.web.validator.UserCreateValidator;
+import com.marketplace.user.web.validator.UserUpdateValidator;
 import com.marketplace.usercore.dto.UserRequest;
 import com.marketplace.usercore.dto.UserResponse;
 import com.marketplace.usercore.dto.UserUpdateRequest;

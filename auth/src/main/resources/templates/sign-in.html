@@ -88,6 +88,7 @@
                         <div class="input-with-icon">
                             <i class="bi bi-envelope form-icon"></i>
                             <input type="text"
+                                   pattern="^(?=\S{8,32}$).*$"
                                    th:field="*{email}"
                                    class="form-control"
                                    id="email"

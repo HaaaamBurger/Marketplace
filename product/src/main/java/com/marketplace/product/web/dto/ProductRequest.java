@@ -3,6 +3,7 @@ package com.marketplace.product.web.dto;
 import jakarta.validation.constraints.*;
 import lombok.Builder;
 import lombok.Data;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 
@@ -19,14 +20,26 @@ public class ProductRequest {
     private String description;
 
     @NotNull(message = "Price is required")
-    @DecimalMin(value = "0.01", message = "Price must be greater than 0")
+    @DecimalMin(value = "0.00", message = "Price must be greater or equal to 0")
     @Digits(integer = 8, fraction = 2, message = "Price must have up to 8 digits before the decimal point and 2 after")
     private BigDecimal price;
 
-    @NotNull(message = "Amount is required")
     @Min(value = 0, message = "Amount cannot be negative value")
     private Integer amount;
 
+    private MultipartFile photo;
+
+    @NotNull(message = "Active is required")
     private Boolean active;
+
+    public MultipartFile getPhoto() {
+
+        if (photo != null && !photo.isEmpty()) {
+            return photo;
+        } else {
+            return null;
+        }
+
+    }
 
 }

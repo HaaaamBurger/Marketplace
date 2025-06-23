@@ -1,5 +1,6 @@
 package com.marketplace.product.service;
 
+import com.marketplace.aws.service.S3FileUploadService;
 import com.marketplace.common.exception.EntityNotFoundException;
 import com.marketplace.product.mapper.SimpleProductMapper;
 import com.marketplace.product.web.dto.ProductRequest;
@@ -12,15 +13,18 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.net.URL;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public final class ProductFacade implements ProductCrudService, ProductSettingsService {
+public class ProductFacade implements ProductCrudService, ProductSettingsService {
 
     private final ProductRepository productRepository;
 
@@ -30,6 +34,9 @@ public final class ProductFacade implements ProductCrudService, ProductSettingsS
 
     private final UserSettingsService userSettingsService;
 
+    private final S3FileUploadService s3FileUploadService;
+
+    @Transactional
     @Override
     public Product create(ProductRequest productRequest) {
         User authenticatedUser = authenticationUserService.getAuthenticatedUser();
@@ -37,6 +44,11 @@ public final class ProductFacade implements ProductCrudService, ProductSettingsS
         Product product = simpleProductMapper.mapProductRequestDtoToProduct(productRequest).toBuilder()
                 .ownerId(authenticatedUser.getId())
                 .build();
+
+        if (productRequest.getPhoto() != null) {
+            URL url = s3FileUploadService.uploadFile(productRequest.getPhoto(), String.valueOf(UUID.randomUUID()));
+            product.setPhotoUrl(url.toString());
+        }
 
         return productRepository.save(product);
     }
@@ -55,6 +67,7 @@ public final class ProductFacade implements ProductCrudService, ProductSettingsS
                 });
     }
 
+    @Transactional
     @Override
     public Product update(String productId, ProductRequest productRequest) {
 
@@ -64,6 +77,10 @@ public final class ProductFacade implements ProductCrudService, ProductSettingsS
         Optional.ofNullable(productRequest.getPrice()).ifPresent(product::setPrice);
         Optional.of(productRequest.getAmount()).ifPresent(product::setAmount);
         Optional.ofNullable(productRequest.getDescription()).ifPresent(product::setDescription);
+        Optional.ofNullable(productRequest.getPhoto()).ifPresent(multipartFile -> {
+            URL url = s3FileUploadService.uploadFile(productRequest.getPhoto(), String.valueOf(UUID.randomUUID()));
+            product.setPhotoUrl(String.valueOf(url));
+        });
         Optional.ofNullable(productRequest.getActive()).ifPresent(product::setActive);
 
         return productRepository.save(product);

@@ -85,7 +85,7 @@ class ProductTest {
 
         Set<ConstraintViolation<Product>> violations = validator.validate(product);
         assertFalse(violations.isEmpty());
-        assertTrue(violations.stream().anyMatch(v -> v.getMessage().contains("greater than 0")));
+        assertTrue(violations.stream().anyMatch(v -> v.getMessage().contains("greater or equal to 0")));
     }
 
     @Test
@@ -120,6 +120,18 @@ class ProductTest {
         assertFalse(violations.isEmpty());
         assertTrue(violations.stream().anyMatch(v -> v.getMessage().contains("Amount cannot be negative value")));
     }
+
+    @Test
+    public void whenActiveIsNull_thenValidationFails() {
+        Product product = ProductDataBuilder.buildProductWithAllFields()
+                .active(null)
+                .build();
+
+        Set<ConstraintViolation<Product>> violations = validator.validate(product);
+        assertFalse(violations.isEmpty());
+        assertTrue(violations.stream().anyMatch(v -> v.getMessage().contains("Active is required")));
+    }
+
 
     @Test
     public void decreaseAmount_ShouldDecreaseAmount() {
