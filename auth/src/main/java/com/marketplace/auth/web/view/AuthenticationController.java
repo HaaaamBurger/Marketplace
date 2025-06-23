@@ -1,8 +1,8 @@
 package com.marketplace.auth.web.view;
 
 import com.marketplace.auth.service.AuthenticationService;
-import com.marketplace.auth.service.validator.SignInValidator;
-import com.marketplace.auth.service.validator.SignUpValidator;
+import com.marketplace.auth.web.validator.SignInValidator;
+import com.marketplace.auth.web.validator.SignUpValidator;
 import com.marketplace.auth.web.dto.AuthRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -37,13 +37,14 @@ public class AuthenticationController {
             HttpServletResponse response
     ) {
         signInValidator.validate(authRequest, bindingResult);
+
         if (bindingResult.hasErrors()) {
             return "sign-in";
         }
 
         authenticationService.signIn(authRequest, response);
 
-        return "redirect:/home";
+        return "redirect:/products/all";
     }
 
     @GetMapping("/sign-up")

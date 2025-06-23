@@ -5,6 +5,7 @@ import com.marketplace.product.service.ProductCrudService;
 import com.marketplace.product.web.dto.ProductRequest;
 import com.marketplace.product.web.model.Product;
 
+import com.marketplace.product.web.validator.ProductValidator;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -12,6 +13,7 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Controller
@@ -20,6 +22,8 @@ import java.util.List;
 public class ProductController {
 
     private final ProductCrudService productCrudService;
+
+    private final ProductValidator productValidator;
 
     private final SimpleProductMapper simpleProductMapper;
 
@@ -44,15 +48,18 @@ public class ProductController {
     public String getCreateProduct(Model model) {
         model.addAttribute("productRequest", ProductRequest.builder()
                 .active(true)
+                .price(BigDecimal.ZERO)
+                .amount(1)
                 .build());
         return "product-create";
     }
 
     @PostMapping("/create")
     public String createProduct(
-            @Valid @ModelAttribute ProductRequest productRequest,
+            @Valid @ModelAttribute("productRequest") ProductRequest productRequest,
             BindingResult bindingResult
     ) {
+        productValidator.validate(productRequest, bindingResult);
         if (bindingResult.hasErrors()) {
             return "product-create";
         }
@@ -79,6 +86,7 @@ public class ProductController {
              @Valid @ModelAttribute ProductRequest productRequest,
              BindingResult bindingResult
     ) {
+        productValidator.validate(productRequest, bindingResult);
         if (bindingResult.hasErrors()) {
             return "product-update";
         }

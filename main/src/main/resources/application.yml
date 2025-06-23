@@ -8,6 +8,9 @@ spring:
     hiddenmethod:
       filter:
         enabled: true
+  servlet:
+    multipart:
+      max-file-size: 5MB
 security:
   jwt:
     secret-key: ${JWT_SECRET_KEY}

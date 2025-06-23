@@ -1,142 +1,237 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
-    <title>Marketplace</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet"/>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet"/>
+    <meta charset="UTF-8" />
+    <title>Marketplace - Product Details</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet" />
+
     <style>
-        html, body {
-            margin: 0;
-            padding: 0;
-            min-height: 100vh;
-        }
-
         body {
-            background: linear-gradient(135deg, #eef2ff, #dde9ff);
-            font-family: 'Segoe UI', sans-serif;
+            background: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0; padding: 0;
         }
-
-        .card {
+        .container-lg {
+            max-width: 1200px;
+            padding: 2rem 1rem;
+            background: #fff;
+            margin: 2rem auto;
             border-radius: 16px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+            box-shadow: 0 12px 30px rgb(0 0 0 / 0.1);
         }
-
-        .badge {
-            font-size: 0.95rem;
-            padding: 0.5rem 0.9rem;
-            border-radius: 12px;
+        .back-btn {
+            user-select:none;
         }
-
-        .btn {
-            border-radius: 10px;
-            font-weight: 500;
+        .product-main {
+            display: flex;
+            gap: 2rem;
+            flex-wrap: wrap;
         }
-
-        .btn i {
-            margin-right: 6px;
+        .product-image {
+            flex: 1 1 300px;
+            aspect-ratio: 1 / 1;
+            border-radius: 16px;
+            overflow: hidden;
+            background-color: #f8f9fa;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.1);
         }
-
-        .meta-info small {
-            display: block;
-            color: #6c757d;
+        .product-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .additional-photos img {
+            height: 70px;
+            border-radius: 8px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: border-color 0.3s ease;
+        }
+        .additional-photos img:hover {
+            border-color: #0d6efd;
+        }
+        .product-info {
+            flex: 1 1 400px;
+            min-width: 280px;
+        }
+        .product-title {
+            font-size: 2.25rem;
+            font-weight: 700;
             margin-bottom: 0.3rem;
         }
-
-        .product-header {
+        .badge-active {
+            background-color: #198754;
+        }
+        .badge-inactive {
+            background-color: #6c757d;
+        }
+        .price {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #0d6efd;
+            margin-bottom: 1rem;
+        }
+        .description {
+            font-size: 1.1rem;
+            color: #444;
+            line-height: 1.5;
+            margin-bottom: 2rem;
+            white-space: pre-line;
+        }
+        .info-blocks {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
+            gap: 1.5rem;
             flex-wrap: wrap;
+            margin-bottom: 2rem;
+        }
+        .info-block {
+            background: #f1f3f5;
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            flex: 1 1 180px;
+            box-shadow: 0 2px 8px rgb(0 0 0 / 0.05);
+            display: flex;
+            align-items: center;
             gap: 1rem;
         }
-
-        @media (max-width: 576px) {
-            .info-section {
-                flex-direction: column !important;
-                gap: 1rem;
+        .info-block i {
+            font-size: 1.8rem;
+            color: #0d6efd;
+        }
+        .info-block .label {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+        .info-block .value {
+            font-weight: 700;
+            font-size: 1.4rem;
+            color: #212529;
+        }
+        .meta-info i {
+            margin-right: 0.4rem;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        .action-buttons .btn {
+            flex: 1 1 140px;
+            font-weight: 600;
+            border-radius: 12px;
+            transition: box-shadow 0.3s ease;
+        }
+        .action-buttons .btn:hover {
+            box-shadow: 0 6px 15px rgb(13 110 253 / 0.3);
+        }
+        @media (max-width: 768px) {
+            .product-main {
+                flex-direction: column;
+            }
+            .product-images,
+            .product-info {
+                max-width: 100%;
             }
         }
     </style>
 </head>
-<body>
-<div class="container py-5">
-    <div class="card p-4">
+<body class="bg-light">
 
-        <div class="product-header mb-3">
-            <h2 class="mb-0 fw-bold" th:text="${product.name}">Product Name</h2>
+<div class="container py-4">
 
-            <div>
-                <a th:href="@{/products/all}" class="btn btn-outline-secondary btn-sm me-2">
-                    <i class="bi bi-arrow-left"></i> Back
-                </a>
+    <div class="mb-3">
+        <a onclick="history.back(-1)" class="btn btn-outline-secondary d-inline-flex align-items-center">
+            <i class="bi bi-arrow-left me-2"></i> Back
+        </a>
+    </div>
 
-                <span th:if="${product.active}" class="badge bg-success">
-                    <i class="bi bi-check-circle"></i> Active
-                </span>
-                <span th:if="${!product.active}" class="badge bg-secondary">
-                    <i class="bi bi-slash-circle"></i> Inactive
-                </span>
-            </div>
-        </div>
+    <div class="row g-4">
 
-        <hr>
+        <div class="col-lg-8">
+            <div class="bg-white p-4 rounded shadow-sm mb-4">
 
-        <p class="mb-4" th:text="${product.description}">Product description goes here...</p>
-
-        <div class="row mb-4">
-            <div class="col-md-6 mb-3 mb-md-0">
-                <div class="border rounded p-3 bg-light d-flex align-items-center gap-3 shadow-sm">
-                    <i class="bi bi-tag-fill fs-3 text-primary"></i>
-                    <div>
-                        <div class="text-muted">Price</div>
-                        <div class="fs-4 fw-semibold" th:text="${product.price + ' $'}">$0.00</div>
+                <div class="mb-4 text-center">
+                    <div class="ratio ratio-4x3 rounded" style="max-height: 400px; overflow: hidden;">
+                        <th:block th:if="${product.photoUrl != null && !#strings.isEmpty(product.photoUrl)}">
+                            <img th:src="${product.photoUrl}" class="object-fit-cover w-100 h-100" alt="Product photo" />
+                        </th:block>
+                        <th:block th:unless="${product.photoUrl != null && !#strings.isEmpty(product.photoUrl)}">
+                            <div class="d-flex justify-content-center align-items-center h-100 bg-light text-muted">
+                                <i class="bi bi-image fs-1"></i>
+                            </div>
+                        </th:block>
                     </div>
                 </div>
-            </div>
-            <div class="col-md-6">
-                <div class="border rounded p-3 bg-light d-flex align-items-center gap-3 shadow-sm">
-                    <i class="bi bi-box-fill fs-3 text-success"></i>
-                    <div>
-                        <div class="text-muted">In stock</div>
-                        <div class="fs-4 fw-semibold" th:text="${product.amount}">0</div>
-                    </div>
+
+                <h2 class="mb-2" th:text="${product.name}">Name</h2>
+
+                <div class="mb-3">
+                    <span th:if="${product.active}" class="badge bg-success px-3 py-2">
+                        <i class="bi bi-check-circle me-1"></i> Active
+                    </span>
+                    <span th:if="${!product.active}" class="badge bg-secondary px-3 py-2">
+                        <i class="bi bi-slash-circle me-1"></i> Inactive
+                    </span>
                 </div>
+
+                <h5 class="mt-4">Description</h5>
+                <p class="text-secondary" th:text="${product.description}">Description...</p>
+
+                <h5 class="mt-4">Info</h5>
+                <ul class="list-unstyled">
+                    <li><i class="bi bi-box-seam me-2 text-primary"></i> In stock: <strong th:text="${product.amount}">0</strong></li>
+                    <li><i class="bi bi-calendar me-2 text-primary"></i> Created At: <strong th:text="${#temporals.format(product.createdAt, 'yyyy-MM-dd')}">2025-06-01</strong></li>
+                    <li><i class="bi bi-clock-history me-2 text-primary"></i> Updated At: <strong th:text="${#temporals.format(product.updatedAt, 'yyyy-MM-dd')}">2025-06-02</strong></li>
+                </ul>
+
+                <h5 class="mt-4">Delivery and refinding</h5>
+                <p class="text-secondary">Free shipping in 5 days...</p>
+
             </div>
         </div>
 
+        <div class="col-lg-4">
+            <div class="bg-white p-4 rounded shadow-sm mb-4">
 
-        <div class="meta-info mb-4">
-            <small>
-                <i class="bi bi-clock"></i> Created at:
-                <span th:text="${#temporals.format(product.createdAt, 'yyyy-MM-dd HH:mm')}">2025-06-01 12:00</span>
-            </small>
-            <small>
-                <i class="bi bi-pencil"></i> Updated at:
-                <span th:text="${#temporals.format(product.updatedAt, 'yyyy-MM-dd HH:mm')}">2025-06-02 14:30</span>
-            </small>
-        </div>
+                <h3 class="text-primary fw-bold mb-3" th:text="${product.price + ' $'}">$0.00</h3>
 
-        <div th:if="${authUser}">
-            <div class="d-flex flex-wrap gap-2">
-                <form th:action="@{/orders/add-product/{id}(id=${productId})}" th:method="put">
-                    <button type="submit"
-                            th:attr="disabled=${authUser.id == product.ownerId || product.amount == 0 || !product.active}"
-                            class="btn btn-success">
-                        <i class="bi bi-cart-plus"></i> Add to Order
-                    </button>
-                </form>
+                <div th:if="${authUser}" class="mb-4">
+                    <form th:action="@{/orders/add-product/{id}(id=${productId})}" th:method="put">
+                        <button type="submit"
+                                th:attr="disabled=${authUser.id == product.ownerId || product.amount == 0 || !product.active}"
+                                class="btn btn-primary w-100 mb-2">
+                            <i class="bi bi-cart-plus"></i> Add to order
+                        </button>
+                    </form>
 
-                <a th:href="@{/products/{id}/update(id=${productId})}"
-                   th:if="${authUser.id == product.ownerId || authUser.role?.name() == 'ADMIN'}"
-                   class="btn btn-warning">
-                    <i class="bi bi-pencil-square"></i> Update
-                </a>
+                    <a th:href="@{/products/{id}/update(id=${productId})}"
+                       th:if="${authUser.id == product.ownerId || authUser.role?.name() == 'ADMIN'}"
+                       class="btn btn-outline-secondary w-100">
+                        <i class="bi bi-pencil-square"></i> Edit
+                    </a>
+                </div>
+
+                <hr />
+                <h6 class="text-muted">Seller</h6>
+                <p><strong>John Doe</strong></p>
+                <p class="text-muted">Contacts: <em>Hidden</em></p>
+
+                <hr />
+                <h6 class="text-muted">Address</h6>
+                <p>Lviv, Ukraine</p>
             </div>
         </div>
 
     </div>
 </div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>

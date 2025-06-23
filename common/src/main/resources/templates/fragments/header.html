@@ -14,6 +14,7 @@
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container-fluid">
 
+            <img th:src="@{/images/logo.png}" alt="Marketplace Logo" width="40" height="40" class="me-2">
             <a class="navbar-brand" style="cursor: pointer;" th:href="@{/home}">Marketplace</a>
 
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
@@ -24,11 +25,6 @@
 
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0" th:if="${authUser}">
-                    <li class="nav-item">
-                        <a class="nav-link"
-                           th:classappend="${request.startsWith('/home')} ? ' active' : ''"
-                           th:href="@{/home}">Main</a>
-                    </li>
 
                     <li class="nav-item"
                         th:if="${#authorization.expression('hasAuthority(''ADMIN'')')}">

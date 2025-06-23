@@ -30,16 +30,15 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
-    private static final String[] PERMITTED_ROUTES = new String[] {
+    public static final String[] PERMITTED_ROUTES = new String[] {
             "/sign-in",
             "/sign-up",
             "/logout",
             "/home",
             "/products/**",
             "/error",
-            "/swagger-ui/**",
-            "/v3/api-docs*/**",
             "/favicon.ico",
+            "/images/**",
             "/.well-known/appspecific/com.chrome.devtools.json"
     };
 

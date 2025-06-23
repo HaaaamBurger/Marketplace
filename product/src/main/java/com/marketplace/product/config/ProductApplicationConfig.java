@@ -9,7 +9,8 @@ import org.springframework.data.mongodb.repository.config.EnableMongoRepositorie
 @EnableAutoConfiguration
 @ComponentScan(basePackages = {
         "com.marketplace.product",
-        "com.marketplace.auth"
+        "com.marketplace.auth",
+        "com.marketplace.aws"
 })
 @EnableMongoRepositories(basePackages = {"com.marketplace.product.repository"})
 public class ProductApplicationConfig {

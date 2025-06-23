@@ -11,15 +11,12 @@ import com.marketplace.usercore.dto.UserUpdateRequest;
 import com.marketplace.usercore.model.User;
 import com.marketplace.usercore.model.UserRole;
 import com.marketplace.usercore.repository.UserRepository;
-import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Import;
-import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.validation.BindingResult;
@@ -49,23 +46,19 @@ public class UserControllerIntegrationTest {
     @Autowired
     private AuthHelper authHelper;
 
-    @Autowired
-    private ApplicationContext applicationContext;
 
     @BeforeEach
     public void setUp() {
-        applicationContext.getBeansOfType(MongoRepository.class)
-                .values()
-                .forEach(MongoRepository::deleteAll);
+        userRepository.deleteAll();
     }
 
     @Test
     public void getProfile_ThenReturnUser() throws Exception {
         User authUser = UserDataBuilder.buildUserWithAllFields().build();
 
-        Cookie cookie = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
         MvcResult mvcResult = mockMvc.perform(get("/profile")
-                        .cookie(cookie))
+                        .cookie(jwtCookiePayload.getAccessCookie()))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -85,9 +78,9 @@ public class UserControllerIntegrationTest {
                 .email("test1@gmail.com")
                 .build();
 
-        Cookie cookie = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
         mockMvc.perform(post("/users/create")
-                        .cookie(cookie)
+                        .cookie(jwtCookiePayload.getAccessCookie())
                         .param("email", userRequest.getEmail())
                         .param("role", String.valueOf(userRequest.getRole()))
                         .param("password", String.valueOf(userRequest.getPassword())))
@@ -100,16 +93,16 @@ public class UserControllerIntegrationTest {
     }
 
     @Test
-    public void createUser_WhenRoleUser_ShouldRedirectToErrorPage() throws Exception {
+    public void createUser_WhenRoleUser_ShouldRedirectToHomePage() throws Exception {
         User authUser = UserDataBuilder.buildUserWithAllFields().build();
         UserRequest userRequest = UserRequestDataBuilder.withAllFields()
                 .email("test1@gmail.com")
                 .build();
 
-        Cookie cookie = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
 
         MvcResult mvcResult = mockMvc.perform(post("/users/create")
-                        .cookie(cookie)
+                        .cookie(jwtCookiePayload.getAccessCookie())
                         .param("email", userRequest.getEmail())
                         .param("role", String.valueOf(userRequest.getRole()))
                         .param("password", String.valueOf(userRequest.getPassword())))
@@ -117,7 +110,7 @@ public class UserControllerIntegrationTest {
 
         String redirectedUrl = mvcResult.getResponse().getRedirectedUrl();
         assertThat(redirectedUrl).isNotNull();
-        assertThat(redirectedUrl).isEqualTo("/error");
+        assertThat(redirectedUrl).isEqualTo("/home");
     }
 
     @Test
@@ -132,11 +125,11 @@ public class UserControllerIntegrationTest {
                 .email("test1@gmail.com")
                 .build();
 
-        Cookie cookie = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
         userRepository.save(user);
 
         MvcResult mvcResult = mockMvc.perform(post("/users/create")
-                        .cookie(cookie)
+                        .cookie(jwtCookiePayload.getAccessCookie())
                         .param("email", userRequest.getEmail())
                         .param("role", String.valueOf(userRequest.getRole()))
                         .param("password", String.valueOf(userRequest.getPassword())))
@@ -151,16 +144,16 @@ public class UserControllerIntegrationTest {
 
 
     @Test
-    public void createUser_WhenRoleUser_ThenRedirectToErrorPage() throws Exception {
+    public void createUser_WhenRoleUser_ThenRedirectToHomePage() throws Exception {
         User authUser = UserDataBuilder.buildUserWithAllFields().build();
         UserRequest userRequest = UserRequestDataBuilder.withAllFields()
                 .email("test1@gmail.com")
                 .build();
 
-        Cookie cookie = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
 
         MvcResult mvcResult = mockMvc.perform(post("/users/create")
-                        .cookie(cookie)
+                        .cookie(jwtCookiePayload.getAccessCookie())
                         .param("email", userRequest.getEmail())
                         .param("role", String.valueOf(userRequest.getRole()))
                         .param("password", String.valueOf(userRequest.getPassword())))
@@ -169,7 +162,7 @@ public class UserControllerIntegrationTest {
 
         String redirectedUrl = mvcResult.getResponse().getRedirectedUrl();
         assertThat(redirectedUrl).isNotNull();
-        assertThat(redirectedUrl).isEqualTo("/error");
+        assertThat(redirectedUrl).isEqualTo("/home");
     }
 
     @Test
@@ -184,11 +177,11 @@ public class UserControllerIntegrationTest {
                 .email("test2@gmail.com")
                 .build();
 
-        Cookie cookie = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
         userRepository.saveAll(List.of(user1, user2));
 
         MvcResult mvcResult = mockMvc.perform(get("/users/all")
-                        .cookie(cookie))
+                        .cookie(jwtCookiePayload.getAccessCookie()))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -201,7 +194,7 @@ public class UserControllerIntegrationTest {
     }
 
     @Test
-    public void findAll_WhenRoleUser_ShouldRedirectToErrorPage() throws Exception {
+    public void findAll_WhenRoleUser_ShouldRedirectToHomePage() throws Exception {
         User authUser = UserDataBuilder.buildUserWithAllFields().build();
         User user1 = UserDataBuilder.buildUserWithAllFields()
                 .email("test1@gmail.com")
@@ -210,17 +203,17 @@ public class UserControllerIntegrationTest {
                 .email("test2@gmail.com")
                 .build();
 
-        Cookie cookie = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
         userRepository.saveAll(List.of(user1, user2));
 
         MvcResult mvcResult = mockMvc.perform(get("/users/all")
-                        .cookie(cookie))
+                        .cookie(jwtCookiePayload.getAccessCookie()))
                 .andExpect(status().is3xxRedirection())
                 .andReturn();
 
         String redirectedUrl = mvcResult.getResponse().getRedirectedUrl();
         assertThat(redirectedUrl).isNotNull();
-        assertThat(redirectedUrl).isEqualTo("/error");
+        assertThat(redirectedUrl).isEqualTo("/home");
     }
 
     @Test
@@ -233,11 +226,11 @@ public class UserControllerIntegrationTest {
                 .email("test2@gmail.com")
                 .build();
 
-        Cookie cookie = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
         userRepository.save(user);
 
         MvcResult mvcResult = mockMvc.perform(put("/users/{userId}/update", user.getId())
-                        .cookie(cookie)
+                        .cookie(jwtCookiePayload.getAccessCookie())
                         .param("email", userUpdateRequest.getEmail())
                         .param("status", String.valueOf(userUpdateRequest.getStatus()))
                         .param("role", String.valueOf(userUpdateRequest.getRole())))
@@ -253,16 +246,16 @@ public class UserControllerIntegrationTest {
     }
 
     @Test
-    public void updateUser_WhenRoleUser_ThenRedirectToErrorPage() throws Exception {
+    public void updateUser_WhenRoleUser_ThenRedirectToHomePage() throws Exception {
         User authUser = UserDataBuilder.buildUserWithAllFields().build();
         UserUpdateRequest userUpdateRequest = UserUpdateRequestDataBuilder.buildUserWithAllFields()
                 .email("test2@gmail.com")
                 .build();
 
-        Cookie cookie = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
 
         MvcResult mvcResult = mockMvc.perform(put("/users/{userId}/update", authUser.getId())
-                        .cookie(cookie)
+                        .cookie(jwtCookiePayload.getAccessCookie())
                         .param("email", userUpdateRequest.getEmail())
                         .param("status", String.valueOf(userUpdateRequest.getStatus()))
                         .param("role", String.valueOf(userUpdateRequest.getRole())))
@@ -271,7 +264,7 @@ public class UserControllerIntegrationTest {
 
         String redirectedUrl = mvcResult.getResponse().getRedirectedUrl();
         assertThat(redirectedUrl).isNotNull();
-        assertThat(redirectedUrl).isEqualTo("/error");
+        assertThat(redirectedUrl).isEqualTo("/home");
 
         Optional<User> optionalUser = userRepository.findByEmail(authUser.getEmail());
         assertThat(optionalUser).isPresent();
@@ -285,11 +278,11 @@ public class UserControllerIntegrationTest {
                 .role(UserRole.ADMIN)
                 .build();
 
-        Cookie cookie = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
         userRepository.save(user);
 
         String redirectedUrl = mockMvc.perform(delete("/users/{userId}/delete", user.getId())
-                        .cookie(cookie))
+                        .cookie(jwtCookiePayload.getAccessCookie()))
                 .andExpect(status().is3xxRedirection())
                 .andReturn().getResponse().getRedirectedUrl();
 
@@ -301,23 +294,23 @@ public class UserControllerIntegrationTest {
     }
 
     @Test
-    public void deleteUser_WhenRoleUser_ShouldRedirectToErrorPage() throws Exception {
+    public void deleteUser_WhenRoleUser_ShouldRedirectToHomePage() throws Exception {
         User user = UserDataBuilder.buildUserWithAllFields().email("test1@gmail.com").build();
         User authUser = UserDataBuilder.buildUserWithAllFields()
                 .build();
 
-        Cookie cookie = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
         userRepository.save(user);
 
         String redirectedUrl = mockMvc.perform(delete("/users/{userId}/delete", user.getId())
-                        .cookie(cookie))
+                        .cookie(jwtCookiePayload.getAccessCookie()))
                 .andExpect(status().is3xxRedirection())
                 .andReturn()
                 .getResponse()
                 .getRedirectedUrl();
 
         assertThat(redirectedUrl).isNotNull();
-        assertThat(redirectedUrl).isEqualTo("/error");
+        assertThat(redirectedUrl).isEqualTo("/home");
 
         Optional<User> optionalUser = userRepository.findById(user.getId());
         assertThat(optionalUser).isPresent();
@@ -330,10 +323,10 @@ public class UserControllerIntegrationTest {
                 .role(UserRole.ADMIN)
                 .build();
 
-        Cookie cookie = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
 
         ModelAndView modelAndView = mockMvc.perform(delete("/users/{userId}/delete", userId)
-                        .cookie(cookie))
+                        .cookie(jwtCookiePayload.getAccessCookie()))
                 .andExpect(status().isNotFound())
                 .andReturn()
                 .getModelAndView();

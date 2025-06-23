@@ -11,7 +11,6 @@ import com.marketplace.product.web.dto.ProductResponse;
 import com.marketplace.product.web.model.Product;
 import com.marketplace.usercore.model.User;
 import com.marketplace.usercore.model.UserRole;
-import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,22 +18,18 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.servlet.ModelAndView;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.net.URL;
+import java.util.*;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -66,11 +61,11 @@ class ProductControllerIntegrationTest {
         Product product = ProductDataBuilder.buildProductWithAllFields().build();
         Product product1 = ProductDataBuilder.buildProductWithAllFields().build();
 
-        Cookie cookie = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
         productRepository.saveAll(List.of(product, product1));
 
         MvcResult mvcResult = mockMvc.perform(get("/products/all")
-                        .cookie(cookie))
+                        .cookie(jwtCookiePayload.getAccessCookie()))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -104,11 +99,11 @@ class ProductControllerIntegrationTest {
         User authUser = UserDataBuilder.buildUserWithAllFields().build();
         Product product = ProductDataBuilder.buildProductWithAllFields().build();
 
-        Cookie cookie = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
         productRepository.save(product);
 
         MvcResult mvcResult = mockMvc.perform(get("/products/{productId}", product.getId())
-                        .cookie(cookie))
+                        .cookie(jwtCookiePayload.getAccessCookie()))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -126,10 +121,10 @@ class ProductControllerIntegrationTest {
         User authUser = UserDataBuilder.buildUserWithAllFields().build();
         Product product = ProductDataBuilder.buildProductWithAllFields().build();
 
-        Cookie cookie = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
 
         ModelAndView modelAndView = mockMvc.perform(get("/products/{productId}", product.getId())
-                        .cookie(cookie))
+                        .cookie(jwtCookiePayload.getAccessCookie()))
                 .andExpect(status().isNotFound())
                 .andReturn().getModelAndView();
 
@@ -157,15 +152,17 @@ class ProductControllerIntegrationTest {
     }
 
     @Test
-    public void createProduct_WhenUserAuthenticated_ShouldRedirectToProducts() throws Exception {
+    public void createProduct_ShouldRedirectToProducts_WhenUserAuthenticated() throws Exception {
         User authUser = UserDataBuilder.buildUserWithAllFields().build();
         ProductRequest productRequest = ProductRequestDataBuilder.buildProductWithAllFields().build();
 
-        Cookie cookie = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
 
-        String redirectedUrl = mockMvc.perform(post("/products/create")
-                        .cookie(cookie)
+        String redirectedUrl = mockMvc.perform(multipart("/products/create")
+                        .file((MockMultipartFile) productRequest.getPhoto())
+                        .cookie(jwtCookiePayload.getAccessCookie())
                         .param("name", productRequest.getName())
+                        .param("active", String.valueOf(productRequest.getActive()))
                         .param("description", productRequest.getDescription())
                         .param("amount", String.valueOf(productRequest.getAmount()))
                         .param("price", String.valueOf(productRequest.getPrice())))
@@ -179,6 +176,72 @@ class ProductControllerIntegrationTest {
 
         Optional<Product> productByOwnerId = productRepository.findProductByOwnerId(authUser.getId());
         assertThat(productByOwnerId).isPresent();
+        assertThat(productByOwnerId.get().getName()).isEqualTo(productRequest.getName());
+        assertThat(productByOwnerId.get().getAmount()).isEqualTo(productRequest.getAmount());
+        assertThat(productByOwnerId.get().getOwnerId()).isEqualTo(authUser.getId());
+        assertThat(productByOwnerId.get().getDescription()).isEqualTo(productRequest.getDescription());
+        assertThat(productByOwnerId.get().getActive()).isNotNull();
+        assertThat(productByOwnerId.get().getActive()).isTrue();
+        assertThat(productByOwnerId.get().getPhotoUrl()).isNotNull();
+        assertThat(new URL(productByOwnerId.get().getPhotoUrl())).isNotNull();
+    }
+
+    @Test
+    public void createProduct_ShouldRedirectToProduct_WhenPhotoExtensionIsUnsupported() throws Exception {
+        User authUser = UserDataBuilder.buildUserWithAllFields().build();
+        ProductRequest productRequest = ProductRequestDataBuilder.buildProductWithAllFields()
+                .photo(new MockMultipartFile("photo", "photo.svg", "image/svg", "photo".getBytes()))
+                .build();
+
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
+
+        MvcResult mvcResult = mockMvc.perform(multipart("/products/create")
+                        .file((MockMultipartFile) productRequest.getPhoto())
+                        .cookie(jwtCookiePayload.getAccessCookie())
+                        .param("name", productRequest.getName())
+                        .param("active", String.valueOf(productRequest.getActive()))
+                        .param("description", productRequest.getDescription())
+                        .param("amount", String.valueOf(productRequest.getAmount()))
+                        .param("price", String.valueOf(productRequest.getPrice())))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        ModelAndView modelAndView = mvcResult.getModelAndView();
+        assertThat(modelAndView).isNotNull();
+
+        FieldError fieldError = ((BindingResult) modelAndView.getModel().get("org.springframework.validation.BindingResult.productRequest")).getFieldError();
+        assertThat(fieldError).isNotNull();
+        assertThat(fieldError.getDefaultMessage()).isNotNull();
+        assertThat(fieldError.getDefaultMessage()).isEqualTo("Unsupported photo extension: .svg");
+    }
+
+    @Test
+    public void createProduct_ShouldRedirectToProduct_WhenPhotoWithoutExtension() throws Exception {
+        User authUser = UserDataBuilder.buildUserWithAllFields().build();
+        ProductRequest productRequest = ProductRequestDataBuilder.buildProductWithAllFields()
+                .photo(new MockMultipartFile("photo", "photo", "image/svg", "photo".getBytes()))
+                .build();
+
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
+
+        MvcResult mvcResult = mockMvc.perform(multipart("/products/create")
+                        .file((MockMultipartFile) productRequest.getPhoto())
+                        .cookie(jwtCookiePayload.getAccessCookie())
+                        .param("name", productRequest.getName())
+                        .param("active", String.valueOf(productRequest.getActive()))
+                        .param("description", productRequest.getDescription())
+                        .param("amount", String.valueOf(productRequest.getAmount()))
+                        .param("price", String.valueOf(productRequest.getPrice())))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        ModelAndView modelAndView = mvcResult.getModelAndView();
+        assertThat(modelAndView).isNotNull();
+
+        FieldError fieldError = ((BindingResult) modelAndView.getModel().get("org.springframework.validation.BindingResult.productRequest")).getFieldError();
+        assertThat(fieldError).isNotNull();
+        assertThat(fieldError.getDefaultMessage()).isNotNull();
+        assertThat(fieldError.getDefaultMessage()).isEqualTo("File name is missing or has no valid extension");
     }
 
     @Test
@@ -187,14 +250,15 @@ class ProductControllerIntegrationTest {
         ProductRequest productRequest = ProductRequestDataBuilder.buildProductWithAllFields()
                 .build();
 
-        Cookie cookie = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
 
         MvcResult mvcResult = mockMvc.perform(post("/products/create")
-                        .cookie(cookie)
+                        .cookie(jwtCookiePayload.getAccessCookie())
                         .param("name", productRequest.getName())
+                        .param("active", String.valueOf(productRequest.getActive()))
                         .param("description", productRequest.getDescription())
                         .param("amount", String.valueOf(productRequest.getAmount()))
-                        .param("price", "0"))
+                        .param("price", "-1"))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -207,7 +271,7 @@ class ProductControllerIntegrationTest {
         FieldError fieldError = ((BindingResult) modelAndView.getModel().get("org.springframework.validation.BindingResult.productRequest")).getFieldError();
         assertThat(fieldError).isNotNull();
         assertThat(fieldError.getDefaultMessage()).isNotNull();
-        assertThat(fieldError.getDefaultMessage()).isEqualTo("Price must be greater than 0");
+        assertThat(fieldError.getDefaultMessage()).isEqualTo("Price must be greater or equal to 0");
     }
 
     @Test
@@ -217,6 +281,7 @@ class ProductControllerIntegrationTest {
 
         String redirectedUrl = mockMvc.perform(post("/products/create")
                         .param("name", productRequest.getName())
+                        .param("active", String.valueOf(productRequest.getActive()))
                         .param("description", productRequest.getDescription())
                         .param("amount", String.valueOf(productRequest.getAmount()))
                         .param("price", String.valueOf(productRequest.getPrice())))
@@ -237,15 +302,16 @@ class ProductControllerIntegrationTest {
         User authUser = UserDataBuilder.buildUserWithAllFields().build();
         ProductRequest productRequest = ProductRequestDataBuilder.buildProductWithAllFields().build();
 
-        Cookie cookie = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
         Product product = ProductDataBuilder.buildProductWithAllFields()
                 .ownerId(authUser.getId())
                 .build();
         productRepository.save(product);
 
         String redirectedUrl = mockMvc.perform(put("/products/{productId}/update", product.getId())
-                        .cookie(cookie)
+                        .cookie(jwtCookiePayload.getAccessCookie())
                         .param("name", productRequest.getName())
+                        .param("active", String.valueOf(productRequest.getActive()))
                         .param("description", productRequest.getDescription())
                         .param("amount", String.valueOf(productRequest.getAmount()))
                         .param("price", String.valueOf(productRequest.getPrice())))
@@ -275,12 +341,13 @@ class ProductControllerIntegrationTest {
                 .ownerId(String.valueOf(UUID.randomUUID()))
                 .build();
 
-        Cookie cookie = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
         productRepository.save(product);
 
         String redirectedUrl = mockMvc.perform(put("/products/{productId}/update", product.getId())
-                        .cookie(cookie)
+                        .cookie(jwtCookiePayload.getAccessCookie())
                         .param("name", productRequest.getName())
+                        .param("active", String.valueOf(productRequest.getActive()))
                         .param("description", productRequest.getDescription())
                         .param("amount", String.valueOf(productRequest.getAmount()))
                         .param("price", String.valueOf(productRequest.getPrice())))
@@ -301,7 +368,7 @@ class ProductControllerIntegrationTest {
     }
 
     @Test
-    public void updateProduct_ShouldRedirectToErrorPage_WhenUserNotAdminAndNotOwner() throws Exception {
+    public void updateProduct_ShouldRedirectToHomePage_WhenUserNotAdminAndNotOwner() throws Exception {
         User authUser = UserDataBuilder.buildUserWithAllFields()
                 .build();
         ProductRequest productRequest = ProductRequestDataBuilder.buildProductWithAllFields().build();
@@ -309,12 +376,13 @@ class ProductControllerIntegrationTest {
                 .ownerId(String.valueOf(UUID.randomUUID()))
                 .build();
 
-        Cookie cookie = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
         productRepository.save(product);
 
         String redirectedUrl = mockMvc.perform(put("/products/{productId}/update", product.getId())
-                        .cookie(cookie)
+                        .cookie(jwtCookiePayload.getAccessCookie())
                         .param("name", productRequest.getName())
+                        .param("active", String.valueOf(productRequest.getActive()))
                         .param("description", productRequest.getDescription())
                         .param("amount", String.valueOf(productRequest.getAmount()))
                         .param("price", String.valueOf(productRequest.getPrice())))
@@ -323,7 +391,7 @@ class ProductControllerIntegrationTest {
                 .getResponse()
                 .getRedirectedUrl();
 
-        assertThat(redirectedUrl).isEqualTo("/error");
+        assertThat(redirectedUrl).isEqualTo("/home");
 
         Optional<Product> productByOwnerId = productRepository.findProductByOwnerId(product.getOwnerId());
         assertThat(productByOwnerId).isPresent();
@@ -342,12 +410,13 @@ class ProductControllerIntegrationTest {
                 .ownerId(String.valueOf(UUID.randomUUID()))
                 .build();
 
-        Cookie cookie = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
         productRepository.save(product);
 
         MvcResult mvcResult = mockMvc.perform(put("/products/{productId}/update", product.getId())
-                        .cookie(cookie)
+                        .cookie(jwtCookiePayload.getAccessCookie())
                         .param("name", "")
+                        .param("active", String.valueOf(productRequest.getActive()))
                         .param("description", productRequest.getDescription())
                         .param("amount", String.valueOf(productRequest.getAmount()))
                         .param("price", String.valueOf(productRequest.getPrice())))
@@ -363,5 +432,42 @@ class ProductControllerIntegrationTest {
         assertThat(fieldError).isNotNull();
         assertThat(fieldError.getDefaultMessage()).isNotNull();
         assertThat(fieldError.getDefaultMessage()).containsAnyOf("Name is required", "Name must be between 2 and 100 characters");
+    }
+
+    @Test
+    public void updateProduct_ShouldUpdatePhotoAndRedirectToProduct_WhenUserOwner() throws Exception {
+        User authUser = UserDataBuilder.buildUserWithAllFields().build();
+        ProductRequest productRequest = ProductRequestDataBuilder.buildProductWithAllFields().build();
+
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
+        Product product = ProductDataBuilder.buildProductWithAllFields()
+                .ownerId(authUser.getId())
+                .build();
+        productRepository.save(product);
+
+        String redirectedUrl = mockMvc.perform(multipart("/products/{productId}/update", product.getId())
+                        .file((MockMultipartFile) productRequest.getPhoto())
+                        .cookie(jwtCookiePayload.getAccessCookie())
+                        .param("name", productRequest.getName())
+                        .param("active", String.valueOf(productRequest.getActive()))
+                        .param("description", productRequest.getDescription())
+                        .param("amount", String.valueOf(productRequest.getAmount()))
+                        .param("price", String.valueOf(productRequest.getPrice()))
+                        .with(request -> {
+                            request.setMethod("PUT");
+                            return request;
+                }))
+                .andExpect(status().is3xxRedirection())
+                .andReturn()
+                .getResponse()
+                .getRedirectedUrl();
+
+        assertThat(redirectedUrl).isNotNull();
+        assertThat(redirectedUrl).isEqualTo("/products/%s", product.getId());
+
+        Optional<Product> productByOwnerId = productRepository.findProductByOwnerId(product.getOwnerId());
+
+        assertThat(productByOwnerId).isPresent();
+        assertThat(productByOwnerId.get().getPhotoUrl()).isNotNull();
     }
 }

@@ -20,6 +20,11 @@ public class JwtTokenManager {
 
     public TokenPayload generateTokenPayload(UserDetails userDetails) {
 
+        if (userDetails == null) {
+            log.error("[JWT_TOKEN_MANAGER]: UserDetails is null");
+            throw new IllegalArgumentException("User details not present");
+        }
+
         String accessToken = jwtService.generateAccessToken(userDetails);
         String refreshToken = jwtService.generateRefreshToken(userDetails);
 

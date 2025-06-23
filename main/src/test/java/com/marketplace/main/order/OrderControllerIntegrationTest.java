@@ -13,7 +13,6 @@ import com.marketplace.product.web.dto.ProductResponse;
 import com.marketplace.product.web.model.Product;
 import com.marketplace.usercore.model.User;
 import com.marketplace.usercore.model.UserRole;
-import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +22,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.web.servlet.ModelAndView;
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -64,11 +62,11 @@ class OrderControllerIntegrationTest {
                 .build();
         Order order = OrderDataBuilder.buildOrderWithAllFields().build();
 
-        Cookie cookie = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
         orderRepository.save(order);
 
         MvcResult mvcResult = mockMvc.perform(get("/orders/all")
-                        .cookie(cookie))
+                        .cookie(jwtCookiePayload.getAccessCookie()))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -83,20 +81,20 @@ class OrderControllerIntegrationTest {
     }
 
     @Test
-    public void getAllOrders_ShouldRedirectToErrorPage_WhenRoleUser() throws Exception {
+    public void getAllOrders_ShouldRedirectToHomePage_WhenRoleUser() throws Exception {
         User authUser = UserDataBuilder.buildUserWithAllFields().build();
         Order order = OrderDataBuilder.buildOrderWithAllFields().build();
 
-        Cookie cookie = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
         orderRepository.save(order);
 
         String redirectedUrl = mockMvc.perform(get("/orders/all")
-                        .cookie(cookie))
+                        .cookie(jwtCookiePayload.getAccessCookie()))
                 .andExpect(status().is3xxRedirection())
                 .andReturn().getResponse().getRedirectedUrl();
 
         assertThat(redirectedUrl).isNotNull();
-        assertThat(redirectedUrl).isEqualTo("/error");
+        assertThat(redirectedUrl).isEqualTo("/home");
     }
 
     @Test
@@ -125,11 +123,11 @@ class OrderControllerIntegrationTest {
                 .productIds(Set.of(product.getId()))
                 .build();
 
-        Cookie cookie = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
         orderRepository.save(order);
 
         MvcResult mvcResult = mockMvc.perform(get("/orders/{id}", order.getId())
-                        .cookie(cookie))
+                        .cookie(jwtCookiePayload.getAccessCookie()))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -149,7 +147,7 @@ class OrderControllerIntegrationTest {
     }
 
     @Test
-    public void getOrderById_ShouldRedirectToErrorPage_WhenRoleUser() throws Exception {
+    public void getOrderById_ShouldRedirectToHomePage_WhenRoleUser() throws Exception {
         User authUser = UserDataBuilder.buildUserWithAllFields().build();
         Product product = ProductDataBuilder.buildProductWithAllFields().build();
 
@@ -158,16 +156,16 @@ class OrderControllerIntegrationTest {
                 .productIds(Set.of(product.getId()))
                 .build();
 
-        Cookie cookie = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
         orderRepository.save(order);
 
         String redirectedUrl = mockMvc.perform(get("/orders/{id}", order.getId())
-                        .cookie(cookie))
+                        .cookie(jwtCookiePayload.getAccessCookie()))
                 .andExpect(status().is3xxRedirection())
                 .andReturn().getResponse().getRedirectedUrl();
 
         assertThat(redirectedUrl).isNotNull();
-        assertThat(redirectedUrl).isEqualTo("/error");
+        assertThat(redirectedUrl).isEqualTo("/home");
     }
 
     @Test
@@ -194,7 +192,7 @@ class OrderControllerIntegrationTest {
         User authUser = UserDataBuilder.buildUserWithAllFields().build();
         Product product = ProductDataBuilder.buildProductWithAllFields().build();
 
-        Cookie cookie = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
         productRepository.save(product);
 
         Order order = OrderDataBuilder.buildOrderWithAllFields()
@@ -206,7 +204,7 @@ class OrderControllerIntegrationTest {
         orderRepository.save(order);
 
         MvcResult mvcResult = mockMvc.perform(get("/orders/user-order")
-                        .cookie(cookie))
+                        .cookie(jwtCookiePayload.getAccessCookie()))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -234,11 +232,11 @@ class OrderControllerIntegrationTest {
         User authUser = UserDataBuilder.buildUserWithAllFields().build();
         Product product = ProductDataBuilder.buildProductWithAllFields().build();
 
-        Cookie cookie = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
         productRepository.save(product);
 
         MvcResult mvcResult = mockMvc.perform(get("/orders/user-order")
-                        .cookie(cookie))
+                        .cookie(jwtCookiePayload.getAccessCookie()))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -264,7 +262,7 @@ class OrderControllerIntegrationTest {
         User authUser = UserDataBuilder.buildUserWithAllFields().build();
         Product product = ProductDataBuilder.buildProductWithAllFields().build();
 
-        Cookie cookie = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
         productRepository.save(product);
 
         Order order = OrderDataBuilder.buildOrderWithAllFields()
@@ -276,7 +274,7 @@ class OrderControllerIntegrationTest {
         orderRepository.save(order);
 
         MvcResult mvcResult = mockMvc.perform(get("/orders/user-order")
-                        .cookie(cookie))
+                        .cookie(jwtCookiePayload.getAccessCookie()))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -313,11 +311,11 @@ class OrderControllerIntegrationTest {
                 .productIds(Set.of(product.getId()))
                 .build();
 
-        Cookie cookie = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
         orderRepository.save(order);
 
         MvcResult mvcResult = mockMvc.perform(get("/orders/{id}/update", order.getId())
-                        .cookie(cookie))
+                        .cookie(jwtCookiePayload.getAccessCookie()))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -333,7 +331,7 @@ class OrderControllerIntegrationTest {
     }
 
     @Test
-    public void getUpdateOrder_ShouldRedirectToErrorPage_WhenRoleUser() throws Exception {
+    public void getUpdateOrder_ShouldRedirectToHomePage_WhenRoleUser() throws Exception {
         User authUser = UserDataBuilder.buildUserWithAllFields().build();
         Product product = ProductDataBuilder.buildProductWithAllFields().build();
 
@@ -342,16 +340,16 @@ class OrderControllerIntegrationTest {
                 .productIds(Set.of(product.getId()))
                 .build();
 
-        Cookie cookie = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
         orderRepository.save(order);
 
         String redirectedUrl = mockMvc.perform(get("/orders/{id}/update", order.getId())
-                        .cookie(cookie))
+                        .cookie(jwtCookiePayload.getAccessCookie()))
                 .andExpect(status().is3xxRedirection())
                 .andReturn().getResponse().getRedirectedUrl();
 
         assertThat(redirectedUrl).isNotNull();
-        assertThat(redirectedUrl).isEqualTo("/error");
+        assertThat(redirectedUrl).isEqualTo("/home");
     }
 
     @Test
@@ -366,12 +364,12 @@ class OrderControllerIntegrationTest {
                 .productIds(Set.of(product.getId()))
                 .build();
 
-        Cookie cookie = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
         orderRepository.save(order);
 
         String redirectedUrl = mockMvc.perform(put("/orders/{id}/update", order.getId())
                         .param("address", "Hokkaido")
-                        .cookie(cookie))
+                        .cookie(jwtCookiePayload.getAccessCookie()))
                 .andExpect(status().is3xxRedirection())
                 .andReturn().getResponse().getRedirectedUrl();
 
@@ -385,7 +383,7 @@ class OrderControllerIntegrationTest {
     }
 
     @Test
-    public void updateOrder_ShouldRedirectToErrorPage_WhenRoleUser() throws Exception {
+    public void updateOrder_ShouldRedirectToHomePage_WhenRoleUser() throws Exception {
         User authUser = UserDataBuilder.buildUserWithAllFields().build();
         Product product = ProductDataBuilder.buildProductWithAllFields().build();
 
@@ -394,17 +392,17 @@ class OrderControllerIntegrationTest {
                 .productIds(Set.of(product.getId()))
                 .build();
 
-        Cookie cookie = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
         orderRepository.save(order);
 
         String redirectedUrl = mockMvc.perform(put("/orders/{id}/update", order.getId())
                         .param("address", "Hokkaido")
-                        .cookie(cookie))
+                        .cookie(jwtCookiePayload.getAccessCookie()))
                 .andExpect(status().is3xxRedirection())
                 .andReturn().getResponse().getRedirectedUrl();
 
         assertThat(redirectedUrl).isNotNull();
-        assertThat(redirectedUrl).isEqualTo("/error");
+        assertThat(redirectedUrl).isEqualTo("/home");
 
         Optional<Order> orderOptional = orderRepository.findById(order.getId());
         assertThat(orderOptional).isPresent();
@@ -417,11 +415,11 @@ class OrderControllerIntegrationTest {
         User authUser = UserDataBuilder.buildUserWithAllFields().build();
         Product product = ProductDataBuilder.buildProductWithAllFields().build();
 
-        Cookie cookie = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
         productRepository.save(product);
 
         String redirectedUrl = mockMvc.perform(put("/orders/add-product/{id}", product.getId())
-                        .cookie(cookie))
+                        .cookie(jwtCookiePayload.getAccessCookie()))
                 .andExpect(status().is3xxRedirection())
                 .andReturn().getResponse().getRedirectedUrl();
 
@@ -442,7 +440,7 @@ class OrderControllerIntegrationTest {
         Product product = ProductDataBuilder.buildProductWithAllFields().build();
         Product product1 = ProductDataBuilder.buildProductWithAllFields().build();
 
-        Cookie cookie = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
         productRepository.saveAll(List.of(product, product1));
         Order order = OrderDataBuilder.buildOrderWithAllFields()
                 .ownerId(authUser.getId())
@@ -452,7 +450,7 @@ class OrderControllerIntegrationTest {
         orderRepository.save(order);
 
         String redirectedUrl = mockMvc.perform(put("/orders/add-product/{id}", product1.getId())
-                        .cookie(cookie))
+                        .cookie(jwtCookiePayload.getAccessCookie()))
                 .andExpect(status().is3xxRedirection())
                 .andReturn().getResponse().getRedirectedUrl();
 
@@ -472,7 +470,7 @@ class OrderControllerIntegrationTest {
         Product product = ProductDataBuilder.buildProductWithAllFields().build();
         String product1 = String.valueOf(UUID.randomUUID());
 
-        Cookie cookie = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
         productRepository.saveAll(List.of(product));
         Order order = OrderDataBuilder.buildOrderWithAllFields()
                 .ownerId(authUser.getId())
@@ -482,7 +480,7 @@ class OrderControllerIntegrationTest {
         orderRepository.save(order);
 
         MvcResult mvcResult = mockMvc.perform(put("/orders/add-product/{id}", product1)
-                        .cookie(cookie))
+                        .cookie(jwtCookiePayload.getAccessCookie()))
                 .andExpect(status().is4xxClientError())
                 .andReturn();
 
@@ -498,11 +496,11 @@ class OrderControllerIntegrationTest {
                 .amount(0)
                 .build();
 
-        Cookie cookie = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
         productRepository.save(product);
 
         MvcResult mvcResult = mockMvc.perform(put("/orders/add-product/{id}", product.getId())
-                        .cookie(cookie))
+                        .cookie(jwtCookiePayload.getAccessCookie()))
                 .andExpect(status().is4xxClientError())
                 .andReturn();
 
@@ -521,11 +519,11 @@ class OrderControllerIntegrationTest {
                 .build();
         Order order = OrderDataBuilder.buildOrderWithAllFields().build();
 
-        Cookie cookie = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
         orderRepository.save(order);
 
         String redirectedUrl = mockMvc.perform(delete("/orders/{id}/delete", order.getId())
-                        .cookie(cookie))
+                        .cookie(jwtCookiePayload.getAccessCookie()))
                 .andExpect(status().is3xxRedirection())
                 .andReturn().getResponse().getRedirectedUrl();
 
@@ -540,14 +538,14 @@ class OrderControllerIntegrationTest {
     public void deleteOrder_ShouldDeleteOrder_WhenRoleUserAndOrderOwner() throws Exception {
         User authUser = UserDataBuilder.buildUserWithAllFields().build();
 
-        Cookie cookie = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
         Order order = OrderDataBuilder.buildOrderWithAllFields()
                 .ownerId(authUser.getId())
                 .build();
         orderRepository.save(order);
 
         String redirectedUrl = mockMvc.perform(delete("/orders/{id}/delete", order.getId())
-                        .cookie(cookie))
+                        .cookie(jwtCookiePayload.getAccessCookie()))
                 .andExpect(status().is3xxRedirection())
                 .andReturn().getResponse().getRedirectedUrl();
 
@@ -559,20 +557,20 @@ class OrderControllerIntegrationTest {
     }
 
     @Test
-    public void deleteOrder_ShouldRedirectToErrorPage_WhenRoleUserAndNotOrderOwner() throws Exception {
+    public void deleteOrder_ShouldRedirectToHomePage_WhenRoleUserAndNotOrderOwner() throws Exception {
         User authUser = UserDataBuilder.buildUserWithAllFields().build();
         Order order = OrderDataBuilder.buildOrderWithAllFields().build();
 
-        Cookie cookie = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
         orderRepository.save(order);
 
         String redirectedUrl = mockMvc.perform(delete("/orders/{id}/delete", order.getId())
-                        .cookie(cookie))
+                        .cookie(jwtCookiePayload.getAccessCookie()))
                 .andExpect(status().is3xxRedirection())
                 .andReturn().getResponse().getRedirectedUrl();
 
         assertThat(redirectedUrl).isNotNull();
-        assertThat(redirectedUrl).isEqualTo("/error");
+        assertThat(redirectedUrl).isEqualTo("/home");
 
         Optional<Order> orderOptional = orderRepository.findById(order.getId());
         assertThat(orderOptional).isPresent();
@@ -583,10 +581,10 @@ class OrderControllerIntegrationTest {
         User authUser = UserDataBuilder.buildUserWithAllFields().build();
         String orderId = String.valueOf(UUID.randomUUID());
 
-        Cookie cookie = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
 
         MvcResult mvcResult = mockMvc.perform(delete("/orders/{id}/delete", orderId)
-                        .cookie(cookie))
+                        .cookie(jwtCookiePayload.getAccessCookie()))
                 .andExpect(status().is4xxClientError())
                 .andReturn();
 
@@ -602,7 +600,7 @@ class OrderControllerIntegrationTest {
         Product product1 = ProductDataBuilder.buildProductWithAllFields().build();
 
         productRepository.save(product);
-        Cookie cookie = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
 
         Order order = OrderDataBuilder.buildOrderWithAllFields()
                 .status(OrderStatus.IN_PROGRESS)
@@ -612,7 +610,7 @@ class OrderControllerIntegrationTest {
         orderRepository.save(order);
 
         String redirectedUrl = mockMvc.perform(delete("/orders/remove-product/{id}", product.getId())
-                        .cookie(cookie))
+                        .cookie(jwtCookiePayload.getAccessCookie()))
                 .andExpect(status().is3xxRedirection())
                 .andReturn().getResponse().getRedirectedUrl();
 
@@ -632,7 +630,7 @@ class OrderControllerIntegrationTest {
         Product product = ProductDataBuilder.buildProductWithAllFields().build();
 
         productRepository.save(product);
-        Cookie cookie = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
 
         Order order = OrderDataBuilder.buildOrderWithAllFields()
                 .status(OrderStatus.IN_PROGRESS)
@@ -642,7 +640,7 @@ class OrderControllerIntegrationTest {
         orderRepository.save(order);
 
         String redirectedUrl = mockMvc.perform(delete("/orders/remove-product/{id}", product.getId())
-                        .cookie(cookie))
+                        .cookie(jwtCookiePayload.getAccessCookie()))
                 .andExpect(status().is3xxRedirection())
                 .andReturn().getResponse().getRedirectedUrl();
 
@@ -658,10 +656,10 @@ class OrderControllerIntegrationTest {
         Product product = ProductDataBuilder.buildProductWithAllFields().build();
 
         productRepository.save(product);
-        Cookie cookie = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
 
         MvcResult mvcResult = mockMvc.perform(delete("/orders/remove-product/{id}", product.getId())
-                        .cookie(cookie))
+                        .cookie(jwtCookiePayload.getAccessCookie()))
                 .andExpect(status().is4xxClientError())
                 .andReturn();
 
@@ -680,7 +678,7 @@ class OrderControllerIntegrationTest {
         Product product = ProductDataBuilder.buildProductWithAllFields().build();
 
         productRepository.save(product);
-        Cookie cookie = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
 
         Order order = OrderDataBuilder.buildOrderWithAllFields()
                 .status(OrderStatus.COMPLETED)
@@ -690,7 +688,7 @@ class OrderControllerIntegrationTest {
         orderRepository.save(order);
 
         MvcResult mvcResult = mockMvc.perform(delete("/orders/remove-product/{id}", product.getId())
-                        .cookie(cookie))
+                        .cookie(jwtCookiePayload.getAccessCookie()))
                 .andExpect(status().is4xxClientError())
                 .andReturn();
 
@@ -709,7 +707,7 @@ class OrderControllerIntegrationTest {
         Product product = ProductDataBuilder.buildProductWithAllFields().build();
 
         productRepository.save(product);
-        Cookie cookie = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
 
         Order order = OrderDataBuilder.buildOrderWithAllFields()
                 .status(OrderStatus.IN_PROGRESS)
@@ -719,7 +717,7 @@ class OrderControllerIntegrationTest {
         orderRepository.save(order);
 
         String redirectedUrl = mockMvc.perform(post("/orders/user-order/pay")
-                        .cookie(cookie))
+                        .cookie(jwtCookiePayload.getAccessCookie()))
                 .andExpect(status().is3xxRedirection())
                 .andReturn().getResponse().getRedirectedUrl();
 
@@ -737,7 +735,7 @@ class OrderControllerIntegrationTest {
         Product product = ProductDataBuilder.buildProductWithAllFields().build();
 
         productRepository.save(product);
-        Cookie cookie = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
 
         Order order = OrderDataBuilder.buildOrderWithAllFields()
                 .status(OrderStatus.COMPLETED)
@@ -747,7 +745,7 @@ class OrderControllerIntegrationTest {
         orderRepository.save(order);
 
         MvcResult mvcResult = mockMvc.perform(post("/orders/user-order/pay")
-                        .cookie(cookie))
+                        .cookie(jwtCookiePayload.getAccessCookie()))
                 .andExpect(status().is4xxClientError())
                 .andReturn();
 
@@ -766,10 +764,10 @@ class OrderControllerIntegrationTest {
         Product product = ProductDataBuilder.buildProductWithAllFields().build();
 
         productRepository.save(product);
-        Cookie cookie = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
 
         MvcResult mvcResult = mockMvc.perform(post("/orders/user-order/pay")
-                        .cookie(cookie))
+                        .cookie(jwtCookiePayload.getAccessCookie()))
                 .andExpect(status().is4xxClientError())
                 .andReturn();
 
@@ -790,7 +788,7 @@ class OrderControllerIntegrationTest {
                 .build();
 
         productRepository.save(product);
-        Cookie cookie = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
 
         Order order = OrderDataBuilder.buildOrderWithAllFields()
                 .status(OrderStatus.IN_PROGRESS)
@@ -800,7 +798,7 @@ class OrderControllerIntegrationTest {
         orderRepository.save(order);
 
         MvcResult mvcResult = mockMvc.perform(post("/orders/user-order/pay")
-                        .cookie(cookie))
+                        .cookie(jwtCookiePayload.getAccessCookie()))
                 .andExpect(status().is4xxClientError())
                 .andReturn();
 
@@ -822,7 +820,7 @@ class OrderControllerIntegrationTest {
         Product product1 = ProductDataBuilder.buildProductWithAllFields().build();
 
         productRepository.saveAll(List.of(product, product1));
-        Cookie cookie = authHelper.signIn(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
 
         Order order = OrderDataBuilder.buildOrderWithAllFields()
                 .status(OrderStatus.IN_PROGRESS)
@@ -832,7 +830,7 @@ class OrderControllerIntegrationTest {
         orderRepository.save(order);
 
         MvcResult mvcResult = mockMvc.perform(post("/orders/user-order/pay")
-                        .cookie(cookie))
+                        .cookie(jwtCookiePayload.getAccessCookie()))
                 .andExpect(status().is4xxClientError())
                 .andReturn();
 
@@ -845,7 +843,7 @@ class OrderControllerIntegrationTest {
         assertThat(errorMessage).isEqualTo("This product is not available");
 
         String redirectedUrl = mockMvc.perform(delete("/orders/remove-product/{id}", product.getId())
-                        .cookie(cookie))
+                        .cookie(jwtCookiePayload.getAccessCookie()))
                 .andExpect(status().is3xxRedirection())
                 .andReturn().getResponse().getRedirectedUrl();
 

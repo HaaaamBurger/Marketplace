@@ -1,90 +1,110 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en">
 <head>
     <meta charset="UTF-8" />
     <title>Marketplace</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css"
-          rel="stylesheet"
-          integrity="sha384-4Q6Gf2aSP4eDXB8Miphtr37CMZZQ5oXLH2yaXMJ2w8e2ZtHTl7GptT4jmndRuHDT"
-          crossorigin="anonymous" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous" />
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: #f9fafd;
             color: #333;
         }
-        header, footer {
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 1020;
             background-color: #fff;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
-        main {
-            flex-grow: 1;
-        }
+
         .hero-section {
             background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
             color: white;
             padding: 5rem 0;
-            text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
         }
+
         .hero-section h1 {
             font-weight: 700;
             font-size: 3.5rem;
-            margin-bottom: 1rem;
         }
+
+        .hero-section h1 span {
+            background-color: rgba(255, 255, 255, 0.2);
+            padding: 0 0.5rem;
+            border-radius: 6px;
+        }
+
         .hero-section p {
             font-size: 1.25rem;
-            margin-bottom: 2rem;
-            opacity: 0.9;
+            opacity: 0.95;
         }
-        .features-section {
+
+        .section-light {
+            background-color: #ffffff;
+        }
+
+        .section-muted {
+            background-color: #f1f4f9;
+        }
+
+        .features-section, .testimonials-section, .faq-section {
             padding: 4rem 0;
         }
-        .feature-card {
+
+        .feature-card, .testimonial-card {
             background: white;
             border-radius: 12px;
             padding: 2rem;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
             transition: transform 0.3s ease;
+            height: 100%;
         }
+
         .feature-card:hover {
             transform: translateY(-10px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
         }
+
         .feature-icon {
             width: 70px;
             height: 70px;
             margin-bottom: 1rem;
         }
+
+        .testimonial-card {
+            border-left: 5px solid #2575fc;
+        }
+
         .cta-section {
             background: #2575fc;
             color: white;
             text-align: center;
             padding: 4rem 1rem;
-            box-shadow: inset 0 -5px 20px rgba(0,0,0,0.2);
         }
+
         .cta-section h2 {
             font-weight: 700;
             font-size: 2.5rem;
-            margin-bottom: 1rem;
         }
-        .cta-section p {
-            font-size: 1.2rem;
-            margin-bottom: 2rem;
-            opacity: 0.85;
-        }
+
         footer {
             padding: 1.5rem 0;
             font-size: 0.9rem;
             background-color: #1a1a1a;
             color: #bbb;
         }
+
         @media (max-width: 768px) {
             .hero-section h1 {
                 font-size: 2.5rem;
             }
-            .feature-card {
+            .feature-card,
+            .testimonial-card {
                 margin-bottom: 2rem;
             }
         }
@@ -92,43 +112,97 @@
 </head>
 <body class="d-flex flex-column min-vh-100">
 
-<header th:replace="~{fragments/header :: header}"></header>
+<header th:replace="~{fragments/home-header :: home-header}"></header>
 
 <main class="flex-grow-1">
-
     <section class="hero-section text-center">
-        <div class="container">
-            <h1>Welcome to Marketplace</h1>
+        <div class="container mt-5">
+            <h1>Welcome to <span>Marketplace</span></h1>
             <p>Buy and sell everything you need in one place. Fast, easy, and secure.</p>
             <a th:href="@{/products/all}" class="btn btn-light btn-lg px-4 shadow-sm">Browse Products</a>
         </div>
     </section>
 
-    <section class="features-section">
-        <div class="container">
+    <section class="features-section section-light">
+        <div class="container mt-4">
             <div class="row g-4 justify-content-center text-center">
-
-                <div class="col-md-4">
-                    <div class="feature-card h-100 d-flex flex-column align-items-center text-center p-3">
-                        <img src="https://cdn-icons-png.flaticon.com/512/1170/1170678.png" alt="Fast" class="feature-icon mx-auto d-block" />
+                <div class="col-md-4 d-flex">
+                    <div class="feature-card d-flex flex-column align-items-center w-100">
+                        <img src="https://cdn-icons-png.flaticon.com/512/1170/1170678.png" alt="Fast" class="feature-icon" />
                         <h5 class="fw-semibold">Fast & Reliable</h5>
                         <p class="text-muted">Experience blazing-fast transactions and real-time updates.</p>
                     </div>
                 </div>
-
-                <div class="col-md-4">
-                    <div class="feature-card h-100 d-flex flex-column align-items-center text-center p-3">
-                        <img src="https://cdn-icons-png.flaticon.com/512/1034/1034103.png" alt="Secure" class="feature-icon mx-auto d-block" />
+                <div class="col-md-4 d-flex">
+                    <div class="feature-card d-flex flex-column align-items-center w-100">
+                        <img src="https://cdn-icons-png.flaticon.com/512/1034/1034103.png" alt="Secure" class="feature-icon" />
                         <h5 class="fw-semibold">Secure Payments</h5>
                         <p class="text-muted">All your transactions are encrypted and protected.</p>
                     </div>
                 </div>
-
-                <div class="col-md-4">
-                    <div class="feature-card h-100 d-flex flex-column align-items-center text-center p-3">
-                        <img src="https://cdn-icons-png.flaticon.com/512/681/681662.png" alt="Support" class="feature-icon mx-auto d-block" />
+                <div class="col-md-4 d-flex">
+                    <div class="feature-card d-flex flex-column align-items-center w-100">
+                        <img src="https://cdn-icons-png.flaticon.com/512/681/681662.png" alt="Support" class="feature-icon" />
                         <h5 class="fw-semibold">24/7 Support</h5>
                         <p class="text-muted">We’re here to help, anytime you need it.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="testimonials-section section-muted">
+        <div class="container">
+            <h2 class="text-center mb-5 fw-bold">What Our Users Say</h2>
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="testimonial-card">
+                        <p>“Marketplace is super easy to use and helped me sell my old laptop in a day!”</p>
+                        <h6 class="fw-semibold">— Anna M.</h6>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="testimonial-card">
+                        <p>“I found exactly what I needed. Fast shipping and secure payments!”</p>
+                        <h6 class="fw-semibold">— Dmytro S.</h6>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="testimonial-card">
+                        <p>“Reliable platform and excellent customer support. Highly recommend.”</p>
+                        <h6 class="fw-semibold">— Liza K.</h6>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="faq-section section-light">
+        <div class="container">
+            <h2 class="text-center mb-5 fw-bold">Frequently Asked Questions</h2>
+            <div class="accordion" id="faqAccordion">
+                <div class="accordion-item mb-3">
+                    <h2 class="accordion-header" id="faqOne">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne">
+                            How do I create an account?
+                        </button>
+                    </h2>
+                    <div id="collapseOne" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body">
+                            Simply click on the "Sign Up" button at the top and follow the instructions.
+                        </div>
+                    </div>
+                </div>
+                <div class="accordion-item mb-3">
+                    <h2 class="accordion-header" id="faqTwo">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo">
+                            Is my payment information safe?
+                        </button>
+                    </h2>
+                    <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body">
+                            Yes, we use secure encryption and do not store your payment details.
+                        </div>
                     </div>
                 </div>
             </div>
@@ -142,7 +216,6 @@
             <a th:href="@{/sign-up}" class="btn btn-light btn-lg px-4 shadow">Get Started</a>
         </div>
     </section>
-
 </main>
 
 <footer>
@@ -151,8 +224,6 @@
     </div>
 </footer>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-j1CDi7MgGQ12Z7Qab0qlWQ/Qqz24Gc6BM0thvEMVjHnfYGF0rmFCozFSxQBxwHKO"
-        crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
 </body>
 </html>
