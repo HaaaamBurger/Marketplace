@@ -37,18 +37,4 @@ public class ProductExceptionHandler {
                 .build());
     }
 
-    @ExceptionHandler(MaxUploadSizeExceededException.class)
-    public ModelAndView handleMaxUploadSizeExceededException(Model model) {
-
-        model.addAttribute("productRequest", ProductRequest.builder()
-                .active(true)
-                .price(BigDecimal.ZERO)
-                .amount(1)
-                .build());
-
-        ModelAndView modelAndView = new ModelAndView("product-create");
-        modelAndView.addObject("photoSizeError", "Photo size can't be more than 5MB");
-
-        return modelAndView;
-    }
 }

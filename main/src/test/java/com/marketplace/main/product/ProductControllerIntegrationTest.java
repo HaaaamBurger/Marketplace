@@ -433,4 +433,41 @@ class ProductControllerIntegrationTest {
         assertThat(fieldError.getDefaultMessage()).isNotNull();
         assertThat(fieldError.getDefaultMessage()).containsAnyOf("Name is required", "Name must be between 2 and 100 characters");
     }
+
+    @Test
+    public void updateProduct_ShouldUpdatePhotoAndRedirectToProduct_WhenUserOwner() throws Exception {
+        User authUser = UserDataBuilder.buildUserWithAllFields().build();
+        ProductRequest productRequest = ProductRequestDataBuilder.buildProductWithAllFields().build();
+
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
+        Product product = ProductDataBuilder.buildProductWithAllFields()
+                .ownerId(authUser.getId())
+                .build();
+        productRepository.save(product);
+
+        String redirectedUrl = mockMvc.perform(multipart("/products/{productId}/update", product.getId())
+                        .file((MockMultipartFile) productRequest.getPhoto())
+                        .cookie(jwtCookiePayload.getAccessCookie())
+                        .param("name", productRequest.getName())
+                        .param("active", String.valueOf(productRequest.getActive()))
+                        .param("description", productRequest.getDescription())
+                        .param("amount", String.valueOf(productRequest.getAmount()))
+                        .param("price", String.valueOf(productRequest.getPrice()))
+                        .with(request -> {
+                            request.setMethod("PUT");
+                            return request;
+                }))
+                .andExpect(status().is3xxRedirection())
+                .andReturn()
+                .getResponse()
+                .getRedirectedUrl();
+
+        assertThat(redirectedUrl).isNotNull();
+        assertThat(redirectedUrl).isEqualTo("/products/%s", product.getId());
+
+        Optional<Product> productByOwnerId = productRepository.findProductByOwnerId(product.getOwnerId());
+
+        assertThat(productByOwnerId).isPresent();
+        assertThat(productByOwnerId.get().getPhotoUrl()).isNotNull();
+    }
 }

@@ -45,7 +45,7 @@ public class ProductFacade implements ProductCrudService, ProductSettingsService
                 .ownerId(authenticatedUser.getId())
                 .build();
 
-        if (productRequest.getPhoto() != null && !productRequest.getPhoto().isEmpty()) {
+        if (productRequest.getPhoto() != null) {
             URL url = s3FileUploadService.uploadFile(productRequest.getPhoto(), String.valueOf(UUID.randomUUID()));
             product.setPhotoUrl(url.toString());
         }
@@ -67,6 +67,7 @@ public class ProductFacade implements ProductCrudService, ProductSettingsService
                 });
     }
 
+    @Transactional
     @Override
     public Product update(String productId, ProductRequest productRequest) {
 
@@ -76,6 +77,10 @@ public class ProductFacade implements ProductCrudService, ProductSettingsService
         Optional.ofNullable(productRequest.getPrice()).ifPresent(product::setPrice);
         Optional.of(productRequest.getAmount()).ifPresent(product::setAmount);
         Optional.ofNullable(productRequest.getDescription()).ifPresent(product::setDescription);
+        Optional.ofNullable(productRequest.getPhoto()).ifPresent(multipartFile -> {
+            URL url = s3FileUploadService.uploadFile(productRequest.getPhoto(), String.valueOf(UUID.randomUUID()));
+            product.setPhotoUrl(String.valueOf(url));
+        });
         Optional.ofNullable(productRequest.getActive()).ifPresent(product::setActive);
 
         return productRepository.save(product);

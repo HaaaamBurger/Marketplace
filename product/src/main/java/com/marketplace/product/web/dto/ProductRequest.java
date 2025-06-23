@@ -32,4 +32,14 @@ public class ProductRequest {
     @NotNull(message = "Active is required")
     private Boolean active;
 
+    public MultipartFile getPhoto() {
+
+        if (photo != null && !photo.isEmpty()) {
+            return photo;
+        } else {
+            return null;
+        }
+
+    }
+
 }

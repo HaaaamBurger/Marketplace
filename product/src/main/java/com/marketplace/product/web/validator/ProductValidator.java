@@ -10,7 +10,7 @@ import org.springframework.validation.Validator;
 
 @Service
 @RequiredArgsConstructor
-public class ProductCreateValidator implements Validator {
+public class ProductValidator implements Validator {
 
     private final S3FileUploadService s3FileUploadService;
 

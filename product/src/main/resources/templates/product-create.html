@@ -139,9 +139,6 @@
       </div>
       <div id="photoPreview" class="mt-2"></div>
       <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('photo')}" th:errors="*{photo}"></div>
-      <div th:if="${photoSizeError}" class="invalid-feedback d-block">
-        <p th:text="${photoSizeError}"></p>
-      </div>
 
     </div>
 

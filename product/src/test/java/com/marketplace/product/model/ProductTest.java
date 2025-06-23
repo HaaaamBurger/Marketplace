@@ -122,6 +122,18 @@ class ProductTest {
     }
 
     @Test
+    public void whenActiveIsNull_thenValidationFails() {
+        Product product = ProductDataBuilder.buildProductWithAllFields()
+                .active(null)
+                .build();
+
+        Set<ConstraintViolation<Product>> violations = validator.validate(product);
+        assertFalse(violations.isEmpty());
+        assertTrue(violations.stream().anyMatch(v -> v.getMessage().contains("Active is required")));
+    }
+
+
+    @Test
     public void decreaseAmount_ShouldDecreaseAmount() {
         Product product = ProductDataBuilder.buildProductWithAllFields()
                 .amount(1)
