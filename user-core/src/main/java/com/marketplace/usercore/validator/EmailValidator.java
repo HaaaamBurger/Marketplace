@@ -2,7 +2,7 @@ package com.marketplace.usercore.validator;
 
 import com.marketplace.usercore.model.User;
 import com.marketplace.usercore.repository.UserRepository;
-import com.marketplace.usercore.service.UserSettingsService;
+import com.marketplace.usercore.service.UserManagerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.Errors;
@@ -13,7 +13,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class EmailValidator {
 
-    private final UserSettingsService userSettingsService;
+    private final UserManagerService userManagerService;
 
     private final UserRepository userRepository;
 
@@ -26,7 +26,7 @@ public class EmailValidator {
     public void validateEmailUniqueness(String newEmail, String currentEmail, Errors errors) {
         if (newEmail == null || newEmail.equals(currentEmail)) return;
 
-        if (userSettingsService.existsByEmail(newEmail)) {
+        if (userManagerService.existsByEmail(newEmail)) {
             rejectEmailValue(errors);
         }
     }

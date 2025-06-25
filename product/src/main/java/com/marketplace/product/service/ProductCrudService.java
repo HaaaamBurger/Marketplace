@@ -4,6 +4,7 @@ import com.marketplace.product.web.dto.ProductRequest;
 import com.marketplace.product.web.model.Product;
 
 import java.util.List;
+import java.util.Set;
 
 public interface ProductCrudService {
 

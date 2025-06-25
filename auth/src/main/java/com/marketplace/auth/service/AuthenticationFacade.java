@@ -10,7 +10,7 @@ import com.marketplace.usercore.model.User;
 import com.marketplace.usercore.model.UserRole;
 import com.marketplace.usercore.model.UserStatus;
 import com.marketplace.usercore.repository.UserRepository;
-import com.marketplace.usercore.service.UserSettingsService;
+import com.marketplace.usercore.service.UserManagerService;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +28,7 @@ public class AuthenticationFacade implements AuthenticationService {
 
     private final PasswordEncoder passwordEncoder;
 
-    private final UserSettingsService userSettingsService;
+    private final UserManagerService userManagerService;
 
     private final JwtTokenManager jwtTokenManager;
 
@@ -52,7 +52,7 @@ public class AuthenticationFacade implements AuthenticationService {
     @Override
     public void signUp(AuthRequest authRequest) {
 
-        userSettingsService.throwIfUserExistsByEmail(authRequest.getEmail());
+        userManagerService.throwIfUserExistsByEmail(authRequest.getEmail());
         String encodedPassword = passwordEncoder.encode(authRequest.getPassword());
 
         userRepository.save(User.builder()

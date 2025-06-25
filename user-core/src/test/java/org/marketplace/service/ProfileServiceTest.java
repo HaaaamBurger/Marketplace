@@ -7,7 +7,7 @@ import com.marketplace.usercore.model.User;
 import com.marketplace.usercore.repository.UserRepository;
 import com.marketplace.usercore.security.AuthenticationUserService;
 import com.marketplace.usercore.service.ProfileService;
-import com.marketplace.usercore.service.UserSettingsService;
+import com.marketplace.usercore.service.UserManagerService;
 import org.junit.jupiter.api.Test;
 import org.marketplace.util.builders.UserDataBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +25,7 @@ import static org.mockito.Mockito.*;
 public class ProfileServiceTest {
 
     @MockitoBean
-    private UserSettingsService userSettingsService;
+    private UserManagerService userManagerService;
 
     @MockitoBean
     private AuthenticationUserService authenticationUserService;
@@ -47,7 +47,7 @@ public class ProfileServiceTest {
                 .build();
 
         when(authenticationUserService.getAuthenticatedUser()).thenReturn(user);
-        when(userSettingsService.throwIfUserNotFoundById(user.getId())).thenReturn(user);
+        when(userManagerService.throwIfUserNotFoundById(user.getId())).thenReturn(user);
         when(userRepository.save(user)).thenReturn(user);
 
         User updatedUser = profileService.update(user.getId(), profileUpdateRequest);
@@ -57,7 +57,7 @@ public class ProfileServiceTest {
         assertThat(updatedUser.getEmail()).isEqualTo(profileUpdateRequest.getEmail());
 
         verify(authenticationUserService).getAuthenticatedUser();
-        verify(userSettingsService).throwIfUserNotFoundById(user.getId());
+        verify(userManagerService).throwIfUserNotFoundById(user.getId());
         verify(userRepository).save(user);
     }
 
@@ -92,7 +92,7 @@ public class ProfileServiceTest {
                 .build();
 
         when(authenticationUserService.getAuthenticatedUser()).thenReturn(user);
-        when(userSettingsService.throwIfUserNotFoundById(user.getId())).thenReturn(user);
+        when(userManagerService.throwIfUserNotFoundById(user.getId())).thenReturn(user);
 
         User updatedUser = profileService.update(user.getId(), profileUpdateRequest);
 
@@ -101,7 +101,7 @@ public class ProfileServiceTest {
         assertThat(updatedUser.getEmail()).isEqualTo(user.getEmail());
 
         verify(authenticationUserService).getAuthenticatedUser();
-        verify(userSettingsService).throwIfUserNotFoundById(user.getId());
+        verify(userManagerService).throwIfUserNotFoundById(user.getId());
         verify(userRepository, never()).save(user);
     }
 
@@ -116,15 +116,15 @@ public class ProfileServiceTest {
                 .build();
 
         when(authenticationUserService.getAuthenticatedUser()).thenReturn(user);
-        when(userSettingsService.throwIfUserNotFoundById(user.getId())).thenReturn(user);
-        doThrow(new EntityExistsException("User with this email already exists")).when(userSettingsService).throwIfUserWithSameEmailExists(profileUpdateRequest.getEmail());
+        when(userManagerService.throwIfUserNotFoundById(user.getId())).thenReturn(user);
+        doThrow(new EntityExistsException("User with this email already exists")).when(userManagerService).throwIfUserWithSameEmailExists(profileUpdateRequest.getEmail());
 
         assertThatThrownBy(() -> profileService.update(user.getId(), profileUpdateRequest))
                 .isInstanceOf(EntityExistsException.class)
                 .hasMessage("User with this email already exists");
 
         verify(authenticationUserService).getAuthenticatedUser();
-        verify(userSettingsService).throwIfUserNotFoundById(user.getId());
+        verify(userManagerService).throwIfUserNotFoundById(user.getId());
         verify(userRepository, never()).save(any());
     }
 }

@@ -111,7 +111,7 @@ class ProductFacadeTest {
     }
 
     @Test
-    public void update_shouldUpdateProduct() {
+    public void update_shouldUpdateProductByRequest() {
         User user = mockHelper.mockAuthenticationAndSetContext();
         Product product = ProductDataBuilder.buildProductWithAllFields()
                 .ownerId(user.getId())
