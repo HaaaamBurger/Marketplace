@@ -5,10 +5,10 @@ import com.marketplace.product.web.model.Product;
 import java.util.List;
 import java.util.Set;
 
-public interface ProductSettingsService {
+public interface ProductManagerService {
 
     List<Product> findAllByIdIn(Set<String> productIds);
 
-    boolean containsInactiveProduct(List<Product> products);
+    void decreaseProductsAmountAndSave(List<Product> products);
 
 }

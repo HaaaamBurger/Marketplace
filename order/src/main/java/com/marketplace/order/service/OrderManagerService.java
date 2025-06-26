@@ -2,14 +2,17 @@ package com.marketplace.order.service;
 
 import com.marketplace.order.web.model.Order;
 import com.marketplace.order.web.model.OrderStatus;
+import com.marketplace.product.web.model.Product;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
-public interface OrderSettingsService {
+public interface OrderManagerService {
 
     Order addProductToOrder(String productId);
+
+    Order findOrderOrThrow(String orderId);
 
     Optional<Order> findOrderByOwnerIdAndStatus(OrderStatus orderStatus);
 
@@ -19,4 +22,5 @@ public interface OrderSettingsService {
 
     void payForOrder();
 
+    BigDecimal calculateTotalSum(List<Product> products);
 }

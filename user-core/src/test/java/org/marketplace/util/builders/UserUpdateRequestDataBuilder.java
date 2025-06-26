@@ -1,4 +1,4 @@
-package com.marketplace.user.util;
+package org.marketplace.util.builders;
 
 import com.marketplace.usercore.dto.UserUpdateRequest;
 import com.marketplace.usercore.model.UserRole;

@@ -17,7 +17,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class ProfileService {
 
-    private final UserSettingsService userSettingsService;
+    private final UserManagerService userManagerService;
 
     private final AuthenticationUserService authenticationUserService;
 
@@ -31,13 +31,13 @@ public class ProfileService {
             throw new AccessDeniedException("Access denied!");
         }
 
-        User userForUpdate = userSettingsService.throwIfUserNotFoundById(userId);
+        User userForUpdate = userManagerService.throwIfUserNotFoundByIdOrGet(userId);
 
         if (profileUpdateRequest.getEmail().equals(userForUpdate.getEmail())) {
             return userForUpdate;
         }
 
-        userSettingsService.throwIfUserWithSameEmailExists(profileUpdateRequest.getEmail());
+        userManagerService.throwIfUserExistsByEmail(profileUpdateRequest.getEmail());
 
         Optional.ofNullable(profileUpdateRequest.getEmail()).ifPresent(userForUpdate::setEmail);
         return userRepository.save(userForUpdate);

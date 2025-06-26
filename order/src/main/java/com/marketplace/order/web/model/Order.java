@@ -8,6 +8,7 @@ import lombok.experimental.SuperBuilder;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.math.BigDecimal;
 import java.util.Set;
 
 @Data
@@ -31,5 +32,7 @@ public class Order extends AuditableEntity {
 
     @NotNull(message = "Status is required")
     private OrderStatus status;
+
+    private BigDecimal total;
 
 }

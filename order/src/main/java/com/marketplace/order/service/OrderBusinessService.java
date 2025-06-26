@@ -1,25 +1,21 @@
 package com.marketplace.order.service;
 
 import com.marketplace.common.exception.EntityNotFoundException;
-import com.marketplace.order.exception.OrderUpdateException;
 import com.marketplace.order.repository.OrderRepository;
-import com.marketplace.order.web.dto.OrderUpdateRequest;
 import com.marketplace.order.web.model.Order;
 import com.marketplace.order.web.model.OrderStatus;
-import com.marketplace.order.web.dto.OrderRequest;
-import com.marketplace.product.exception.ProductNotAvailableException;
-import com.marketplace.product.repository.ProductRepository;
+import com.marketplace.product.service.ProductBusinessService;
 import com.marketplace.product.service.ProductCrudService;
+import com.marketplace.product.service.ProductValidationService;
 import com.marketplace.product.web.model.Product;
 import com.marketplace.usercore.model.User;
 import com.marketplace.usercore.security.AuthenticationUserService;
-import com.marketplace.usercore.service.UserSettingsService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -28,69 +24,27 @@ import java.util.Set;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class OrderFacade implements OrderCrudService, OrderSettingsService {
-
-    private final OrderRepository orderRepository;
+public class OrderBusinessService implements OrderManagerService {
 
     private final AuthenticationUserService authenticationUserService;
 
+    private final OrderRepository orderRepository;
+
     private final ProductCrudService productCrudService;
 
-    private final ProductRepository productRepository;
+    private final ProductBusinessService productBusinessService;
 
-    private final UserSettingsService userSettingsService;
-
-    @Override
-    public Order create(OrderRequest request) {
-        User authenticatedUser = authenticationUserService.getAuthenticatedUser();
-
-        Set<String> productIds = request.getProductIds();
-        productIds.forEach(productCrudService::getById);
-
-        return orderRepository.save(Order.builder()
-                .ownerId(authenticatedUser.getId())
-                .productIds(request.getProductIds())
-                .address(request.getAddress())
-                .status(request.getStatus())
-                .build());
-    }
-
-    @Override
-    public List<Order> findAll() {
-        return orderRepository.findAll();
-    }
-
-    @Override
-    public Order findById(String orderId) {
-        return validateOrderAccessOrThrow(orderId);
-    }
-
-    @Override
-    public Order update(String orderId, OrderUpdateRequest request) {
-        Order order = findOrderOrThrow(orderId);
-
-        validateOrderUpdateOrThrow(order);
-
-        Optional.ofNullable(request.getAddress()).ifPresent(order::setAddress);
-        Optional.ofNullable(request.getStatus()).ifPresent(order::setStatus);
-
-        return orderRepository.save(order);
-    }
-
-    @Override
-    public void delete(String orderId) {
-        Order order = validateOrderAccessOrThrow(orderId);
-        orderRepository.delete(order);
-    }
+    private final ProductValidationService productValidationService;
 
     @Transactional
     @Override
     public Order addProductToOrder(String productId) {
         Product product = productCrudService.getById(productId);
-        validateProductOrThrow(product);
+        productValidationService.validateProductOrThrow(product);
 
         Order order = findByOwnerIdOrCreate();
         order.getProductIds().add(productId);
+
         return orderRepository.save(order);
     }
 
@@ -124,34 +78,35 @@ public class OrderFacade implements OrderCrudService, OrderSettingsService {
         orderRepository.save(order);
     }
 
-    // TODO Think about race condition
     @Transactional
     @Override
     public void payForOrder() {
         Order order = findActiveOrderByOwnerIdOrThrow();
 
-        order.getProductIds().stream()
-                .map(productCrudService::getById)
-                .forEach(product -> {
-                    validateProductOrThrow(product);
-                    product.decreaseAmount();
-                    productRepository.save(product);
-        });
+        List<Product> products = productBusinessService.findAllByIdIn(order.getProductIds());
+        products.forEach(productValidationService::validateProductOrThrow);
 
+        productBusinessService.decreaseProductsAmountAndSave(products);
+
+        order.setTotal(calculateTotalSum(products));
         order.setStatus(OrderStatus.COMPLETED);
         orderRepository.save(order);
     }
 
-    private Order validateOrderAccessOrThrow(String orderId) {
-        User authenticatedUser = authenticationUserService.getAuthenticatedUser();
-        Order order = findOrderOrThrow(orderId);
+    @Override
+    public Order findOrderOrThrow(String orderId) {
+        return orderRepository.findById(orderId)
+                .orElseThrow(() -> {
+                    log.error("[MONGO_ORDER_SERVICE]: Order not found by ID {}", orderId);
+                    return new EntityNotFoundException("Order not found!");
+                });
+    }
 
-        if (userSettingsService.validateEntityOwnerOrAdmin(authenticatedUser, order.getOwnerId())) {
-            return order;
-        }
-
-        log.error("[MONGO_ORDER_SERVICE]: User {} is not owner of the order: {} or not ADMIN", authenticatedUser.getId(), orderId);
-        throw new AccessDeniedException("Access denied!");
+    @Override
+    public BigDecimal calculateTotalSum(List<Product> products) {
+        return products.stream()
+                .map(Product::getPrice)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
     private Order findByOwnerIdOrCreate() {
@@ -174,28 +129,6 @@ public class OrderFacade implements OrderCrudService, OrderSettingsService {
                 });
     }
 
-    private Order findOrderOrThrow(String orderId) {
-        return orderRepository.findById(orderId)
-                .orElseThrow(() -> {
-                    log.error("[MONGO_ORDER_SERVICE]: Order not found by ID {}", orderId);
-                    return new EntityNotFoundException("Order not found!");
-                });
-    }
-
-    private void validateOrderUpdateOrThrow(Order order) {
-        if (order.getStatus() == OrderStatus.COMPLETED || order.getStatus() == OrderStatus.CANCELLED) {
-            log.warn("[ORDER_FACADE]: Order with statuses: COMPLETED or CANCELLED cannot be updated!");
-            throw new OrderUpdateException("Completed order cannot be updated");
-        }
-    }
-
-    private void validateProductOrThrow(Product product) {
-        if (product.getAmount() == 0 || !product.getActive()) {
-            log.warn("[ORDER_FACADE]: Product {} is not available because amount is 0 or not active", product.getId());
-            throw new ProductNotAvailableException("This product is not available");
-        }
-    }
-
     private Order findOrderByOwnerIdAndStatusOrThrow(OrderStatus orderStatus) {
         User authenticatedUser = authenticationUserService.getAuthenticatedUser();
         Optional<Order> orderByOwnerIdAndStatus = orderRepository.findOrderByOwnerIdAndStatus(authenticatedUser.getId(), orderStatus);
@@ -207,4 +140,5 @@ public class OrderFacade implements OrderCrudService, OrderSettingsService {
 
         return orderByOwnerIdAndStatus.get();
     }
+
 }

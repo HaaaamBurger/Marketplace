@@ -17,6 +17,7 @@ public class OrderEntityMapper implements SimpleOrderMapper {
                 .productIds(order.getProductIds())
                 .address(order.getAddress())
                 .status(order.getStatus())
+                .total(order.getTotal())
                 .createdAt(order.getCreatedAt())
                 .updatedAt(order.getUpdatedAt())
                 .build();
