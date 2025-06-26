@@ -17,8 +17,6 @@ public class ProductBusinessService implements ProductManagerService {
 
     private final ProductRepository productRepository;
 
-    private final ProductValidationService productValidationService;
-
     @Override
     public List<Product> findAllByIdIn(Set<String> productIds) {
         return productRepository.findAllByIdIn(productIds);
@@ -37,12 +35,5 @@ public class ProductBusinessService implements ProductManagerService {
         });
 
         productRepository.saveAll(products);
-    }
-
-    @Override
-    public ProductsValidationResponse validateProducts(Set<String> productIds) {
-        List<Product> products = findAllByIdIn(productIds);
-        boolean isNotValid = products.stream().anyMatch(productValidationService::isNotValidProduct);
-        return ProductsValidationResponse.builder().products(products).hasInvalidProduct(isNotValid).build();
     }
 }

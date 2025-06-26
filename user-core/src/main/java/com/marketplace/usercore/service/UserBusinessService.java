@@ -22,27 +22,18 @@ public class UserBusinessService implements UserManagerService {
 
     @Override
     public void throwIfUserExistsByEmail(String email) {
-        userRepository.findByEmail(email).ifPresent(user -> {
+        if (existsByEmail(email)) {
             log.error("[USER_SERVICE_FACADE]: User already exists by email: {}", email);
             throw new EntityExistsException("User already exists!");
-        });
-
+        }
     }
 
     @Override
-    public User throwIfUserNotFoundById(String userId) {
+    public User throwIfUserNotFoundByIdOrGet(String userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> {
                     log.error("[USER_SERVICE_FACADE]: User not found by id: {}", userId);
                     return new EntityNotFoundException("User not found!");
                 });
     }
-
-    @Override
-    public void throwIfUserWithSameEmailExists(String email) {
-        if (userRepository.existsByEmail(email)) {
-            throw new EntityExistsException("User with this email already exists");
-        }
-    }
-
 }

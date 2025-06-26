@@ -31,13 +31,13 @@ public class ProfileService {
             throw new AccessDeniedException("Access denied!");
         }
 
-        User userForUpdate = userManagerService.throwIfUserNotFoundById(userId);
+        User userForUpdate = userManagerService.throwIfUserNotFoundByIdOrGet(userId);
 
         if (profileUpdateRequest.getEmail().equals(userForUpdate.getEmail())) {
             return userForUpdate;
         }
 
-        userManagerService.throwIfUserWithSameEmailExists(profileUpdateRequest.getEmail());
+        userManagerService.throwIfUserExistsByEmail(profileUpdateRequest.getEmail());
 
         Optional.ofNullable(profileUpdateRequest.getEmail()).ifPresent(userForUpdate::setEmail);
         return userRepository.save(userForUpdate);

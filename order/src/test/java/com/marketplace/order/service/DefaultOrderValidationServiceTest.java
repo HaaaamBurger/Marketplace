@@ -78,7 +78,7 @@ public class DefaultOrderValidationServiceTest {
 
         when(authenticationUserService.getAuthenticatedUser()).thenThrow(AuthenticationCredentialsNotFoundException.class);
 
-        defaultOrderValidationService.validateOrderAccessOrThrow(mockedOrder);
+        assertThatThrownBy(() -> defaultOrderValidationService.validateOrderAccessOrThrow(mockedOrder)).isInstanceOf(AuthenticationCredentialsNotFoundException.class);
     }
 
     @Test

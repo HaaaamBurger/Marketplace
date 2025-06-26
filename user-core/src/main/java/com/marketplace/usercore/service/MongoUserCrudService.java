@@ -47,15 +47,15 @@ public class MongoUserCrudService implements UserCrudService {
 
     @Override
     public User findById(String userId) {
-        return userManagerService.throwIfUserNotFoundById(userId);
+        return userManagerService.throwIfUserNotFoundByIdOrGet(userId);
     }
 
     @Override
     public User update(String userId, UserUpdateRequest userUpdateRequest) {
-        User userForUpdate = userManagerService.throwIfUserNotFoundById(userId);
+        User userForUpdate = userManagerService.throwIfUserNotFoundByIdOrGet(userId);
 
         if (!userUpdateRequest.getEmail().equals(userForUpdate.getEmail())) {
-            userManagerService.throwIfUserWithSameEmailExists(userUpdateRequest.getEmail());
+            userManagerService.throwIfUserExistsByEmail(userUpdateRequest.getEmail());
             Optional.ofNullable(userUpdateRequest.getEmail()).ifPresent(userForUpdate::setEmail);
         }
 
@@ -67,7 +67,7 @@ public class MongoUserCrudService implements UserCrudService {
 
     @Override
     public void delete(String userId) {
-        userManagerService.throwIfUserNotFoundById(userId);
+        userManagerService.throwIfUserNotFoundByIdOrGet(userId);
         userRepository.deleteById(userId);
     }
 

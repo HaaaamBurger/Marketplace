@@ -9,7 +9,6 @@ import com.marketplace.product.web.model.Product;
 import com.marketplace.usercore.model.User;
 import com.marketplace.usercore.security.AuthenticationUserService;
 import com.marketplace.usercore.service.DefaultUserValidationService;
-import com.marketplace.usercore.service.UserManagerService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.AccessDeniedException;
@@ -69,22 +68,7 @@ public class MongoProductCrudService implements ProductCrudService {
     public Product update(String productId, ProductRequest productRequest) {
         Product product = validateProductAccessOrThrow(productId);
 
-        Optional.ofNullable(productRequest.getName()).ifPresent(product::setName);
-        Optional.ofNullable(productRequest.getPrice()).ifPresent(product::setPrice);
-        Optional.ofNullable(productRequest.getDescription()).ifPresent(product::setDescription);
-        Optional.ofNullable(productRequest.getActive()).ifPresent(product::setActive);
-
-        Optional.ofNullable(productRequest.getAmount()).ifPresent(amount -> {
-            if (amount == 0) {
-                product.setActive(false);
-            }
-            product.setAmount(amount);
-        });
-
-        Optional.ofNullable(productRequest.getPhoto()).ifPresent(multipartFile -> {
-            URL url = s3FileUploadService.uploadFile(productRequest.getPhoto(), String.valueOf(UUID.randomUUID()));
-            product.setPhotoUrl(String.valueOf(url));
-        });
+        applyUpdatesByRequest(product, productRequest);
 
         return productRepository.save(product);
     }
@@ -104,6 +88,26 @@ public class MongoProductCrudService implements ProductCrudService {
         }
 
         throw new AccessDeniedException("Access denied!");
+    }
+
+    private void applyUpdatesByRequest( Product product, ProductRequest productRequest) {
+        Optional.ofNullable(productRequest.getName()).ifPresent(product::setName);
+        Optional.ofNullable(productRequest.getPrice()).ifPresent(product::setPrice);
+        Optional.ofNullable(productRequest.getDescription()).ifPresent(product::setDescription);
+        Optional.ofNullable(productRequest.getActive()).ifPresent(product::setActive);
+
+        Optional.ofNullable(productRequest.getAmount()).ifPresent(amount -> {
+            if (amount == 0) {
+                product.setActive(false);
+            }
+            product.setAmount(amount);
+        });
+
+        // TODO delete old photo
+        Optional.ofNullable(productRequest.getPhoto()).ifPresent(multipartFile -> {
+            URL url = s3FileUploadService.uploadFile(productRequest.getPhoto(), String.valueOf(UUID.randomUUID()));
+            product.setPhotoUrl(String.valueOf(url));
+        });
     }
 
 }

@@ -67,6 +67,12 @@ public class AuthenticationServiceTest {
         assertNotNull(authResponse);
         assertThat(mockAccessToken).isEqualTo(authResponse.getAccessToken());
         assertThat(mockRefreshToken).isEqualTo(authResponse.getRefreshToken());
+
+        verify(mockUser).getPassword();
+        verify(userRepository).findByEmail(authRequest.getEmail());
+        verify(passwordEncoder).matches(authRequest.getPassword(), mockEncodedPassword);
+        verify(jwtService).generateAccessToken(mockUser);
+        verify(jwtService).generateRefreshToken(mockUser);
     }
 
     @Test
@@ -77,8 +83,11 @@ public class AuthenticationServiceTest {
         when(userRepository.findByEmail((authRequest.getEmail()))).thenReturn(Optional.empty());
 
         String exceptionMessage = assertThrows(CredentialException.class, () -> authenticationService.signIn(authRequest, httpServletResponse)).getMessage();
+
         assertThat(exceptionMessage).isNotBlank();
         assertThat(exceptionMessage).isEqualTo("Wrong credentials!");
+
+        verify(userRepository).findByEmail(authRequest.getEmail());
     }
 
     @Test
@@ -96,6 +105,10 @@ public class AuthenticationServiceTest {
         String exceptionMessage = assertThrows(CredentialException.class, () -> authenticationService.signIn(authRequest, httpServletResponse)).getMessage();
         assertThat(exceptionMessage).isNotBlank();
         assertThat(exceptionMessage).isEqualTo("Wrong credentials!");
+
+        verify(userRepository).findByEmail(authRequest.getEmail());
+        verify(mockUser).getPassword();
+        verify(passwordEncoder).matches(authRequest.getPassword(), mockEncodedPassword);
     }
 
     @Test
@@ -104,8 +117,9 @@ public class AuthenticationServiceTest {
         AuthRequest authRequest = AuthRequestDataBuilder.withAllFields().build();
         ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
 
-        when(userRepository.findByEmail(authRequest.getEmail())).thenReturn(Optional.empty());
+        when(userRepository.existsByEmail(authRequest.getEmail())).thenReturn(false);
         when(passwordEncoder.encode(authRequest.getPassword())).thenReturn(encodedPassword);
+
         authenticationService.signUp(authRequest);
 
         verify(userRepository).save(userCaptor.capture());
@@ -113,18 +127,22 @@ public class AuthenticationServiceTest {
         assertThat(userCaptor.getValue().getEmail()).isEqualTo(authRequest.getEmail());
         assertThat(userCaptor.getValue().getPassword()).isEqualTo(encodedPassword);
         assertThat(userCaptor.getValue().getStatus()).isEqualTo(UserStatus.ACTIVE);
+
+        verify(userRepository).existsByEmail(authRequest.getEmail());
+        verify(passwordEncoder).encode(authRequest.getPassword());
     }
 
     @Test
     public void signUp_shouldThrowException_WhenUserAlreadyExists() {
-        User mockUser = mock(User.class);
         AuthRequest authRequest = AuthRequestDataBuilder.withAllFields().build();
 
-        when(userRepository.findByEmail(authRequest.getEmail())).thenReturn(Optional.of(mockUser));
+        when(userRepository.existsByEmail(authRequest.getEmail())).thenReturn(true);
 
         assertThatThrownBy(() -> authenticationService.signUp(authRequest))
                 .isInstanceOf(EntityExistsException.class)
                 .hasMessage("User already exists!");
+
+        verify(userRepository).existsByEmail(authRequest.getEmail());
     }
 
     @Test
@@ -150,6 +168,12 @@ public class AuthenticationServiceTest {
         assertNotNull(authResponse);
         assertThat(authResponse.getAccessToken()).isEqualTo(mockAccessToken);
         assertThat(authResponse.getRefreshToken()).isEqualTo(mockRefreshToken);
+
+        verify(jwtService).extractSubject(mockValidRefreshToken);
+        verify(customUserDetailsService).loadUserByUsername(mockSubject);
+        verify(jwtService).isTokenValid(mockValidRefreshToken, mockUser);
+        verify(jwtService).generateAccessToken(mockUser);
+        verify(jwtService).generateRefreshToken(mockUser);
     }
 
     @Test
@@ -169,5 +193,9 @@ public class AuthenticationServiceTest {
         assertThatThrownBy(() -> authenticationService.refreshToken(authRefreshRequest))
                 .isInstanceOf(TokenNotValidException.class)
                 .hasMessage("Token not valid!");
+
+        verify(jwtService).extractSubject(mockValidRefreshToken);
+        verify(customUserDetailsService).loadUserByUsername(mockSubject);
+        verify(jwtService).isTokenValid(mockValidRefreshToken, mockUser);
     }
 }

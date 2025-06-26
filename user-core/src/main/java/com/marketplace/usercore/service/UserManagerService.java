@@ -6,9 +6,7 @@ public interface UserManagerService {
 
     void throwIfUserExistsByEmail(String email);
 
-    User throwIfUserNotFoundById(String userId);
-
-    void throwIfUserWithSameEmailExists(String email);
+    User throwIfUserNotFoundByIdOrGet(String userId);
 
     boolean existsByEmail(String email);
 

@@ -1,35 +1,35 @@
-package com.marketplace.user.service;
+package org.marketplace.service;
 
-import com.marketplace.user.util.UserUpdateRequestDataBuilder;
+import com.marketplace.common.exception.EntityExistsException;
+import com.marketplace.common.exception.EntityNotFoundException;
+import com.marketplace.usercore.config.UserCoreApplicationConfig;
 import com.marketplace.usercore.dto.UserRequest;
 import com.marketplace.usercore.dto.UserUpdateRequest;
 import com.marketplace.usercore.model.User;
-import com.marketplace.common.exception.EntityExistsException;
-import com.marketplace.common.exception.EntityNotFoundException;
-import com.marketplace.user.util.UserDataBuilder;
-import com.marketplace.usercore.config.UserCoreApplicationConfig;
 import com.marketplace.usercore.model.UserRole;
 import com.marketplace.usercore.model.UserStatus;
 import com.marketplace.usercore.repository.UserRepository;
 import com.marketplace.usercore.security.AuthenticationUserService;
 import com.marketplace.usercore.service.UserCrudService;
 import org.junit.jupiter.api.Test;
+import org.marketplace.util.builders.UserDataBuilder;
+import org.marketplace.util.builders.UserUpdateRequestDataBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.assertj.core.api.AssertionsForClassTypes.*;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-@ActiveProfiles("test")
 @SpringBootTest(classes = UserCoreApplicationConfig.class)
-public class UserFacadeTest {
+public class MongoUserCrudServiceTest {
 
     @MockitoBean
     private UserRepository userRepository;
@@ -83,7 +83,7 @@ public class UserFacadeTest {
                 .password(mockPassword)
                 .build();
 
-        when(userRepository.findByEmail(mockEmail)).thenReturn(Optional.empty());
+        when(userRepository.existsByEmail(mockEmail)).thenReturn(false);
         when(passwordEncoder.encode(mockPassword)).thenReturn(mockEncodedPassword);
         when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -95,14 +95,13 @@ public class UserFacadeTest {
         assertThat(responseUser.getStatus()).isEqualTo(UserStatus.ACTIVE);
         assertThat(responseUser.getPassword()).isEqualTo(mockEncodedPassword);
 
-        verify(userRepository).findByEmail(mockEmail);
+        verify(userRepository).existsByEmail(mockEmail);
         verify(passwordEncoder).encode(mockPassword);
         verify(userRepository).save(any(User.class));
     }
 
     @Test
     public void create_shouldThrowException_WhenUserExists() {
-        User mockUser = mock(User.class);
         String mockEmail = "mockEmail";
         String mockPassword = "mockPassword";
         UserRequest userRequest = UserRequest.builder()
@@ -111,13 +110,13 @@ public class UserFacadeTest {
                 .password(mockPassword)
                 .build();
 
-        when(userRepository.findByEmail(mockEmail)).thenReturn(Optional.of(mockUser));
+        when(userRepository.existsByEmail(mockEmail)).thenReturn(true);
 
         assertThatThrownBy(() -> userCrudService.create(userRequest))
                 .isInstanceOf(EntityExistsException.class)
                 .hasMessage("User already exists!");
 
-        verify(userRepository).findByEmail(mockEmail);
+        verify(userRepository).existsByEmail(mockEmail);
     }
 
     @Test
@@ -148,7 +147,6 @@ public class UserFacadeTest {
         UserUpdateRequest userUpdateRequest = UserUpdateRequestDataBuilder.buildUserWithAllFields().build();
 
         when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
-        when(authenticationUserService.getAuthenticatedUser()).thenReturn(user);
         when(userRepository.save(user)).thenAnswer(invocation -> {
             User invocationUser = invocation.getArgument(0);
             invocationUser.setRole(UserRole.ADMIN);
@@ -163,6 +161,20 @@ public class UserFacadeTest {
 
         verify(userRepository).findById(user.getId());
         verify(userRepository).save(user);
+    }
+
+    @Test
+    public void update_shouldThrowException_WhenUserNotFound() {
+        User user = UserDataBuilder.buildUserWithAllFields()
+                .id(String.valueOf(UUID.randomUUID()))
+                .build();
+        UserUpdateRequest userUpdateRequest = UserUpdateRequestDataBuilder.buildUserWithAllFields().build();
+
+        when(userRepository.findById(user.getId())).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> userCrudService.update(user.getId(), userUpdateRequest)).isInstanceOf(EntityNotFoundException.class);
+
+        verify(userRepository).findById(user.getId());
     }
 
     @Test

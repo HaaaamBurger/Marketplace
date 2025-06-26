@@ -47,7 +47,7 @@ public class ProfileServiceTest {
                 .build();
 
         when(authenticationUserService.getAuthenticatedUser()).thenReturn(user);
-        when(userManagerService.throwIfUserNotFoundById(user.getId())).thenReturn(user);
+        when(userManagerService.throwIfUserNotFoundByIdOrGet(user.getId())).thenReturn(user);
         when(userRepository.save(user)).thenReturn(user);
 
         User updatedUser = profileService.update(user.getId(), profileUpdateRequest);
@@ -57,7 +57,7 @@ public class ProfileServiceTest {
         assertThat(updatedUser.getEmail()).isEqualTo(profileUpdateRequest.getEmail());
 
         verify(authenticationUserService).getAuthenticatedUser();
-        verify(userManagerService).throwIfUserNotFoundById(user.getId());
+        verify(userManagerService).throwIfUserNotFoundByIdOrGet(user.getId());
         verify(userRepository).save(user);
     }
 
@@ -92,7 +92,7 @@ public class ProfileServiceTest {
                 .build();
 
         when(authenticationUserService.getAuthenticatedUser()).thenReturn(user);
-        when(userManagerService.throwIfUserNotFoundById(user.getId())).thenReturn(user);
+        when(userManagerService.throwIfUserNotFoundByIdOrGet(user.getId())).thenReturn(user);
 
         User updatedUser = profileService.update(user.getId(), profileUpdateRequest);
 
@@ -101,7 +101,7 @@ public class ProfileServiceTest {
         assertThat(updatedUser.getEmail()).isEqualTo(user.getEmail());
 
         verify(authenticationUserService).getAuthenticatedUser();
-        verify(userManagerService).throwIfUserNotFoundById(user.getId());
+        verify(userManagerService).throwIfUserNotFoundByIdOrGet(user.getId());
         verify(userRepository, never()).save(user);
     }
 
@@ -116,15 +116,15 @@ public class ProfileServiceTest {
                 .build();
 
         when(authenticationUserService.getAuthenticatedUser()).thenReturn(user);
-        when(userManagerService.throwIfUserNotFoundById(user.getId())).thenReturn(user);
-        doThrow(new EntityExistsException("User with this email already exists")).when(userManagerService).throwIfUserWithSameEmailExists(profileUpdateRequest.getEmail());
+        when(userManagerService.throwIfUserNotFoundByIdOrGet(user.getId())).thenReturn(user);
+        doThrow(new EntityExistsException("User with this email already exists")).when(userManagerService).throwIfUserExistsByEmail(profileUpdateRequest.getEmail());
 
         assertThatThrownBy(() -> profileService.update(user.getId(), profileUpdateRequest))
                 .isInstanceOf(EntityExistsException.class)
                 .hasMessage("User with this email already exists");
 
         verify(authenticationUserService).getAuthenticatedUser();
-        verify(userManagerService).throwIfUserNotFoundById(user.getId());
+        verify(userManagerService).throwIfUserNotFoundByIdOrGet(user.getId());
         verify(userRepository, never()).save(any());
     }
 }

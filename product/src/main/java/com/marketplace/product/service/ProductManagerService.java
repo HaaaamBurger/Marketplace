@@ -11,6 +11,4 @@ public interface ProductManagerService {
 
     void decreaseProductsAmountAndSave(List<Product> products);
 
-    ProductsValidationResponse validateProducts(Set<String> productIds);
-
 }
