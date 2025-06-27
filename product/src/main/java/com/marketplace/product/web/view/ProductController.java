@@ -100,6 +100,6 @@ public class ProductController {
     @DeleteMapping("/{productId}/delete")
     public String deleteProduct(@PathVariable String productId) {
         productCrudService.delete(productId);
-        return "redirect:/products";
+        return "redirect:/products/all";
     }
 }

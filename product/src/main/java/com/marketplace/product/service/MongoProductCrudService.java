@@ -79,7 +79,7 @@ public class MongoProductCrudService implements ProductCrudService {
     @Override
     public void delete(String productId) {
         validateProductAccessOrThrow(productId);
-        productEventProducer.sendProductDeleteEvent(productId);
+        productEventProducer.sendDeleteProductFromOrdersEvent(productId);
     }
 
     private Product validateProductAccessOrThrow(String productId) {

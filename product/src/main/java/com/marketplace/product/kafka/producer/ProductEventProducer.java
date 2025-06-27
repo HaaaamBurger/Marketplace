@@ -13,9 +13,9 @@ public class ProductEventProducer {
 
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
-    public void sendProductDeleteEvent(String productId) {
-        log.info("[PRODUCT_EVENT_PRODUCER: Sent {} for product deletion", OutputTopics.PRODUCTS_DELETE_TOPIC);
-        kafkaTemplate.send(OutputTopics.PRODUCTS_DELETE_TOPIC, productId);
+    public void sendDeleteProductFromOrdersEvent(String productId) {
+        log.info("[PRODUCT_EVENT_PRODUCER: Sent {} for product deletion", OutputTopics.PRODUCTS_DELETE_FROM_ORDER_TOPIC);
+        kafkaTemplate.send(OutputTopics.PRODUCTS_DELETE_FROM_ORDER_TOPIC, productId);
     }
 
 }
