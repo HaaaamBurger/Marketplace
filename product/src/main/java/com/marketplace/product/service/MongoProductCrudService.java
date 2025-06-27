@@ -2,6 +2,7 @@ package com.marketplace.product.service;
 
 import com.marketplace.aws.service.S3FileUploadService;
 import com.marketplace.common.exception.EntityNotFoundException;
+import com.marketplace.product.kafka.producer.ProductEventProducer;
 import com.marketplace.product.mapper.SimpleProductMapper;
 import com.marketplace.product.repository.ProductRepository;
 import com.marketplace.product.web.dto.ProductRequest;
@@ -34,6 +35,8 @@ public class MongoProductCrudService implements ProductCrudService {
     private final S3FileUploadService s3FileUploadService;
 
     private final DefaultUserValidationService defaultUserValidationService;
+
+    private final ProductEventProducer productEventProducer;
 
     @Transactional
     @Override
@@ -75,8 +78,8 @@ public class MongoProductCrudService implements ProductCrudService {
 
     @Override
     public void delete(String productId) {
-        Product product = validateProductAccessOrThrow(productId);
-        productRepository.delete(product);
+        validateProductAccessOrThrow(productId);
+        productEventProducer.sendProductDeleteEvent(productId);
     }
 
     private Product validateProductAccessOrThrow(String productId) {

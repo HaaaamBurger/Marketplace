@@ -96,4 +96,10 @@ public class ProductController {
 
         return "redirect:/products/" + productId;
     }
+
+    @DeleteMapping("/{productId}/delete")
+    public String deleteProduct(@PathVariable String productId) {
+        productCrudService.delete(productId);
+        return "redirect:/products";
+    }
 }
