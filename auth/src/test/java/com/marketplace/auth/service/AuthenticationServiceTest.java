@@ -9,7 +9,7 @@ import com.marketplace.auth.security.token.JwtService;
 import com.marketplace.auth.web.dto.AuthRefreshRequest;
 import com.marketplace.auth.web.dto.AuthRequest;
 import com.marketplace.auth.web.dto.AuthResponse;
-import com.marketplace.auth.web.util.builders.AuthRequestDataBuilder;
+import com.marketplace.auth.web.util.builder.AuthRequestDataBuilder;
 import com.marketplace.usercore.model.User;
 import com.marketplace.usercore.model.UserStatus;
 import com.marketplace.usercore.repository.UserRepository;

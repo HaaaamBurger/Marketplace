@@ -21,7 +21,6 @@ public class ProductEventConsumer {
     )
     public void listenDeleteProductFromOrdersEvent(String productId) {
         log.info("[PRODUCT_EVENT_CONSUMER]: Received event {} from {}", productId, InputTopics.PRODUCTS_DELETE_FROM_ORDER_TOPIC);
-
         productEventService.deleteProductFromOrdersAndProduct(productId);
     }
 

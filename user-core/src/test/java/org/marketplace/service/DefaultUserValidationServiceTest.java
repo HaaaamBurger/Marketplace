@@ -5,7 +5,7 @@ import com.marketplace.usercore.model.User;
 import com.marketplace.usercore.model.UserRole;
 import com.marketplace.usercore.service.DefaultUserValidationService;
 import org.junit.jupiter.api.Test;
-import org.marketplace.util.builders.UserDataBuilder;
+import org.marketplace.util.builder.UserDataBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 

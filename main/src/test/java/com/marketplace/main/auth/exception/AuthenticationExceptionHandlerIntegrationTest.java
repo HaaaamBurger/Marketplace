@@ -38,7 +38,7 @@ public class AuthenticationExceptionHandlerIntegrationTest {
     @Test
     public void handleExpiredJwtException_ShouldRedirectToSignIn_WhenTokenExpired() throws Exception {
         User user = UserDataBuilder.buildUserWithAllFields().build();
-        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(user, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signIn(user, mockMvc);
 
         String redirectedUrl = mockMvc.perform(get("/users/all")
                         .cookie(jwtCookiePayload.getAccessCookie(), jwtCookiePayload.getRefreshCookie()))

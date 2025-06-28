@@ -12,5 +12,4 @@ public interface ProductRepository extends MongoRepository<Product,String> {
     Optional<Product> findProductByOwnerId(String ownerId);
 
     List<Product> findAllByIdIn(Set<String> productIds);
-
 }

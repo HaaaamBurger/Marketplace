@@ -1,4 +1,4 @@
-package com.marketplace.order.util;
+package com.marketplace.order.util.builder;
 
 import com.marketplace.order.web.model.Order;
 import com.marketplace.order.web.model.OrderStatus;

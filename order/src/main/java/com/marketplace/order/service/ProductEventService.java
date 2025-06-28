@@ -16,7 +16,11 @@ public class ProductEventService {
     @Transactional
     public void deleteProductFromOrdersAndProduct(String productId) {
         orderManagerService.removeProductFromAllOrders(productId);
-        productRepository.deleteById(productId);
+        deleteProductIfExists(productId);
+    }
+
+    private void deleteProductIfExists(String productId) {
+        productRepository.findById(productId).ifPresent(productRepository::delete);
     }
 
 }
