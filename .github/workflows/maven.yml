@@ -53,6 +53,7 @@ jobs:
             echo "Waiting for Mongo... attempt $i"
             sleep 5
           done
+
       - name: Wait for Kafka to be ready
         run: |
           echo "Waiting for Kafka..."
@@ -61,6 +62,6 @@ jobs:
             echo "Waiting for Kafka... attempt $i"
             sleep 5
           done
+
       - name: Build all modules
         run: mvn clean verify
-
