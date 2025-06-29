@@ -1,6 +1,6 @@
 package com.marketplace.auth.exception;
 
-import com.marketplace.common.exception.CommonExceptionService;
+import com.marketplace.common.exception.ExceptionService;
 import com.marketplace.common.exception.ExceptionType;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -18,14 +18,14 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class AuthenticationExceptionHandler {
 
-    private final CommonExceptionService commonExceptionService;
+    private final ExceptionService exceptionService;
 
     @ExceptionHandler(CredentialException.class)
     public ModelAndView handleCredentialsException(CredentialException exception, HttpServletResponse response, HttpServletRequest request) {
         log.error("[AUTHENTICATION_EXCEPTION_HANDLER]: {}", exception.getMessage());
 
         response.setStatus(401);
-        return commonExceptionService.buildErrorResponseModelAndView(CommonExceptionService.ErrorModelPayload.builder()
+        return exceptionService.buildErrorResponseModelAndView(ExceptionService.ErrorModelPayload.builder()
                         .modelView("error")
                         .status(401)
                         .message(exception.getMessage())

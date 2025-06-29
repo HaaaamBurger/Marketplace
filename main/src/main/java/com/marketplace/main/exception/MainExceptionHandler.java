@@ -1,6 +1,6 @@
 package com.marketplace.main.exception;
 
-import com.marketplace.common.exception.CommonExceptionService;
+import com.marketplace.common.exception.ExceptionService;
 import com.marketplace.common.exception.EntityExistsException;
 import com.marketplace.common.exception.EntityNotFoundException;
 import com.marketplace.common.exception.ExceptionType;
@@ -25,7 +25,7 @@ import static com.marketplace.common.constants.Delimiters.COLON_DELIMITER;
 @RequiredArgsConstructor
 public class MainExceptionHandler {
 
-    private final CommonExceptionService commonExceptionService;
+    private final ExceptionService exceptionService;
 
     @ExceptionHandler(ConstraintViolationException.class)
     public ModelAndView handleConstraintViolationException(ConstraintViolationException exception, HttpServletRequest request, HttpServletResponse response) {
@@ -35,7 +35,7 @@ public class MainExceptionHandler {
                 .collect(Collectors.joining(COMMA_DELIMITER));
 
         response.setStatus(400);
-        return commonExceptionService.buildErrorResponseModelAndView(CommonExceptionService.ErrorModelPayload.builder()
+        return exceptionService.buildErrorResponseModelAndView(ExceptionService.ErrorModelPayload.builder()
                     .modelView("error")
                     .status(400)
                     .message(invalidFields)
@@ -48,7 +48,7 @@ public class MainExceptionHandler {
     public ModelAndView handleEntityExistsException(EntityExistsException exception, HttpServletRequest request, HttpServletResponse response) {
 
         response.setStatus(400);
-        return commonExceptionService.buildErrorResponseModelAndView(CommonExceptionService.ErrorModelPayload.builder()
+        return exceptionService.buildErrorResponseModelAndView(ExceptionService.ErrorModelPayload.builder()
                 .modelView("error")
                 .status(400)
                 .message(exception.getMessage())
@@ -61,7 +61,7 @@ public class MainExceptionHandler {
     public ModelAndView handleEntityNotFoundException(EntityNotFoundException exception, HttpServletRequest request, HttpServletResponse response) {
 
         response.setStatus(404);
-        return commonExceptionService.buildErrorResponseModelAndView(CommonExceptionService.ErrorModelPayload.builder()
+        return exceptionService.buildErrorResponseModelAndView(ExceptionService.ErrorModelPayload.builder()
                 .modelView("error")
                 .status(404)
                 .message(exception.getMessage())
@@ -80,7 +80,7 @@ public class MainExceptionHandler {
                 .collect(Collectors.joining(COMMA_DELIMITER));
 
         response.setStatus(400);
-        return commonExceptionService.buildErrorResponseModelAndView(CommonExceptionService.ErrorModelPayload.builder()
+        return exceptionService.buildErrorResponseModelAndView(ExceptionService.ErrorModelPayload.builder()
                 .modelView("error")
                 .status(400)
                 .message(invalidFields)

@@ -29,7 +29,7 @@ public class ProductValidator implements Validator {
         ProductRequest productRequest = (ProductRequest) target;
         if (productRequest.getPhoto() != null && !productRequest.getPhoto().isEmpty()) {
             try {
-                s3FileUploadService.validateAndGetExtensionFromFilename(productRequest.getPhoto().getOriginalFilename());
+                s3FileUploadService.getExtension(productRequest.getPhoto().getOriginalFilename());
             } catch (AwsPhotoUploadException exception) {
                 rejectPhotoValue(errors, exception.getMessage());
             }

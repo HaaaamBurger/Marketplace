@@ -30,7 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 @SpringBootTest(classes = AuthApplicationConfig.class)
-public class AuthenticationServiceTest {
+public class AuthenticationManagerServiceTest {
 
     @MockitoBean
     private CustomUserDetailsService customUserDetailsService;
@@ -45,7 +45,7 @@ public class AuthenticationServiceTest {
     private JwtService jwtService;
 
     @Autowired
-    private AuthenticationService authenticationService;
+    private AuthenticationManagerService authenticationManagerService;
 
     @Test
     public void signIn_shouldReturnPairOfTokens() {
@@ -62,7 +62,7 @@ public class AuthenticationServiceTest {
         when(jwtService.generateAccessToken(mockUser)).thenReturn(mockAccessToken);
         when(jwtService.generateRefreshToken(mockUser)).thenReturn(mockRefreshToken);
 
-        AuthResponse authResponse = authenticationService.signIn(authRequest, httpServletResponse);
+        AuthResponse authResponse = authenticationManagerService.signIn(authRequest, httpServletResponse);
 
         assertNotNull(authResponse);
         assertThat(mockAccessToken).isEqualTo(authResponse.getAccessToken());
@@ -82,7 +82,7 @@ public class AuthenticationServiceTest {
 
         when(userRepository.findByEmail((authRequest.getEmail()))).thenReturn(Optional.empty());
 
-        String exceptionMessage = assertThrows(CredentialException.class, () -> authenticationService.signIn(authRequest, httpServletResponse)).getMessage();
+        String exceptionMessage = assertThrows(CredentialException.class, () -> authenticationManagerService.signIn(authRequest, httpServletResponse)).getMessage();
 
         assertThat(exceptionMessage).isNotBlank();
         assertThat(exceptionMessage).isEqualTo("Wrong credentials!");
@@ -102,7 +102,7 @@ public class AuthenticationServiceTest {
         when(mockUser.getPassword()).thenReturn(mockEncodedPassword);
         when(passwordEncoder.matches(authRequest.getPassword(), mockEncodedPassword)).thenReturn(false);
 
-        String exceptionMessage = assertThrows(CredentialException.class, () -> authenticationService.signIn(authRequest, httpServletResponse)).getMessage();
+        String exceptionMessage = assertThrows(CredentialException.class, () -> authenticationManagerService.signIn(authRequest, httpServletResponse)).getMessage();
         assertThat(exceptionMessage).isNotBlank();
         assertThat(exceptionMessage).isEqualTo("Wrong credentials!");
 
@@ -120,7 +120,7 @@ public class AuthenticationServiceTest {
         when(userRepository.existsByEmail(authRequest.getEmail())).thenReturn(false);
         when(passwordEncoder.encode(authRequest.getPassword())).thenReturn(encodedPassword);
 
-        authenticationService.signUp(authRequest);
+        authenticationManagerService.signUp(authRequest);
 
         verify(userRepository).save(userCaptor.capture());
 
@@ -138,7 +138,7 @@ public class AuthenticationServiceTest {
 
         when(userRepository.existsByEmail(authRequest.getEmail())).thenReturn(true);
 
-        assertThatThrownBy(() -> authenticationService.signUp(authRequest))
+        assertThatThrownBy(() -> authenticationManagerService.signUp(authRequest))
                 .isInstanceOf(EntityExistsException.class)
                 .hasMessage("User already exists!");
 
@@ -163,7 +163,7 @@ public class AuthenticationServiceTest {
         when(jwtService.generateAccessToken(mockUser)).thenReturn(mockAccessToken);
         when(jwtService.generateRefreshToken(mockUser)).thenReturn(mockRefreshToken);
 
-        AuthResponse authResponse = authenticationService.refreshToken(authRefreshRequest);
+        AuthResponse authResponse = authenticationManagerService.refreshToken(authRefreshRequest);
 
         assertNotNull(authResponse);
         assertThat(authResponse.getAccessToken()).isEqualTo(mockAccessToken);
@@ -190,7 +190,7 @@ public class AuthenticationServiceTest {
         when(customUserDetailsService.loadUserByUsername(mockSubject)).thenReturn(mockUser);
         when(jwtService.isTokenValid(mockValidRefreshToken, mockUser)).thenReturn(false);
 
-        assertThatThrownBy(() -> authenticationService.refreshToken(authRefreshRequest))
+        assertThatThrownBy(() -> authenticationManagerService.refreshToken(authRefreshRequest))
                 .isInstanceOf(TokenNotValidException.class)
                 .hasMessage("Token not valid!");
 

@@ -5,8 +5,8 @@ import com.marketplace.auth.security.cookie.CookieNotFoundException;
 import com.marketplace.auth.security.cookie.CookieService;
 import com.marketplace.auth.security.token.JwtService;
 import com.marketplace.auth.security.token.TokenPayload;
-import com.marketplace.auth.service.JwtCookieManager;
-import com.marketplace.auth.service.JwtTokenManager;
+import com.marketplace.auth.service.JwtCookieService;
+import com.marketplace.auth.service.JwtTokenService;
 import com.marketplace.usercore.model.User;
 import com.marketplace.usercore.model.UserStatus;
 import io.jsonwebtoken.JwtException;
@@ -41,10 +41,10 @@ public class JwtAuthenticationFilterTest {
     private CookieService cookieService;
 
     @MockitoBean
-    private JwtCookieManager jwtCookieManager;
+    private JwtCookieService jwtCookieService;
 
     @MockitoBean
-    private JwtTokenManager jwtTokenManager;
+    private JwtTokenService jwtTokenService;
 
     @MockitoBean
     private HttpServletRequest httpServletRequest;
@@ -77,7 +77,7 @@ public class JwtAuthenticationFilterTest {
             when(mockedSecurityContext.getAuthentication()).thenReturn(null);
             when(cookieService.extractCookieByName(COOKIE_ACCESS_TOKEN, httpServletRequest)).thenReturn(mockedCookie);
             when(mockedCookie.getValue()).thenReturn(accessToken);
-            when(jwtTokenManager.getUserDetailsIfTokenValidOrThrow(accessToken)).thenReturn(mockedUser);
+            when(jwtTokenService.getUserDetailsIfTokenValidOrThrow(accessToken)).thenReturn(mockedUser);
 
             jwtAuthenticationFilter.doFilterInternal(httpServletRequest, httpServletResponse, filterChain);
 
@@ -86,7 +86,7 @@ public class JwtAuthenticationFilterTest {
             verify(mockedSecurityContext).getAuthentication();
             verify(cookieService).extractCookieByName(COOKIE_ACCESS_TOKEN, httpServletRequest);
             verify(mockedCookie).getValue();
-            verify(jwtTokenManager).getUserDetailsIfTokenValidOrThrow(accessToken);
+            verify(jwtTokenService).getUserDetailsIfTokenValidOrThrow(accessToken);
 
             verify(mockedSecurityContext).setAuthentication(authenticationArgumentCaptor.capture());
             assertThat(authenticationArgumentCaptor.getValue()).isNotNull();
@@ -126,10 +126,10 @@ public class JwtAuthenticationFilterTest {
             when(mockedSecurityContext.getAuthentication()).thenReturn(null);
             when(cookieService.extractCookieByName(COOKIE_ACCESS_TOKEN, httpServletRequest)).thenReturn(mockedCookie);
             when(mockedCookie.getValue()).thenReturn(accessToken);
-            when(jwtTokenManager.getUserDetailsIfTokenValidOrThrow(accessToken)).thenThrow(JwtException.class);
+            when(jwtTokenService.getUserDetailsIfTokenValidOrThrow(accessToken)).thenThrow(JwtException.class);
             when(cookieService.extractCookieByName(COOKIE_REFRESH_TOKEN, httpServletRequest)).thenReturn(mockedCookie);
             when(mockedCookie.getValue()).thenReturn(refreshToken);
-            when(jwtTokenManager.getUserDetailsIfTokenValidOrThrow(refreshToken)).thenThrow(JwtException.class);
+            when(jwtTokenService.getUserDetailsIfTokenValidOrThrow(refreshToken)).thenThrow(JwtException.class);
 
             jwtAuthenticationFilter.doFilterInternal(httpServletRequest, httpServletResponse, filterChain);
 
@@ -137,7 +137,7 @@ public class JwtAuthenticationFilterTest {
             verify(cookieService).extractCookieByName(COOKIE_ACCESS_TOKEN, httpServletRequest);
             verify(cookieService).extractCookieByName(COOKIE_REFRESH_TOKEN, httpServletRequest);
             verify(mockedCookie, times(2)).getValue();
-            verify(jwtTokenManager, times(2)).getUserDetailsIfTokenValidOrThrow(refreshToken);
+            verify(jwtTokenService, times(2)).getUserDetailsIfTokenValidOrThrow(refreshToken);
             verify(httpServletResponse).sendRedirect("/sign-in");
         }
     }
@@ -158,22 +158,22 @@ public class JwtAuthenticationFilterTest {
             when(mockedSecurityContext.getAuthentication()).thenReturn(null);
             when(cookieService.extractCookieByName(COOKIE_ACCESS_TOKEN, httpServletRequest)).thenReturn(mockedAccessCookie);
             when(mockedAccessCookie.getValue()).thenReturn(accessToken);
-            when(jwtTokenManager.getUserDetailsIfTokenValidOrThrow(accessToken)).thenThrow(JwtException.class);
+            when(jwtTokenService.getUserDetailsIfTokenValidOrThrow(accessToken)).thenThrow(JwtException.class);
             when(cookieService.extractCookieByName(COOKIE_REFRESH_TOKEN, httpServletRequest)).thenReturn(mockedRefreshCookie);
             when(mockedRefreshCookie.getValue()).thenReturn(refreshToken);
-            when(jwtTokenManager.getUserDetailsIfTokenValidOrThrow(refreshToken)).thenReturn(mockedUser);
-            when(jwtTokenManager.generateTokenPayload(mockedUser)).thenReturn(mockedTokenPayload);
+            when(jwtTokenService.getUserDetailsIfTokenValidOrThrow(refreshToken)).thenReturn(mockedUser);
+            when(jwtTokenService.generateTokenPayload(mockedUser)).thenReturn(mockedTokenPayload);
 
             jwtAuthenticationFilter.doFilterInternal(httpServletRequest, httpServletResponse, filterChain);
 
             verify(mockedSecurityContext).getAuthentication();
             verify(cookieService).extractCookieByName(COOKIE_ACCESS_TOKEN, httpServletRequest);
             verify(mockedAccessCookie).getValue();
-            verify(jwtTokenManager).getUserDetailsIfTokenValidOrThrow(accessToken);
+            verify(jwtTokenService).getUserDetailsIfTokenValidOrThrow(accessToken);
             verify(cookieService).extractCookieByName(COOKIE_REFRESH_TOKEN, httpServletRequest);
             verify(mockedRefreshCookie).getValue();
-            verify(jwtTokenManager).getUserDetailsIfTokenValidOrThrow(refreshToken);
-            verify(jwtTokenManager).generateTokenPayload(mockedUser);
+            verify(jwtTokenService).getUserDetailsIfTokenValidOrThrow(refreshToken);
+            verify(jwtTokenService).generateTokenPayload(mockedUser);
 
             verify(httpServletResponse, never()).sendRedirect("/sign-in");
         }
@@ -192,7 +192,7 @@ public class JwtAuthenticationFilterTest {
             when(mockedSecurityContext.getAuthentication()).thenReturn(null);
             when(cookieService.extractCookieByName(COOKIE_ACCESS_TOKEN, httpServletRequest)).thenReturn(mockedCookie);
             when(mockedCookie.getValue()).thenReturn(accessToken);
-            when(jwtTokenManager.getUserDetailsIfTokenValidOrThrow(accessToken)).thenReturn(mockedUser);
+            when(jwtTokenService.getUserDetailsIfTokenValidOrThrow(accessToken)).thenReturn(mockedUser);
             when(mockedUser.getStatus()).thenReturn(UserStatus.BLOCKED);
 
             jwtAuthenticationFilter.doFilterInternal(httpServletRequest, httpServletResponse, filterChain);
@@ -200,8 +200,8 @@ public class JwtAuthenticationFilterTest {
             verify(mockedSecurityContext).getAuthentication();
             verify(cookieService).extractCookieByName(COOKIE_ACCESS_TOKEN, httpServletRequest);
             verify(mockedCookie).getValue();
-            verify(jwtTokenManager).getUserDetailsIfTokenValidOrThrow(accessToken);
-            verify(jwtCookieManager).deleteTokensFromCookie(httpServletResponse);
+            verify(jwtTokenService).getUserDetailsIfTokenValidOrThrow(accessToken);
+            verify(jwtCookieService).deleteTokensFromCookie(httpServletResponse);
         }
     }
 

@@ -3,7 +3,7 @@ package com.marketplace.product.service;
 import com.marketplace.aws.service.S3FileUploadService;
 import com.marketplace.common.exception.EntityNotFoundException;
 import com.marketplace.product.kafka.producer.ProductEventProducer;
-import com.marketplace.product.mapper.SimpleProductMapper;
+import com.marketplace.product.mapper.ProductEntityMapper;
 import com.marketplace.product.repository.ProductRepository;
 import com.marketplace.product.web.dto.ProductRequest;
 import com.marketplace.product.web.model.Product;
@@ -28,7 +28,7 @@ public class MongoProductCrudService implements ProductCrudService {
 
     private final ProductRepository productRepository;
 
-    private final SimpleProductMapper simpleProductMapper;
+    private final ProductEntityMapper productEntityMapper;
 
     private final AuthenticationUserService authenticationUserService;
 
@@ -43,7 +43,7 @@ public class MongoProductCrudService implements ProductCrudService {
     public Product create(ProductRequest productRequest) {
         User authenticatedUser = authenticationUserService.getAuthenticatedUser();
 
-        Product product = simpleProductMapper.mapProductRequestDtoToProduct(productRequest).toBuilder()
+        Product product = productEntityMapper.mapProductRequestDtoToProduct(productRequest).toBuilder()
                 .ownerId(authenticatedUser.getId())
                 .build();
 

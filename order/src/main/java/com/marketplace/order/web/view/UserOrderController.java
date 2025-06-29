@@ -1,11 +1,11 @@
 package com.marketplace.order.web.view;
 
-import com.marketplace.order.mapper.SimpleOrderMapper;
+import com.marketplace.order.mapper.OrderEntityMapper;
 import com.marketplace.order.service.OrderCrudService;
 import com.marketplace.order.service.OrderManagerService;
 import com.marketplace.order.web.model.Order;
 import com.marketplace.order.web.model.OrderStatus;
-import com.marketplace.product.mapper.SimpleProductMapper;
+import com.marketplace.product.mapper.ProductEntityMapper;
 import com.marketplace.product.service.ProductManagerService;
 import com.marketplace.product.service.ProductValidationService;
 import com.marketplace.product.web.model.Product;
@@ -30,9 +30,9 @@ public class UserOrderController {
 
     private final ProductValidationService productValidationService;
 
-    private final SimpleOrderMapper simpleOrderMapper;
+    private final OrderEntityMapper orderEntityMapper;
 
-    private final SimpleProductMapper simpleProductMapper;
+    private final ProductEntityMapper productEntityMapper;
 
     @GetMapping("/{orderId}")
     public String getOrderById(
@@ -43,8 +43,8 @@ public class UserOrderController {
 
         List<Product> products = productManagerService.findAllByIdIn(order.getProductIds());
         model.addAttribute("isPayable", !productValidationService.validateProducts(products));
-        model.addAttribute("products", simpleProductMapper.mapProductsToProductResponseDtos(products));
-        model.addAttribute("order", simpleOrderMapper.mapOrderToOrderResponseDto(order));
+        model.addAttribute("products", productEntityMapper.mapProductsToProductResponseDtos(products));
+        model.addAttribute("order", orderEntityMapper.mapOrderToOrderResponseDto(order));
 
         return "order";
     }
@@ -58,13 +58,13 @@ public class UserOrderController {
         orderByOwnerIdAndStatus.ifPresent(order -> {
             List<Product> products = productManagerService.findAllByIdIn(order.getProductIds());
             model.addAttribute("isPayable", !productValidationService.validateProducts(products));
-            model.addAttribute("orderProducts", simpleProductMapper.mapProductsToProductResponseDtos(products));
+            model.addAttribute("orderProducts", productEntityMapper.mapProductsToProductResponseDtos(products));
             model.addAttribute("totalSum", orderManagerService.calculateTotalSum(products));
-            model.addAttribute("currentOrder", simpleOrderMapper.mapOrderToOrderResponseDto(order));
+            model.addAttribute("currentOrder", orderEntityMapper.mapOrderToOrderResponseDto(order));
         });
 
         List<Order> ordersByOwnerIdAndStatusIn = orderManagerService.findOrdersByOwnerIdAndStatusIn(List.of(OrderStatus.COMPLETED, OrderStatus.CANCELLED));
-        model.addAttribute("historyOrders", simpleOrderMapper.mapOrdersToOrderResponseDtos(ordersByOwnerIdAndStatusIn));
+        model.addAttribute("historyOrders", orderEntityMapper.mapOrdersToOrderResponseDtos(ordersByOwnerIdAndStatusIn));
 
         return "user-order";
     }

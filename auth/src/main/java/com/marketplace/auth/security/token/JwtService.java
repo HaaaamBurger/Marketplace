@@ -56,11 +56,6 @@ public class JwtService {
         }
     }
 
-    public Object extractClaim(String token, String claim) {
-        Claims claims = extractAllClaims(token);
-        return claims.get(claim);
-    }
-
     public String extractSubject(String token) {
         return extractClaim(token, Claims::getSubject);
     }

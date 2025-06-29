@@ -1,6 +1,6 @@
 package com.marketplace.order.exception;
 
-import com.marketplace.common.exception.CommonExceptionService;
+import com.marketplace.common.exception.ExceptionService;
 import com.marketplace.common.exception.ExceptionType;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -15,14 +15,14 @@ import org.springframework.web.servlet.ModelAndView;
 @RequiredArgsConstructor
 public class OrderExceptionHandler {
 
-    private final CommonExceptionService commonExceptionService;
+    private final ExceptionService exceptionService;
 
     @ExceptionHandler(OrderUpdateException.class)
     protected ModelAndView handleOrderUpdateException(OrderUpdateException exception, HttpServletResponse response, HttpServletRequest request) {
         log.error("[ORDER_EXCEPTION_HANDLER]: {}", exception.getMessage());
 
         response.setStatus(400);
-        return commonExceptionService.buildErrorResponseModelAndView(CommonExceptionService.ErrorModelPayload.builder()
+        return exceptionService.buildErrorResponseModelAndView(ExceptionService.ErrorModelPayload.builder()
                         .modelView("error")
                         .status(400)
                         .message(exception.getMessage())
