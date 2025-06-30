@@ -29,14 +29,14 @@ jobs:
           - "9092:9092"
         env:
           KAFKA_BROKER_ID: 1
-          KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-          KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
+          KAFKA_ZOOKEEPER_CONNECT: localhost:2181  # ← правильно
           KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+          KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
           KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
           KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
 
     env:
-      MONGO_DB_URI: mongodb://localhost:27017/marketplace
+      MONGO_DB_URI: ${{ secrets.MONGO_DB_URI }}
       JWT_ACCESS_EXPIRATION_TIME: ${{ secrets.JWT_ACCESS_EXPIRATION_TIME }}
       JWT_REFRESH_EXPIRATION_TIME: ${{ secrets.JWT_REFRESH_EXPIRATION_TIME }}
       JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
@@ -59,11 +59,11 @@ jobs:
 
       - name: Wait for MongoDB to be ready
         run: |
-          echo "Waiting for MongoDB..."
+          echo "Waiting for MongoDB to be ready..."
           for i in {1..20}; do
             nc -z localhost 27017 && echo "Mongo is up" && break
             echo "Waiting for Mongo... attempt $i"
-            sleep 3
+            sleep 5
           done
 
       - name: Wait for Zookeeper to be ready
@@ -72,7 +72,7 @@ jobs:
           for i in {1..20}; do
             echo ruok | nc localhost 2181 | grep imok && echo "Zookeeper is ready" && break
             echo "Waiting for Zookeeper... attempt $i"
-            sleep 3
+            sleep 5
           done
 
       - name: Wait for Kafka to be ready
@@ -81,7 +81,7 @@ jobs:
           for i in {1..20}; do
             nc -z localhost 9092 && echo "Kafka is up" && break
             echo "Waiting for Kafka... attempt $i"
-            sleep 3
+            sleep 5
           done
 
       - name: Build all modules
