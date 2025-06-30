@@ -1,7 +1,7 @@
 package com.marketplace.order.model;
 
 
-import com.marketplace.order.util.OrderDataBuilder;
+import com.marketplace.order.util.builder.OrderDataBuilder;
 import com.marketplace.order.web.model.Order;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
@@ -45,7 +45,7 @@ public class OrderTest {
 
         assertThat(matchedViolation).isNotNull();
         assertThat(matchedViolation.getPropertyPath().toString()).isEqualTo("ownerId");
-        assertThat(matchedViolation.getMessage()).isEqualTo("Owner ID is required");
+        assertThat(matchedViolation.getMessage()).isEqualTo("Owner Id is required");
     }
 
     @Test

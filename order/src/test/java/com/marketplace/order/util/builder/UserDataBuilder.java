@@ -1,15 +1,20 @@
-package com.marketplace.auth.web.util.builders;
+package com.marketplace.order.util.builder;
 
 import com.marketplace.usercore.model.User;
 import com.marketplace.usercore.model.UserRole;
 import com.marketplace.usercore.model.UserStatus;
 
+import java.util.UUID;
+
 public class UserDataBuilder {
+
     public static User.UserBuilder buildUserWithAllFields() {
         return User.builder()
-                .email("test@gmail.com")
-                .role(UserRole.USER)
+                .id(String.valueOf(UUID.randomUUID()))
+                .email(String.valueOf(UUID.randomUUID()))
                 .status(UserStatus.ACTIVE)
-                .password("testPassword1");
+                .role(UserRole.USER)
+                .password(String.valueOf(UUID.randomUUID()));
     }
+
 }

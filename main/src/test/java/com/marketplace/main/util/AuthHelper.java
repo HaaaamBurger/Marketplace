@@ -31,7 +31,7 @@ public class AuthHelper {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    public JwtCookiePayload signUp(User user, MockMvc mockMvc) throws Exception {
+    public JwtCookiePayload signIn(User user, MockMvc mockMvc) throws Exception {
         AuthRequest authRequest = AuthRequestDataBuilder.withAllFields()
                 .email(user.getEmail())
                 .password(user.getPassword())

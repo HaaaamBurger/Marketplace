@@ -17,7 +17,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
 @SpringBootTest(classes = AuthApplicationConfig.class)
-public class JwtTokenManagerTest {
+public class JwtTokenServiceTest {
 
     @MockitoBean
     private JwtService jwtService;
@@ -26,7 +26,7 @@ public class JwtTokenManagerTest {
     private UserDetailsService userDetailsService;
 
     @Autowired
-    private JwtTokenManager jwtTokenManager;
+    private JwtTokenService jwtTokenService;
 
     @Test
     public void generateTokenPayload_ShouldGenerateTokenPayload() {
@@ -37,7 +37,7 @@ public class JwtTokenManagerTest {
         when(jwtService.generateAccessToken(mockedUser)).thenReturn(mockedAccessToken);
         when(jwtService.generateRefreshToken(mockedUser)).thenReturn(mockedRefreshToken);
 
-        TokenPayload tokenPayload = jwtTokenManager.generateTokenPayload(mockedUser);
+        TokenPayload tokenPayload = jwtTokenService.generateTokenPayload(mockedUser);
         assertThat(tokenPayload).isNotNull();
         assertThat(tokenPayload.getAccessToken()).isEqualTo(mockedAccessToken);
         assertThat(tokenPayload.getRefreshToken()).isEqualTo(mockedRefreshToken);
@@ -48,7 +48,7 @@ public class JwtTokenManagerTest {
 
     @Test
     public void generateTokenPayload_ShouldThrowException_WhenUserDetailsIsNull() {
-        assertThatThrownBy(() -> jwtTokenManager.generateTokenPayload(null))
+        assertThatThrownBy(() -> jwtTokenService.generateTokenPayload(null))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("User details not present");
     }
@@ -63,7 +63,7 @@ public class JwtTokenManagerTest {
         when(userDetailsService.loadUserByUsername(mockedSubject)).thenReturn(mockedUser);
         when(jwtService.isTokenValid(mockedToken, mockedUser)).thenReturn(true);
 
-        UserDetails userDetails = jwtTokenManager.getUserDetailsIfTokenValidOrThrow(mockedToken);
+        UserDetails userDetails = jwtTokenService.getUserDetailsIfTokenValidOrThrow(mockedToken);
 
         assertThat(userDetails).isNotNull();
         assertThat(userDetails).isEqualTo(mockedUser);
@@ -83,14 +83,14 @@ public class JwtTokenManagerTest {
         when(userDetailsService.loadUserByUsername(mockedSubject)).thenReturn(mockedUser);
         when(jwtService.isTokenValid(mockedToken, mockedUser)).thenReturn(false);
 
-        assertThatThrownBy(() -> jwtTokenManager.getUserDetailsIfTokenValidOrThrow(mockedToken))
+        assertThatThrownBy(() -> jwtTokenService.getUserDetailsIfTokenValidOrThrow(mockedToken))
                 .isInstanceOf(TokenNotValidException.class)
                 .hasMessage("Token not valid!");
     }
 
     @Test
     public void getUserDetailsIfTokenValidOrThrow_ShouldThrowException_WhenTokenIsNull() {
-        assertThatThrownBy(() -> jwtTokenManager.getUserDetailsIfTokenValidOrThrow(null))
+        assertThatThrownBy(() -> jwtTokenService.getUserDetailsIfTokenValidOrThrow(null))
                 .isInstanceOf(TokenNotValidException.class)
                 .hasMessage("Token not valid!");
     }

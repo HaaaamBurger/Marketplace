@@ -1,6 +1,6 @@
 package com.marketplace.product.web.view;
 
-import com.marketplace.product.mapper.SimpleProductMapper;
+import com.marketplace.product.mapper.ProductEntityMapper;
 import com.marketplace.product.service.ProductCrudService;
 import com.marketplace.product.web.dto.ProductRequest;
 import com.marketplace.product.web.model.Product;
@@ -25,12 +25,12 @@ public class ProductController {
 
     private final ProductValidator productValidator;
 
-    private final SimpleProductMapper simpleProductMapper;
+    private final ProductEntityMapper productEntityMapper;
 
     @GetMapping("/all")
     public String getAllProducts(Model model) {
         List<Product> products = productCrudService.findAll();
-        model.addAttribute("products", simpleProductMapper.mapProductsToProductResponseDtos(products));
+        model.addAttribute("products", productEntityMapper.mapProductsToProductResponseDtos(products));
         return "products";
     }
 
@@ -40,7 +40,7 @@ public class ProductController {
             @PathVariable String productId
     ) {
         Product product = productCrudService.getById(productId);
-        model.addAttribute("product", simpleProductMapper.mapProductToProductResponseDto(product));
+        model.addAttribute("product", productEntityMapper.mapProductToProductResponseDto(product));
         return "product";
     }
 
@@ -76,7 +76,7 @@ public class ProductController {
         Product product = productCrudService.getById(productId);
 
         model.addAttribute("productId", productId);
-        model.addAttribute("productRequest", simpleProductMapper.mapProductToProductRequestDto(product));
+        model.addAttribute("productRequest", productEntityMapper.mapProductToProductRequestDto(product));
         return "product-update";
     }
 
@@ -92,8 +92,14 @@ public class ProductController {
         }
 
         Product product = productCrudService.update(productId, productRequest);
-        simpleProductMapper.mapProductToProductResponseDto(product);
+        productEntityMapper.mapProductToProductResponseDto(product);
 
         return "redirect:/products/" + productId;
+    }
+
+    @DeleteMapping("/{productId}/delete")
+    public String deleteProduct(@PathVariable String productId) {
+        productCrudService.delete(productId);
+        return "redirect:/products/all";
     }
 }

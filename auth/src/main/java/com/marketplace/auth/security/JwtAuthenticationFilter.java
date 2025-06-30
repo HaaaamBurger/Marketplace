@@ -3,8 +3,8 @@ package com.marketplace.auth.security;
 import com.marketplace.auth.security.cookie.CookieNotFoundException;
 import com.marketplace.auth.security.cookie.CookieService;
 import com.marketplace.auth.security.token.TokenPayload;
-import com.marketplace.auth.service.JwtCookieManager;
-import com.marketplace.auth.service.JwtTokenManager;
+import com.marketplace.auth.service.JwtCookieService;
+import com.marketplace.auth.service.JwtTokenService;
 import com.marketplace.usercore.model.User;
 import com.marketplace.usercore.model.UserStatus;
 import io.jsonwebtoken.JwtException;
@@ -36,9 +36,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final CookieService cookieService;
 
-    private final JwtCookieManager jwtCookieManager;
+    private final JwtCookieService jwtCookieService;
 
-    private final JwtTokenManager jwtTokenManager;
+    private final JwtTokenService jwtTokenService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -56,7 +56,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             addAuthenticationToContext(userDetails);
 
         } catch (JwtException exception) {
-            log.error("[JWT_EXCEPTION_FILTER]: {}", exception.getMessage());
+            log.error("[JWT_AUTHENTICATION_FILTER]: {}", exception.getMessage());
 
             boolean refreshValid = updateTokensIfRefreshValid(response, request);
             if (refreshValid) {
@@ -64,20 +64,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 return;
             }
 
-            jwtCookieManager.deleteTokensFromCookie(response);
+            jwtCookieService.deleteTokensFromCookie(response);
             response.sendRedirect("/sign-in");
             return;
         } catch (UsernameNotFoundException | AccessDeniedException exception) {
-            log.error("[USERNAME_NOT_FOUND_OR_ACCESS_DENIED_FILTER]: {}", exception.getMessage());
+            log.error("[JWT_AUTHENTICATION_FILTER]: {}", exception.getMessage());
 
-            jwtCookieManager.deleteTokensFromCookie(response);
+            jwtCookieService.deleteTokensFromCookie(response);
             return;
         } catch (CookieNotFoundException exception) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        log.info("[JWT_AUTHENTICATION_FILTER]: Token validated successfully");
         filterChain.doFilter(request, response);
     }
 
@@ -91,7 +90,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     private UserDetails validateUserAccessibility(String token) {
-        UserDetails userDetails = jwtTokenManager.getUserDetailsIfTokenValidOrThrow(token);
+        UserDetails userDetails = jwtTokenService.getUserDetailsIfTokenValidOrThrow(token);
 
         if (userDetails instanceof User && ((User) userDetails).getStatus() == UserStatus.BLOCKED) {
             throw new AccessDeniedException("User is blocked");
@@ -104,9 +103,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             Cookie refreshTokenCookie = cookieService.extractCookieByName(COOKIE_REFRESH_TOKEN, request);
 
-            UserDetails userDetails = jwtTokenManager.getUserDetailsIfTokenValidOrThrow(refreshTokenCookie.getValue());
-            TokenPayload tokenPayload = jwtTokenManager.generateTokenPayload(userDetails);
-            jwtCookieManager.addTokensToCookie(tokenPayload, response);
+            UserDetails userDetails = jwtTokenService.getUserDetailsIfTokenValidOrThrow(refreshTokenCookie.getValue());
+            TokenPayload tokenPayload = jwtTokenService.generateTokenPayload(userDetails);
+            jwtCookieService.addTokensToCookie(tokenPayload, response);
 
             log.info("[JWT_AUTHENTICATION_FILTER]: Tokens refreshed successfully");
 

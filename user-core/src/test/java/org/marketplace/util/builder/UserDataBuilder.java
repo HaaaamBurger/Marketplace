@@ -1,4 +1,4 @@
-package org.marketplace.util.builders;
+package org.marketplace.util.builder;
 
 import com.marketplace.usercore.model.User;
 import com.marketplace.usercore.model.UserRole;

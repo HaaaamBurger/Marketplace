@@ -1,7 +1,7 @@
 package com.marketplace.auth.security;
 
 import com.marketplace.auth.config.AuthApplicationConfig;
-import com.marketplace.auth.web.util.builders.UserDataBuilder;
+import com.marketplace.auth.web.util.builder.UserDataBuilder;
 import com.marketplace.usercore.model.User;
 import com.marketplace.usercore.repository.UserRepository;
 import org.junit.jupiter.api.Test;

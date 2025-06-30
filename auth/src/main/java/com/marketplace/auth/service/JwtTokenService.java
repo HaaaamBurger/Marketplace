@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class JwtTokenManager {
+public class JwtTokenService {
 
     private final JwtService jwtService;
 
@@ -21,7 +21,6 @@ public class JwtTokenManager {
     public TokenPayload generateTokenPayload(UserDetails userDetails) {
 
         if (userDetails == null) {
-            log.error("[JWT_TOKEN_MANAGER]: UserDetails is null");
             throw new IllegalArgumentException("User details not present");
         }
 
@@ -43,7 +42,6 @@ public class JwtTokenManager {
             return userDetails;
         }
 
-        log.error("[JWT_TOKEN_MANAGER]: Token validation failed");
         throw new TokenNotValidException("Token not valid!");
     }
 

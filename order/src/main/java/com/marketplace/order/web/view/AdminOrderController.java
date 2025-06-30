@@ -1,6 +1,6 @@
 package com.marketplace.order.web.view;
 
-import com.marketplace.order.mapper.SimpleOrderMapper;
+import com.marketplace.order.mapper.OrderEntityMapper;
 import com.marketplace.order.service.OrderCrudService;
 import com.marketplace.order.web.dto.OrderUpdateRequest;
 import com.marketplace.order.web.model.Order;
@@ -20,12 +20,12 @@ public class AdminOrderController {
 
     private final OrderCrudService orderCrudService;
 
-    private final SimpleOrderMapper simpleOrderMapper;
+    private final OrderEntityMapper orderEntityMapper;
 
     @GetMapping("/all")
     public String getAllOrders(Model model) {
         List<Order> orders = orderCrudService.findAll();
-        model.addAttribute("orders", simpleOrderMapper.mapOrdersToOrderResponseDtos(orders));
+        model.addAttribute("orders", orderEntityMapper.mapOrdersToOrderResponseDtos(orders));
         return "orders";
     }
 
@@ -35,7 +35,7 @@ public class AdminOrderController {
             @PathVariable String orderId
     ) {
         Order order = orderCrudService.findById(orderId);
-        model.addAttribute("order", simpleOrderMapper.mapOrderToOrderResponseDto(order));
+        model.addAttribute("order", orderEntityMapper.mapOrderToOrderResponseDto(order));
 
         return "order-edit";
     }

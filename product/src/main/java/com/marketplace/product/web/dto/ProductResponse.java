@@ -1,16 +1,16 @@
 package com.marketplace.product.web.dto;
 
-import lombok.Builder;
+import com.marketplace.common.dto.BaseResponse;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.experimental.SuperBuilder;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
 @Data
-@Builder
-public class ProductResponse {
-
-    private String id;
+@SuperBuilder
+@EqualsAndHashCode(callSuper = true)
+public class ProductResponse extends BaseResponse {
 
     private String name;
 
@@ -25,9 +25,5 @@ public class ProductResponse {
     private String photoUrl;
 
     private Boolean active;
-
-    private LocalDateTime createdAt;
-
-    private LocalDateTime updatedAt;
 
 }

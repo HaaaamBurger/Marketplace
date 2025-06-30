@@ -2,7 +2,7 @@ package com.marketplace.usercore.service;
 
 import com.marketplace.usercore.dto.UserRequest;
 import com.marketplace.usercore.dto.UserUpdateRequest;
-import com.marketplace.usercore.mapper.SimpleUserMapper;
+import com.marketplace.usercore.mapper.UserEntityMapper;
 import com.marketplace.usercore.model.User;
 import com.marketplace.usercore.model.UserStatus;
 import com.marketplace.usercore.repository.UserRepository;
@@ -23,7 +23,7 @@ public class MongoUserCrudService implements UserCrudService {
 
     private final PasswordEncoder passwordEncoder;
 
-    private final SimpleUserMapper simpleUserMapper;
+    private final UserEntityMapper userEntityMapper;
 
     private final UserManagerService userManagerService;
 
@@ -32,7 +32,7 @@ public class MongoUserCrudService implements UserCrudService {
         userManagerService.throwIfUserExistsByEmail(userRequest.getEmail());
 
         String encodedPassword = passwordEncoder.encode(userRequest.getPassword());
-        User user = simpleUserMapper.mapUserRequestDtoToUser(userRequest).toBuilder()
+        User user = userEntityMapper.mapUserRequestDtoToUser(userRequest).toBuilder()
                 .status(UserStatus.ACTIVE)
                 .password(encodedPassword)
                 .build();

@@ -1,6 +1,6 @@
 package com.marketplace.aws.exception;
 
-import com.marketplace.common.exception.CommonExceptionService;
+import com.marketplace.common.exception.ExceptionService;
 import com.marketplace.common.exception.ExceptionType;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -15,7 +15,7 @@ import org.springframework.web.servlet.ModelAndView;
 @RequiredArgsConstructor
 public class AwsExceptionHandler {
 
-    private final CommonExceptionService commonExceptionService;
+    private final ExceptionService exceptionService;
 
     @ExceptionHandler(AwsPhotoUploadException.class)
     public ModelAndView handleAwsPhotoUploadException(AwsPhotoUploadException exception, HttpServletResponse response, HttpServletRequest request) {
@@ -23,7 +23,7 @@ public class AwsExceptionHandler {
         log.error("[AWS_EXCEPTION_HANDLER]: {}", exception.getMessage());
 
         response.setStatus(400);
-        return commonExceptionService.buildErrorResponseModelAndView(CommonExceptionService.ErrorModelPayload.builder()
+        return exceptionService.buildErrorResponseModelAndView(ExceptionService.ErrorModelPayload.builder()
                 .modelView("error")
                 .status(400)
                 .message(exception.getMessage())

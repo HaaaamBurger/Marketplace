@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.ModelAndView;
 
 @Service
-public class CommonExceptionService {
+public class ExceptionService {
 
     public ModelAndView buildErrorResponseModelAndView(ErrorModelPayload errorModelPayload) {
 

@@ -61,7 +61,7 @@ class ProductControllerIntegrationTest {
         Product product = ProductDataBuilder.buildProductWithAllFields().build();
         Product product1 = ProductDataBuilder.buildProductWithAllFields().build();
 
-        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signIn(authUser, mockMvc);
         productRepository.saveAll(List.of(product, product1));
 
         MvcResult mvcResult = mockMvc.perform(get("/products/all")
@@ -99,7 +99,7 @@ class ProductControllerIntegrationTest {
         User authUser = UserDataBuilder.buildUserWithAllFields().build();
         Product product = ProductDataBuilder.buildProductWithAllFields().build();
 
-        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signIn(authUser, mockMvc);
         productRepository.save(product);
 
         MvcResult mvcResult = mockMvc.perform(get("/products/{productId}", product.getId())
@@ -121,7 +121,7 @@ class ProductControllerIntegrationTest {
         User authUser = UserDataBuilder.buildUserWithAllFields().build();
         Product product = ProductDataBuilder.buildProductWithAllFields().build();
 
-        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signIn(authUser, mockMvc);
 
         ModelAndView modelAndView = mockMvc.perform(get("/products/{productId}", product.getId())
                         .cookie(jwtCookiePayload.getAccessCookie()))
@@ -156,7 +156,7 @@ class ProductControllerIntegrationTest {
         User authUser = UserDataBuilder.buildUserWithAllFields().build();
         ProductRequest productRequest = ProductRequestDataBuilder.buildProductWithAllFields().build();
 
-        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signIn(authUser, mockMvc);
 
         String redirectedUrl = mockMvc.perform(multipart("/products/create")
                         .file((MockMultipartFile) productRequest.getPhoto())
@@ -193,7 +193,7 @@ class ProductControllerIntegrationTest {
                 .photo(new MockMultipartFile("photo", "photo.svg", "image/svg", "photo".getBytes()))
                 .build();
 
-        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signIn(authUser, mockMvc);
 
         MvcResult mvcResult = mockMvc.perform(multipart("/products/create")
                         .file((MockMultipartFile) productRequest.getPhoto())
@@ -222,7 +222,7 @@ class ProductControllerIntegrationTest {
                 .photo(new MockMultipartFile("photo", "photo", "image/svg", "photo".getBytes()))
                 .build();
 
-        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signIn(authUser, mockMvc);
 
         MvcResult mvcResult = mockMvc.perform(multipart("/products/create")
                         .file((MockMultipartFile) productRequest.getPhoto())
@@ -250,7 +250,7 @@ class ProductControllerIntegrationTest {
         ProductRequest productRequest = ProductRequestDataBuilder.buildProductWithAllFields()
                 .build();
 
-        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signIn(authUser, mockMvc);
 
         MvcResult mvcResult = mockMvc.perform(post("/products/create")
                         .cookie(jwtCookiePayload.getAccessCookie())
@@ -302,7 +302,7 @@ class ProductControllerIntegrationTest {
         User authUser = UserDataBuilder.buildUserWithAllFields().build();
         ProductRequest productRequest = ProductRequestDataBuilder.buildProductWithAllFields().build();
 
-        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signIn(authUser, mockMvc);
         Product product = ProductDataBuilder.buildProductWithAllFields()
                 .ownerId(authUser.getId())
                 .build();
@@ -341,7 +341,7 @@ class ProductControllerIntegrationTest {
                 .ownerId(String.valueOf(UUID.randomUUID()))
                 .build();
 
-        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signIn(authUser, mockMvc);
         productRepository.save(product);
 
         String redirectedUrl = mockMvc.perform(put("/products/{productId}/update", product.getId())
@@ -376,7 +376,7 @@ class ProductControllerIntegrationTest {
                 .ownerId(String.valueOf(UUID.randomUUID()))
                 .build();
 
-        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signIn(authUser, mockMvc);
         productRepository.save(product);
 
         String redirectedUrl = mockMvc.perform(put("/products/{productId}/update", product.getId())
@@ -410,7 +410,7 @@ class ProductControllerIntegrationTest {
                 .ownerId(String.valueOf(UUID.randomUUID()))
                 .build();
 
-        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signIn(authUser, mockMvc);
         productRepository.save(product);
 
         MvcResult mvcResult = mockMvc.perform(put("/products/{productId}/update", product.getId())
@@ -439,7 +439,7 @@ class ProductControllerIntegrationTest {
         User authUser = UserDataBuilder.buildUserWithAllFields().build();
         ProductRequest productRequest = ProductRequestDataBuilder.buildProductWithAllFields().build();
 
-        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signIn(authUser, mockMvc);
         Product product = ProductDataBuilder.buildProductWithAllFields()
                 .ownerId(authUser.getId())
                 .build();

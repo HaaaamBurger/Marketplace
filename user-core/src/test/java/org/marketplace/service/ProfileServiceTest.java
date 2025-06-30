@@ -9,7 +9,7 @@ import com.marketplace.usercore.security.AuthenticationUserService;
 import com.marketplace.usercore.service.ProfileService;
 import com.marketplace.usercore.service.UserManagerService;
 import org.junit.jupiter.api.Test;
-import org.marketplace.util.builders.UserDataBuilder;
+import org.marketplace.util.builder.UserDataBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.access.AccessDeniedException;

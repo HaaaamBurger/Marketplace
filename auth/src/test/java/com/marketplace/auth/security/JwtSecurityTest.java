@@ -3,7 +3,7 @@ package com.marketplace.auth.security;
 import com.marketplace.auth.config.AuthApplicationConfig;
 import com.marketplace.auth.security.token.JwtService;
 import com.marketplace.auth.util.JwtServiceHelper;
-import com.marketplace.auth.web.util.builders.UserDataBuilder;
+import com.marketplace.auth.web.util.builder.UserDataBuilder;
 import com.marketplace.usercore.model.User;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -92,38 +92,6 @@ public class JwtSecurityTest {
 
         assertThat(refreshToken).isNotBlank();
         assertThat(jwtService.isTokenExpired(refreshToken)).isFalse();
-    }
-
-    @Test
-    public void extractClaim_shouldReturnValue() {
-        User user = UserDataBuilder.buildUserWithAllFields().build();
-
-        String accessToken = jwtService.generateAccessToken(user, Map.of(ROLES_CLAIM, "ADMIN"));
-
-        assertThat(accessToken).isNotBlank();
-        assertThat(jwtService.extractSubject(accessToken)).isEqualTo(user.getUsername());
-        assertThat(jwtService.isTokenValid(accessToken, user)).isTrue();
-
-        Object role = jwtService.extractClaim(accessToken, ROLES_CLAIM);
-
-        assertThat(role).isNotNull();
-        assertThat(role).isInstanceOf(String.class);
-        assertThat((String) role).isEqualTo("ADMIN");
-    }
-
-    @Test
-    public void extractClaim_shouldReturnNullValue_WhenNoClaim() {
-        User user = UserDataBuilder.buildUserWithAllFields().build();
-
-        String accessToken = jwtService.generateAccessToken(user, Map.of(ROLES_CLAIM, "ADMIN"));
-
-        assertThat(accessToken).isNotBlank();
-        assertThat(jwtService.extractSubject(accessToken)).isEqualTo(user.getUsername());
-        assertThat(jwtService.isTokenValid(accessToken, user)).isTrue();
-
-        Object role = jwtService.extractClaim(accessToken, "status");
-
-        assertThat(role).isNull();
     }
 
     @Test

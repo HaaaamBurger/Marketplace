@@ -12,7 +12,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
-import static jakarta.servlet.http.HttpServletResponse.SC_FORBIDDEN;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -39,7 +38,7 @@ public class RestAccessDeniedHandlerIntegrationTest {
     public void handle_ShouldRedirectToHomePage_WhenAccessNotDenied() throws Exception {
         User authUser = UserDataBuilder.buildUserWithAllFields().build();
 
-        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signUp(authUser, mockMvc);
+        AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signIn(authUser, mockMvc);
 
         MvcResult mvcResult = mockMvc.perform(get("/users")
                         .cookie(jwtCookiePayload.getAccessCookie()))

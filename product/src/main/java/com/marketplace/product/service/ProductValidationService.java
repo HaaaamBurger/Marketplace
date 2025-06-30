@@ -8,7 +8,7 @@ public interface ProductValidationService {
 
     void validateProductOrThrow(Product product);
 
-     boolean isNotValidProduct(Product product);
+    boolean isNotValidProduct(Product product);
 
     boolean validateProducts(List<Product> products);
 

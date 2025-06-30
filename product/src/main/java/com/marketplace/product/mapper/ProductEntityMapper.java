@@ -8,9 +8,8 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
-public class ProductEntityMapper implements SimpleProductMapper {
+public class ProductEntityMapper {
 
-    @Override
     public ProductResponse mapProductToProductResponseDto(Product product) {
         return ProductResponse.builder()
                 .id(product.getId())
@@ -26,7 +25,6 @@ public class ProductEntityMapper implements SimpleProductMapper {
                 .build();
     }
 
-    @Override
     public Product mapProductRequestDtoToProduct(ProductRequest productRequest) {
         return Product.builder()
                 .name(productRequest.getName())
@@ -37,7 +35,6 @@ public class ProductEntityMapper implements SimpleProductMapper {
                 .build();
     }
 
-    @Override
     public ProductRequest mapProductToProductRequestDto(Product product) {
         return ProductRequest.builder()
                 .name(product.getName())
@@ -48,7 +45,6 @@ public class ProductEntityMapper implements SimpleProductMapper {
                 .build();
     }
 
-    @Override
     public List<ProductResponse> mapProductsToProductResponseDtos(List<Product> products) {
         return products.stream()
                 .map(this::mapProductToProductResponseDto)

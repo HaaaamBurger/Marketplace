@@ -7,7 +7,7 @@ import com.marketplace.usercore.model.User;
 import com.marketplace.usercore.repository.UserRepository;
 import com.marketplace.usercore.service.UserBusinessService;
 import org.junit.jupiter.api.Test;
-import org.marketplace.util.builders.UserDataBuilder;
+import org.marketplace.util.builder.UserDataBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;

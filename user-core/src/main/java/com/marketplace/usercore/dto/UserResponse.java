@@ -1,26 +1,21 @@
 package com.marketplace.usercore.dto;
 
-import lombok.Builder;
+import com.marketplace.common.dto.BaseResponse;
 import lombok.Data;
 import com.marketplace.usercore.model.UserRole;
 import com.marketplace.usercore.model.UserStatus;
-
-import java.time.LocalDateTime;
+import lombok.EqualsAndHashCode;
+import lombok.experimental.SuperBuilder;
 
 @Data
-@Builder
-public class UserResponse {
-
-    private String id;
+@SuperBuilder
+@EqualsAndHashCode(callSuper = true)
+public class UserResponse extends BaseResponse {
 
     private String email;
 
     private UserRole role;
 
     private UserStatus status;
-
-    private LocalDateTime createdAt;
-
-    private LocalDateTime updatedAt;
 
 }

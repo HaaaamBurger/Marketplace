@@ -16,10 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -80,6 +77,14 @@ public class OrderBusinessService implements OrderManagerService {
 
     @Transactional
     @Override
+    public void removeProductFromAllOrders(String productId) {
+        List<Order> productIdsContaining = orderRepository.findByProductIdsContaining(Set.of(productId));
+        removeProductAndDeleteEmptyOrders(productIdsContaining, productId);
+        orderRepository.saveAll(productIdsContaining);
+    }
+
+    @Transactional
+    @Override
     public void payForOrder() {
         Order order = findActiveOrderByOwnerIdOrThrow();
 
@@ -109,8 +114,24 @@ public class OrderBusinessService implements OrderManagerService {
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
+    private void removeProductAndDeleteEmptyOrders(List<Order> productIdsContaining, String productId) {
+
+        Iterator<Order> iterator = productIdsContaining.iterator();
+        while (iterator.hasNext()) {
+            Order order = iterator.next();
+            boolean hasProductRemoved = order.getProductIds().remove(productId);
+
+            if (hasProductRemoved && order.getProductIds().isEmpty()) {
+                orderRepository.delete(order);
+                iterator.remove();
+            }
+
+        }
+    }
+
     private Order findByOwnerIdOrCreate() {
         User authenticatedUser = authenticationUserService.getAuthenticatedUser();
+
         return orderRepository.findOrderByOwnerIdAndStatus(authenticatedUser.getId(), OrderStatus.IN_PROGRESS)
                 .orElse(Order.builder()
                         .ownerId(authenticatedUser.getId())

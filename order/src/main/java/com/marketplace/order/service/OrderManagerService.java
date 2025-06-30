@@ -20,6 +20,8 @@ public interface OrderManagerService {
 
     void removeProductFromOrder(String productId);
 
+    void removeProductFromAllOrders(String productId);
+
     void payForOrder();
 
     BigDecimal calculateTotalSum(List<Product> products);

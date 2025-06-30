@@ -3,7 +3,7 @@ package com.marketplace.order.service;
 import com.marketplace.order.config.OrderApplicationConfig;
 import com.marketplace.order.exception.OrderUpdateException;
 import com.marketplace.order.util.MockHelper;
-import com.marketplace.order.util.OrderDataBuilder;
+import com.marketplace.order.util.builder.OrderDataBuilder;
 import com.marketplace.order.web.model.Order;
 import com.marketplace.order.web.model.OrderStatus;
 import com.marketplace.usercore.model.User;
