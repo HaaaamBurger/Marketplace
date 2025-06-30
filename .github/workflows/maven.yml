@@ -70,7 +70,7 @@ jobs:
         run: |
           echo "Waiting for Zookeeper..."
           for i in {1..20}; do
-            echo ruok | nc localhost 2181 | grep imok && echo "Zookeeper is ready" && break
+            echo ruok | nc zookeeper 2181 | grep imok && echo "Zookeeper is ready" && break
             echo "Waiting for Zookeeper... attempt $i"
             sleep 5
           done
