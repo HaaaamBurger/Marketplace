@@ -11,8 +11,6 @@ spring:
   servlet:
     multipart:
       max-file-size: 5MB
-  kafka:
-    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
 security:
   jwt:
     secret-key: ${JWT_SECRET_KEY}
