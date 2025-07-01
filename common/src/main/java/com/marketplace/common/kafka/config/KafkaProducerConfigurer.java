@@ -14,14 +14,14 @@ import java.util.HashMap;
 @Configuration
 public class KafkaProducerConfigurer {
 
-    @Value("${spring.kafka.bootstrap-server}")
-    private String KAFKA_BOOTSTRAP_SERVER;
+    @Value("${spring.kafka.bootstrap-servers}")
+    private String KAFKA_BOOTSTRAP_SERVERS;
 
     @Bean
     public ProducerFactory<String, Object> producerFactory() {
         HashMap<String, Object> configProps = new HashMap<>();
 
-        configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, KAFKA_BOOTSTRAP_SERVER);
+        configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, KAFKA_BOOTSTRAP_SERVERS);
         configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         configProps.put(ProducerConfig.ACKS_CONFIG, "1");
