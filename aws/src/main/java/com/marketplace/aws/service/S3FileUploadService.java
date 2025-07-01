@@ -8,6 +8,6 @@ public interface S3FileUploadService {
 
     URL uploadFile(InputStreamSource file, String fileName);
 
-    String validateAndGetExtensionFromFilename(String fileName);
+    String getExtension(String fileName);
 
 }

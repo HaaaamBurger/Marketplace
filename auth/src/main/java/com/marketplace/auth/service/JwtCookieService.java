@@ -13,7 +13,7 @@ import static com.marketplace.auth.security.cookie.CookieService.COOKIE_REFRESH_
 
 @Service
 @RequiredArgsConstructor
-public class JwtCookieManager {
+public class JwtCookieService {
 
     private final JwtService jwtService;
 

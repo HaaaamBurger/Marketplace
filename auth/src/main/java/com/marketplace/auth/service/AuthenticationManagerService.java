@@ -5,7 +5,7 @@ import com.marketplace.auth.web.dto.AuthRequest;
 import com.marketplace.auth.web.dto.AuthResponse;
 import jakarta.servlet.http.HttpServletResponse;
 
-public interface AuthenticationService {
+public interface AuthenticationManagerService {
 
     AuthResponse signIn(AuthRequest authRequest, HttpServletResponse response);
 

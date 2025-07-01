@@ -7,9 +7,8 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
-public class OrderEntityMapper implements SimpleOrderMapper {
+public class OrderEntityMapper {
 
-    @Override
     public OrderResponse mapOrderToOrderResponseDto(Order order) {
         return OrderResponse.builder()
                 .id(order.getId())
@@ -23,7 +22,6 @@ public class OrderEntityMapper implements SimpleOrderMapper {
                 .build();
     }
 
-    @Override
     public List<OrderResponse> mapOrdersToOrderResponseDtos(List<Order> orders) {
         return orders.stream()
                 .map(this::mapOrderToOrderResponseDto)

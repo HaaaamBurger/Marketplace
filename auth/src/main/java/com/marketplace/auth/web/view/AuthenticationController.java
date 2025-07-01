@@ -1,6 +1,6 @@
 package com.marketplace.auth.web.view;
 
-import com.marketplace.auth.service.AuthenticationService;
+import com.marketplace.auth.service.AuthenticationManagerService;
 import com.marketplace.auth.web.validator.SignInValidator;
 import com.marketplace.auth.web.validator.SignUpValidator;
 import com.marketplace.auth.web.dto.AuthRequest;
@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 @RequiredArgsConstructor
 public class AuthenticationController {
 
-    private final AuthenticationService authenticationService;
+    private final AuthenticationManagerService authenticationManagerService;
 
     private final SignUpValidator signUpValidator;
 
@@ -42,7 +42,7 @@ public class AuthenticationController {
             return "sign-in";
         }
 
-        authenticationService.signIn(authRequest, response);
+        authenticationManagerService.signIn(authRequest, response);
 
         return "redirect:/products/all";
     }
@@ -61,7 +61,7 @@ public class AuthenticationController {
             return "sign-up";
         }
 
-        authenticationService.signUp(authRequest);
+        authenticationManagerService.signUp(authRequest);
         return "redirect:/sign-in";
 
     }

@@ -3,6 +3,7 @@ package com.marketplace.product.service;
 import com.marketplace.aws.exception.AwsPhotoUploadException;
 import com.marketplace.common.exception.EntityNotFoundException;
 import com.marketplace.product.config.ProductApplicationConfig;
+import com.marketplace.product.kafka.producer.ProductEventProducer;
 import com.marketplace.product.repository.ProductRepository;
 import com.marketplace.product.util.MockHelper;
 import com.marketplace.product.util.ProductDataBuilder;
@@ -48,6 +49,9 @@ public class MongoProductCrudServiceTest {
 
     @MockitoBean
     private DefaultUserValidationService defaultUserValidationService;
+
+    @MockitoBean
+    private ProductEventProducer productEventProducer;
 
     @Autowired
     private MockHelper mockHelper;
@@ -261,7 +265,7 @@ public class MongoProductCrudServiceTest {
     }
 
     @Test
-    public void delete_shouldDeleteProduct() {
+    public void delete_shouldValidateAndSendMessageToKafka() {
         User user = mockHelper.mockAuthenticationAndSetContext();
         Product product = ProductDataBuilder.buildProductWithAllFields()
                 .ownerId(user.getId())
@@ -270,11 +274,12 @@ public class MongoProductCrudServiceTest {
         when(authenticationUserService.getAuthenticatedUser()).thenReturn(user);
         when(productRepository.findById(product.getId())).thenReturn(Optional.of(product));
         when(defaultUserValidationService.validateEntityOwnerOrAdmin(user, product.getOwnerId())).thenReturn(true);
+
         mongoProductCrudService.delete(product.getId());
 
         verify(authenticationUserService).getAuthenticatedUser();
         verify(productRepository).findById(product.getId());
-        verify(productRepository, times(1)).delete(product);
+        verify(productEventProducer).sendDeleteProductFromOrdersEvent(product.getId());
     }
 
     @Test
@@ -314,7 +319,7 @@ public class MongoProductCrudServiceTest {
     }
 
     @Test
-    public void delete_shouldDeleteProductSuccessfully_WhenNotOwnerButAdmin() {
+    public void delete_shouldValidateAndSendMessageToKafka_WhenNotOwnerButAdmin() {
         String ownerId = String.valueOf(UUID.randomUUID());
         Product product = ProductDataBuilder.buildProductWithAllFields()
                 .ownerId(ownerId)
@@ -330,6 +335,6 @@ public class MongoProductCrudServiceTest {
 
         mongoProductCrudService.delete(product.getId());
 
-        verify(productRepository, times(1)).delete(product);
+        verify(productEventProducer).sendDeleteProductFromOrdersEvent(product.getId());
     }
 }

@@ -10,8 +10,6 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 
-import static jakarta.servlet.http.HttpServletResponse.SC_FORBIDDEN;
-
 @Slf4j
 @Component
 @RequiredArgsConstructor

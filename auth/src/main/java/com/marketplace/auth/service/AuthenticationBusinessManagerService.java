@@ -22,7 +22,7 @@ import org.springframework.stereotype.Service;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class AuthenticationFacade implements AuthenticationService {
+public class AuthenticationBusinessManagerService implements AuthenticationManagerService {
 
     private final UserRepository userRepository;
 
@@ -30,9 +30,9 @@ public class AuthenticationFacade implements AuthenticationService {
 
     private final UserManagerService userManagerService;
 
-    private final JwtTokenManager jwtTokenManager;
+    private final JwtTokenService jwtTokenService;
 
-    private final JwtCookieManager jwtCookieManager;
+    private final JwtCookieService jwtCookieService;
 
     @Override
     public AuthResponse signIn(AuthRequest authRequest, HttpServletResponse response) {
@@ -40,8 +40,8 @@ public class AuthenticationFacade implements AuthenticationService {
         User user = findUserByEmailOrThrow(authRequest.getEmail());
 
         matchPasswordsOrThrow(authRequest.getPassword(), user.getPassword());
-        TokenPayload tokenPayload = jwtTokenManager.generateTokenPayload(user);
-        jwtCookieManager.addTokensToCookie(tokenPayload, response);
+        TokenPayload tokenPayload = jwtTokenService.generateTokenPayload(user);
+        jwtCookieService.addTokensToCookie(tokenPayload, response);
 
         return AuthResponse.builder()
                 .accessToken(tokenPayload.getAccessToken())
@@ -68,8 +68,8 @@ public class AuthenticationFacade implements AuthenticationService {
         String authRefreshToken = authRefreshRequest.getRefreshToken();
 
         try {
-            UserDetails userDetails = jwtTokenManager.getUserDetailsIfTokenValidOrThrow(authRefreshToken);
-            TokenPayload tokenPayload = jwtTokenManager.generateTokenPayload(userDetails);
+            UserDetails userDetails = jwtTokenService.getUserDetailsIfTokenValidOrThrow(authRefreshToken);
+            TokenPayload tokenPayload = jwtTokenService.generateTokenPayload(userDetails);
 
             return AuthResponse.builder()
                     .accessToken(tokenPayload.getAccessToken())
@@ -77,21 +77,16 @@ public class AuthenticationFacade implements AuthenticationService {
                     .build();
 
         } catch (JwtException exception) {
-            log.error("[AUTHENTICATION_SERVICE_FACADE]: {}", exception.getMessage());
             throw new TokenNotValidException("Token not valid!");
         }
     }
 
     private User findUserByEmailOrThrow(String email) {
-        return userRepository.findByEmail(email).orElseThrow(() ->  {
-            log.error("[AUTHENTICATION_SERVICE_FACADE]: User does not exist with email: {}", email);
-            return new CredentialException("Wrong credentials!");
-        });
+        return userRepository.findByEmail(email).orElseThrow(() -> new CredentialException("Wrong credentials!"));
     }
 
     private void matchPasswordsOrThrow(String rawPassword, String encodedPassword) throws CredentialException {
         if (!passwordEncoder.matches(rawPassword, encodedPassword)) {
-            log.error("[AUTHENTICATION_SERVICE_FACADE]: User password {} is not matching", rawPassword);
             throw new CredentialException("Wrong credentials!");
         }
     }

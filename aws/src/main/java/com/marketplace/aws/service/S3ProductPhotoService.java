@@ -41,7 +41,7 @@ public class S3ProductPhotoService implements S3FileUploadService {
             throw new AwsPhotoUploadException("Cannot upload not multipart photo");
         }
 
-        String extension = validateAndGetExtensionFromFilename(multipartFile.getOriginalFilename());
+        String extension = getExtension(multipartFile.getOriginalFilename());
 
         PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                 .bucket(AWS_S3_BUCKET_NAME)
@@ -60,7 +60,7 @@ public class S3ProductPhotoService implements S3FileUploadService {
     }
 
     @Override
-    public String validateAndGetExtensionFromFilename(String fileName) {
+    public String getExtension(String fileName) {
 
         if (fileName == null || fileName.lastIndexOf('.') == -1) {
             throw new AwsPhotoUploadException("File name is missing or has no valid extension");
