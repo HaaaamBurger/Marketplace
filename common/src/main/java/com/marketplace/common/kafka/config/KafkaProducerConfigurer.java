@@ -2,6 +2,7 @@ package com.marketplace.common.kafka.config;
 
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
@@ -13,10 +14,14 @@ import java.util.HashMap;
 @Configuration
 public class KafkaProducerConfigurer {
 
+    @Value("${spring.kafka.bootstrap-server}")
+    private String KAFKA_BOOTSTRAP_SERVER;
+
     @Bean
     public ProducerFactory<String, Object> producerFactory() {
         HashMap<String, Object> configProps = new HashMap<>();
 
+        configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, KAFKA_BOOTSTRAP_SERVER);
         configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         configProps.put(ProducerConfig.ACKS_CONFIG, "1");
