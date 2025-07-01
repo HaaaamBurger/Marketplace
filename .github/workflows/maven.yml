@@ -23,6 +23,7 @@ jobs:
         env:
           ZOOKEEPER_CLIENT_PORT: 2181
 
+
       kafka:
         image: confluentinc/cp-kafka:7.4.3
         ports:
@@ -45,7 +46,7 @@ jobs:
       AWS_S3_PRODUCTS_PHOTO_LOCATION: ${{ secrets.AWS_S3_PRODUCTS_PHOTO_LOCATION }}
       AWS_S3_SECRET_KEY: ${{ secrets.AWS_S3_SECRET_KEY }}
       AWS_S3_BUCKET_BASE_URL: ${{ secrets.AWS_S3_BUCKET_BASE_URL }}
-      KAFKA_BOOTSTRAP_SERVERS: localhost:9092
+      KAFKA_BOOTSTRAP_SERVERS: ${{ secrets.KAFKA_BOOTSTRAP_SERVERS }}
 
     steps:
       - uses: actions/checkout@v3
