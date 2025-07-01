@@ -30,7 +30,7 @@ jobs:
           - "9092:9092"
         env:
           KAFKA_BROKER_ID: 1
-          KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+          KAFKA_ZOOKEEPER_CONNECT: localhost:2181
           KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://127.0.0.1:9092
           KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
           KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
@@ -69,16 +69,16 @@ jobs:
 
       - name: Wait for Zookeeper to be ready
         run: |
-          echo "Waiting for Zookeeper..."
+          echo "Waiting for Zookeeper to be ready..."
           for i in {1..20}; do
-            echo ruok | nc zookeeper 2181 | grep imok && echo "Zookeeper is ready" && break
+            nc -z localhost 2181 && echo "Zookeeper is up" && break
             echo "Waiting for Zookeeper... attempt $i"
             sleep 5
           done
 
       - name: Wait for Kafka to be ready
         run: |
-          echo "Waiting for Kafka..."
+          echo "Waiting for Kafka to be ready..."
           for i in {1..20}; do
             nc -z localhost 9092 && echo "Kafka is up" && break
             echo "Waiting for Kafka... attempt $i"
