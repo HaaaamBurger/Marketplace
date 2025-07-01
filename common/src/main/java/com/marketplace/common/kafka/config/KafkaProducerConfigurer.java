@@ -13,13 +13,10 @@ import java.util.HashMap;
 @Configuration
 public class KafkaProducerConfigurer {
 
-    private static final String BOOTSTRAP_SERVERS_CONFIG = "localhost:9092";
-
     @Bean
     public ProducerFactory<String, Object> producerFactory() {
         HashMap<String, Object> configProps = new HashMap<>();
 
-        configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, BOOTSTRAP_SERVERS_CONFIG);
         configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         configProps.put(ProducerConfig.ACKS_CONFIG, "1");
