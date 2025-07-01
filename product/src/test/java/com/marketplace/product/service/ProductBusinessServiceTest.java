@@ -53,7 +53,7 @@ public class ProductBusinessServiceTest {
         when(mockedProduct.decreaseAmount()).thenReturn(true);
         when(productRepository.saveAll(List.of(mockedProduct))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        productBusinessService.decreaseProductsAmountAndSave(List.of(mockedProduct));
+        productBusinessService.decreaseProductsAmountAndSave(Set.of(mockedProduct));
 
         verify(mockedProduct).decreaseAmount();
         verify(productRepository).saveAll(List.of(mockedProduct));
@@ -67,7 +67,7 @@ public class ProductBusinessServiceTest {
         when(mockedProduct.getAmount()).thenReturn(0);
         when(productRepository.saveAll(List.of(mockedProduct))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        productBusinessService.decreaseProductsAmountAndSave(List.of(mockedProduct));
+        productBusinessService.decreaseProductsAmountAndSave(Set.of(mockedProduct));
 
         assertThat(mockedProduct.getActive()).isFalse();
 

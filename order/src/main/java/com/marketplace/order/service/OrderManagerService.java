@@ -7,6 +7,7 @@ import com.marketplace.product.web.model.Product;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 public interface OrderManagerService {
 
@@ -24,5 +25,5 @@ public interface OrderManagerService {
 
     void payForOrder();
 
-    BigDecimal calculateTotalSum(List<Product> products);
+    BigDecimal calculateTotalSum(Set<Product> products);
 }

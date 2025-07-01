@@ -51,7 +51,7 @@ public class OrderTest {
     @Test
     public void testOrderWithEmptyProductIds() {
         Order order = OrderDataBuilder.buildOrderWithAllFields()
-                .productIds(Set.of())
+                .products(Set.of())
                 .build();
 
         Set<ConstraintViolation<Order>> violations = validator.validate(order);

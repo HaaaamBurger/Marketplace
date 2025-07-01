@@ -2,7 +2,7 @@ package com.marketplace.product.service;
 
 import com.marketplace.product.web.model.Product;
 
-import java.util.List;
+import java.util.Set;
 
 public interface ProductValidationService {
 
@@ -10,6 +10,6 @@ public interface ProductValidationService {
 
     boolean isNotValidProduct(Product product);
 
-    boolean validateProducts(List<Product> products);
+    boolean validateProducts(Set<Product> products);
 
 }

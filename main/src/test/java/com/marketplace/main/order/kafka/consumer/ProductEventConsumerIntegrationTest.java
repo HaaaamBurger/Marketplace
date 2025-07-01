@@ -1,10 +1,12 @@
 package com.marketplace.main.order.kafka.consumer;
 
+import com.marketplace.main.util.TestListener;
 import com.marketplace.main.util.builder.OrderDataBuilder;
 import com.marketplace.main.util.builder.ProductDataBuilder;
 import com.marketplace.main.util.TestSender;
 import com.marketplace.order.repository.OrderRepository;
 import com.marketplace.order.web.model.Order;
+import com.marketplace.order.web.model.OrderStatus;
 import com.marketplace.product.repository.ProductRepository;
 import com.marketplace.product.web.model.Product;
 import org.junit.jupiter.api.BeforeEach;
@@ -36,6 +38,9 @@ class ProductEventConsumerIntegrationTest {
 
     @Autowired
     private TestSender testSender;
+
+    @Autowired
+    private TestListener testListener;
 
     @BeforeEach
     public void setUp() {
@@ -111,5 +116,38 @@ class ProductEventConsumerIntegrationTest {
             Optional<Product> byId = productRepository.findById(product1.getId());
             assertThat(byId).isNotPresent();
         });
+    }
+
+    @Test
+    public void sendDeleteProductFromOrdersEvent_ShouldNotDeleteProduct_WhereStatusIsCompletedOrCancelled() {
+        Product product1 = ProductDataBuilder.buildProductWithAllFields().build();
+        Product product2 = ProductDataBuilder.buildProductWithAllFields().build();
+        Order order1 = OrderDataBuilder.buildOrderWithAllFields()
+                .status(OrderStatus.COMPLETED)
+                .productIds(Set.of(product1.getId(), product2.getId()))
+                .build();
+        Order order2 = OrderDataBuilder.buildOrderWithAllFields()
+                .status(OrderStatus.CANCELLED)
+                .productIds(Set.of(product1.getId(), product2.getId()))
+                .build();
+
+        productRepository.save(product1);
+        orderRepository.saveAll(List.of(order1, order2));
+
+        testSender.sendDeleteProductFromOrdersEvent(product1.getId());
+
+        await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> assertThat(testListener.hasReceived(product1.getId())).isTrue());
+
+        Optional<Order> byId1 = orderRepository.findById(order1.getId());
+        assertThat(byId1).isPresent();
+        assertThat(byId1.get().getProductIds()).isNotNull();
+        assertThat(byId1.get().getProductIds().size()).isEqualTo(2);
+        assertThat(byId1.get().getProductIds().contains(product2.getId())).isTrue();
+
+        Optional<Order> byId2 = orderRepository.findById(order2.getId());
+        assertThat(byId2).isPresent();
+        assertThat(byId2.get().getProductIds()).isNotNull();
+        assertThat(byId2.get().getProductIds().size()).isEqualTo(2);
+        assertThat(byId2.get().getProductIds().contains(product2.getId())).isTrue();
     }
 }

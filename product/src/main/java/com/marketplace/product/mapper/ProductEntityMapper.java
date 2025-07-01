@@ -5,7 +5,8 @@ import com.marketplace.product.web.dto.ProductResponse;
 import com.marketplace.product.web.model.Product;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class ProductEntityMapper {
@@ -45,10 +46,10 @@ public class ProductEntityMapper {
                 .build();
     }
 
-    public List<ProductResponse> mapProductsToProductResponseDtos(List<Product> products) {
+    public Set<ProductResponse> mapProductsToProductResponseDtos(Set<Product> products) {
         return products.stream()
                 .map(this::mapProductToProductResponseDto)
-                .toList();
+                .collect(Collectors.toSet());
     }
 
 }

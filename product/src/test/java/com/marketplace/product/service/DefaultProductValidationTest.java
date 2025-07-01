@@ -9,7 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
-import java.util.List;
+import java.util.Set;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
@@ -51,7 +51,7 @@ public class DefaultProductValidationTest {
         Product product = ProductDataBuilder.buildProductWithAllFields().build();
         Product product1 = ProductDataBuilder.buildProductWithAllFields().build();
 
-        boolean validateProducts = defaultProductValidationService.validateProducts(List.of(product, product1));
+        boolean validateProducts = defaultProductValidationService.validateProducts(Set.of(product, product1));
 
         assertThat(validateProducts).isFalse();
     }
@@ -67,7 +67,7 @@ public class DefaultProductValidationTest {
                 .amount(0)
                 .build();
 
-        boolean validateProducts = defaultProductValidationService.validateProducts(List.of(product, product1, product2, product3));
+        boolean validateProducts = defaultProductValidationService.validateProducts(Set.of(product, product1, product2, product3));
 
         assertThat(validateProducts).isTrue();
     }

@@ -2,6 +2,7 @@ package com.marketplace.order.web.dto;
 
 import com.marketplace.common.dto.BaseResponse;
 import com.marketplace.order.web.model.OrderStatus;
+import com.marketplace.product.web.model.Product;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
@@ -15,7 +16,7 @@ public class OrderResponse extends BaseResponse {
 
     private String ownerId;
 
-    private Set<String> productIds;
+    private Set<Product> products;
 
     private String address;
 

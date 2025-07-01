@@ -11,14 +11,13 @@ import com.marketplace.product.web.model.Product;
 import com.marketplace.usercore.model.User;
 import com.marketplace.usercore.security.AuthenticationUserService;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.stream.Collectors;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class OrderBusinessService implements OrderManagerService {
@@ -40,7 +39,7 @@ public class OrderBusinessService implements OrderManagerService {
         productValidationService.validateProductOrThrow(product);
 
         Order order = findByOwnerIdOrCreate();
-        order.getProductIds().add(productId);
+        order.getProducts().add(product);
 
         return orderRepository.save(order);
     }
@@ -60,14 +59,20 @@ public class OrderBusinessService implements OrderManagerService {
     @Override
     public void removeProductFromOrder(String productId) {
         Order order = findOrderByOwnerIdAndStatusOrThrow(OrderStatus.IN_PROGRESS);
-        Set<String> productIds = order.getProductIds();
 
-        if (!productIds.contains(productId)) {
+        // TODO move to validation
+        Set<Product> products = order.getProducts();
+        boolean noneMatchProductById = products.stream().noneMatch(product -> product.getId().equals(productId));
+
+        if (noneMatchProductById) {
             return;
         }
 
-        productIds.remove(productId);
-        if (productIds.isEmpty()) {
+        order.setProducts(products.stream()
+                .filter(product -> !product.getId().equals(productId))
+                .collect(Collectors.toSet()));
+
+        if (products.isEmpty()) {
             orderRepository.deleteById(order.getId());
             return;
         }
@@ -78,9 +83,10 @@ public class OrderBusinessService implements OrderManagerService {
     @Transactional
     @Override
     public void removeProductFromAllOrders(String productId) {
-        List<Order> productIdsContaining = orderRepository.findByProductIdsContaining(Set.of(productId));
-        removeProductAndDeleteEmptyOrders(productIdsContaining, productId);
-        orderRepository.saveAll(productIdsContaining);
+        Product product = productCrudService.getById(productId);
+        List<Order> orders = orderRepository.findByProductsContainingAndStatusIn(Set.of(product), List.of(OrderStatus.CREATED, OrderStatus.IN_PROGRESS));
+        removeProductAndDeleteEmptyOrders(orders, productId);
+        orderRepository.saveAll(orders);
     }
 
     @Transactional
@@ -88,7 +94,7 @@ public class OrderBusinessService implements OrderManagerService {
     public void payForOrder() {
         Order order = findActiveOrderByOwnerIdOrThrow();
 
-        List<Product> products = productBusinessService.findAllByIdIn(order.getProductIds());
+        Set<Product> products = order.getProducts();
         products.forEach(productValidationService::validateProductOrThrow);
 
         productBusinessService.decreaseProductsAmountAndSave(products);
@@ -101,31 +107,28 @@ public class OrderBusinessService implements OrderManagerService {
     @Override
     public Order findOrderOrThrow(String orderId) {
         return orderRepository.findById(orderId)
-                .orElseThrow(() -> {
-                    log.error("[MONGO_ORDER_SERVICE]: Order not found by ID {}", orderId);
-                    return new EntityNotFoundException("Order not found!");
-                });
+                .orElseThrow(() -> new EntityNotFoundException("Order not found!"));
     }
 
     @Override
-    public BigDecimal calculateTotalSum(List<Product> products) {
+    public BigDecimal calculateTotalSum(Set<Product> products) {
         return products.stream()
                 .map(Product::getPrice)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
-    private void removeProductAndDeleteEmptyOrders(List<Order> productIdsContaining, String productId) {
+    private void removeProductAndDeleteEmptyOrders(List<Order> orders, String productId) {
+        Product product = productCrudService.getById(productId);
 
-        Iterator<Order> iterator = productIdsContaining.iterator();
+        Iterator<Order> iterator = orders.iterator();
         while (iterator.hasNext()) {
             Order order = iterator.next();
-            boolean hasProductRemoved = order.getProductIds().remove(productId);
+            boolean hasProductRemoved = order.getProducts().remove(product);
 
-            if (hasProductRemoved && order.getProductIds().isEmpty()) {
+            if (hasProductRemoved && order.getProducts().isEmpty()) {
                 orderRepository.delete(order);
                 iterator.remove();
             }
-
         }
     }
 
@@ -135,7 +138,7 @@ public class OrderBusinessService implements OrderManagerService {
         return orderRepository.findOrderByOwnerIdAndStatus(authenticatedUser.getId(), OrderStatus.IN_PROGRESS)
                 .orElse(Order.builder()
                         .ownerId(authenticatedUser.getId())
-                        .productIds(new HashSet<>())
+                        .products(new HashSet<>())
                         .status(OrderStatus.IN_PROGRESS)
                         .build()
                 );
@@ -144,10 +147,7 @@ public class OrderBusinessService implements OrderManagerService {
     private Order findActiveOrderByOwnerIdOrThrow() {
         User authenticatedUser = authenticationUserService.getAuthenticatedUser();
         return orderRepository.findOrderByOwnerIdAndStatus(authenticatedUser.getId(), OrderStatus.IN_PROGRESS)
-                .orElseThrow(() -> {
-                    log.error("[MONGO_ORDER_SERVICE]: Order not found by ownerId {}", authenticatedUser.getId());
-                    return new EntityNotFoundException("Order not found!");
-                });
+                .orElseThrow(() -> new EntityNotFoundException("Order not found!"));
     }
 
     private Order findOrderByOwnerIdAndStatusOrThrow(OrderStatus orderStatus) {
@@ -155,7 +155,6 @@ public class OrderBusinessService implements OrderManagerService {
         Optional<Order> orderByOwnerIdAndStatus = orderRepository.findOrderByOwnerIdAndStatus(authenticatedUser.getId(), orderStatus);
 
         if (orderByOwnerIdAndStatus.isEmpty()) {
-            log.error("[ORDER_FACADE]: Order not found by ownerId {} and status {}", authenticatedUser.getId(), orderStatus);
             throw new EntityNotFoundException("Order not found!");
         }
 

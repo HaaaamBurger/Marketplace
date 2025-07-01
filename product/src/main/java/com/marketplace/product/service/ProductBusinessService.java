@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 @Slf4j
@@ -18,12 +19,17 @@ public class ProductBusinessService implements ProductManagerService {
     private final ProductRepository productRepository;
 
     @Override
+    public Optional<Product> requireProductById(String productId) {
+        return productRepository.findById(productId);
+    }
+
+    @Override
     public List<Product> findAllByIdIn(Set<String> productIds) {
         return productRepository.findAllByIdIn(productIds);
     }
 
     @Override
-    public void decreaseProductsAmountAndSave(List<Product> products) {
+    public void decreaseProductsAmountAndSave(Set<Product> products) {
         products.forEach(product -> {
             boolean decreasedAmount = product.decreaseAmount();
 

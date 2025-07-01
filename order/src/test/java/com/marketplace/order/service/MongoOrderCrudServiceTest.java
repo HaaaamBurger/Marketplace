@@ -81,11 +81,13 @@ public class MongoOrderCrudServiceTest {
         when(authenticationUserService.getAuthenticatedUser()).thenReturn(user);
         when(mongoProductCrudService.getById(mockProductId)).thenReturn(mockedProduct);
         when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
         Order responseOrder = mongoOrderCrudService.create(orderRequest);
 
         assertThat(responseOrder).isNotNull();
         assertThat(responseOrder.getOwnerId()).isEqualTo(user.getId());
-        assertThat(responseOrder.getProductIds().stream().anyMatch(productId -> productId.equals(mockProductId))).isTrue();
+        System.out.println(responseOrder);
+        assertThat(responseOrder.getProducts().stream().anyMatch(product -> product.equals(mockedProduct))).isTrue();
 
         verify(authenticationUserService, times(1)).getAuthenticatedUser();
         verify(mongoProductCrudService, times(1)).getById(mockProductId);

@@ -13,7 +13,7 @@ public class OrderEntityMapper {
         return OrderResponse.builder()
                 .id(order.getId())
                 .ownerId(order.getOwnerId())
-                .productIds(order.getProductIds())
+                .products(order.getProducts())
                 .address(order.getAddress())
                 .status(order.getStatus())
                 .total(order.getTotal())
