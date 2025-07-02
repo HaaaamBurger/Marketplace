@@ -11,7 +11,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 @RequiredArgsConstructor
 public class TestListener {
 
-    private final LinkedBlockingQueue<String> dataPriorityBlockingList = new LinkedBlockingQueue<>();
+    private static final LinkedBlockingQueue<String> dataPriorityBlockingList = new LinkedBlockingQueue<>();
 
     @KafkaListener(
             topics = InputTopics.PRODUCT_DELETE_INSTANCES_TOPIC,
@@ -25,5 +25,4 @@ public class TestListener {
     public boolean hasReceived(String value) {
         return dataPriorityBlockingList.contains(value);
     }
-
 }

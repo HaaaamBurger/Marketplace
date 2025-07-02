@@ -17,7 +17,7 @@ import java.util.Set;
 @AllArgsConstructor
 @SuperBuilder(toBuilder = true)
 @Document(collection = "orders")
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = false)
 public class Order extends AuditableEntity {
 
     @Id

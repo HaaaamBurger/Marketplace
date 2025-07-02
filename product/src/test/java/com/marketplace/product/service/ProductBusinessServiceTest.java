@@ -56,7 +56,7 @@ public class ProductBusinessServiceTest {
         productBusinessService.decreaseProductsAmountAndSave(Set.of(mockedProduct));
 
         verify(mockedProduct).decreaseAmount();
-        verify(productRepository).saveAll(List.of(mockedProduct));
+        verify(productRepository).saveAll(Set.of(mockedProduct));
     }
 
     @Test
@@ -73,7 +73,7 @@ public class ProductBusinessServiceTest {
 
         verify(mockedProduct).decreaseAmount();
         verify(mockedProduct).getAmount();
-        verify(productRepository).saveAll(List.of(mockedProduct));
+        verify(productRepository).saveAll(Set.of(mockedProduct));
     }
 
 }

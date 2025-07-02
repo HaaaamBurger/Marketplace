@@ -71,7 +71,7 @@ class ProductControllerIntegrationTest {
 
         Map<String, Object> model = authHelper.requireModel(mvcResult);
 
-        List<ProductResponse> productResponses = (List<ProductResponse>) model.get("products");
+        Set<ProductResponse> productResponses = (Set<ProductResponse>) model.get("products");
         assertThat(productResponses).isNotNull();
         assertThat(productResponses.size()).isEqualTo(2);
     }
@@ -89,7 +89,7 @@ class ProductControllerIntegrationTest {
 
         Map<String, Object> model = authHelper.requireModel(mvcResult);
 
-        List<ProductResponse> productResponses = (List<ProductResponse>) model.get("products");
+        Set<ProductResponse> productResponses = (Set<ProductResponse>) model.get("products");
         assertThat(productResponses).isNotNull();
         assertThat(productResponses.size()).isEqualTo(2);
     }

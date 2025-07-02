@@ -120,7 +120,7 @@ class UserOrderControllerIntegrationTest {
 
         productRepository.save(product);
         Order order = OrderDataBuilder.buildOrderWithAllFields()
-                .productIds(Set.of(product.getId()))
+                .products(Set.of(product))
                 .build();
 
         AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signIn(authUser, mockMvc);
@@ -140,10 +140,10 @@ class UserOrderControllerIntegrationTest {
         assertThat(orderResponse).isNotNull();
         assertThat(orderResponse.getId()).isEqualTo(order.getId());
 
-        List<ProductResponse> productResponses = (List<ProductResponse>) model.get("products");
+        Set<ProductResponse> productResponses = (Set<ProductResponse>) model.get("products");
         assertThat(productResponses).isNotNull();
         assertThat(productResponses.size()).isEqualTo(1);
-        assertThat(productResponses.get(0).getId()).isEqualTo(product.getId());
+        assertThat(productResponses.stream().anyMatch(productResponse -> productResponse.getId().equals(product.getId()))).isTrue();
     }
 
     @Test
@@ -153,7 +153,7 @@ class UserOrderControllerIntegrationTest {
 
         productRepository.save(product);
         Order order = OrderDataBuilder.buildOrderWithAllFields()
-                .productIds(Set.of(product.getId()))
+                .products(Set.of(product))
                 .build();
 
         AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signIn(authUser, mockMvc);
@@ -174,7 +174,7 @@ class UserOrderControllerIntegrationTest {
 
         productRepository.save(product);
         Order order = OrderDataBuilder.buildOrderWithAllFields()
-                .productIds(Set.of(product.getId()))
+                .products(Set.of(product))
                 .build();
 
         orderRepository.save(order);
@@ -197,7 +197,7 @@ class UserOrderControllerIntegrationTest {
 
         Order order = OrderDataBuilder.buildOrderWithAllFields()
                 .ownerId(authUser.getId())
-                .productIds(Set.of(product.getId()))
+                .products(Set.of(product))
                 .status(OrderStatus.IN_PROGRESS)
                 .build();
 
@@ -217,10 +217,10 @@ class UserOrderControllerIntegrationTest {
         assertThat(orderResponse).isNotNull();
         assertThat(orderResponse.getId()).isEqualTo(order.getId());
 
-        List<ProductResponse> productResponses = (List<ProductResponse>) model.get("orderProducts");
+        Set<ProductResponse> productResponses = (Set<ProductResponse>) model.get("orderProducts");
         assertThat(productResponses).isNotNull();
         assertThat(productResponses.size()).isEqualTo(1);
-        assertThat(productResponses.get(0).getId()).isEqualTo(product.getId());
+        assertThat(productResponses.stream().anyMatch(productResponse -> productResponse.getId().equals(product.getId()))).isTrue();
 
         BigDecimal totalSum = (BigDecimal) model.get("totalSum");
         assertThat(totalSum).isNotNull();
@@ -248,7 +248,7 @@ class UserOrderControllerIntegrationTest {
         OrderResponse orderResponse = (OrderResponse) model.get("currentOrder");
         assertThat(orderResponse).isNull();
 
-        List<ProductResponse> productResponses = (List<ProductResponse>) model.get("orderProducts");
+        Set<ProductResponse> productResponses = (Set<ProductResponse>) model.get("orderProducts");
         assertThat(productResponses).isNull();
 
         BigDecimal totalSum = (BigDecimal) model.get("totalSum");
@@ -267,7 +267,7 @@ class UserOrderControllerIntegrationTest {
 
         Order order = OrderDataBuilder.buildOrderWithAllFields()
                 .ownerId(authUser.getId())
-                .productIds(Set.of(product.getId()))
+                .products(Set.of(product))
                 .status(OrderStatus.COMPLETED)
                 .build();
 
@@ -286,7 +286,7 @@ class UserOrderControllerIntegrationTest {
         OrderResponse orderResponse = (OrderResponse) model.get("currentOrder");
         assertThat(orderResponse).isNull();
 
-        List<ProductResponse> productResponses = (List<ProductResponse>) model.get("orderProducts");
+        Set<ProductResponse> productResponses = (Set<ProductResponse>) model.get("orderProducts");
         assertThat(productResponses).isNull();
 
         BigDecimal totalSum = (BigDecimal) model.get("totalSum");
@@ -308,7 +308,7 @@ class UserOrderControllerIntegrationTest {
 
         productRepository.save(product);
         Order order = OrderDataBuilder.buildOrderWithAllFields()
-                .productIds(Set.of(product.getId()))
+                .products(Set.of(product))
                 .build();
 
         AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signIn(authUser, mockMvc);
@@ -337,7 +337,7 @@ class UserOrderControllerIntegrationTest {
 
         productRepository.save(product);
         Order order = OrderDataBuilder.buildOrderWithAllFields()
-                .productIds(Set.of(product.getId()))
+                .products(Set.of(product))
                 .build();
 
         AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signIn(authUser, mockMvc);
@@ -361,7 +361,7 @@ class UserOrderControllerIntegrationTest {
 
         productRepository.save(product);
         Order order = OrderDataBuilder.buildOrderWithAllFields()
-                .productIds(Set.of(product.getId()))
+                .products(Set.of(product))
                 .build();
 
         AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signIn(authUser, mockMvc);
@@ -389,7 +389,7 @@ class UserOrderControllerIntegrationTest {
 
         productRepository.save(product);
         Order order = OrderDataBuilder.buildOrderWithAllFields()
-                .productIds(Set.of(product.getId()))
+                .products(Set.of(product))
                 .build();
 
         AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signIn(authUser, mockMvc);
@@ -429,27 +429,27 @@ class UserOrderControllerIntegrationTest {
         Optional<Order> orderOptional = orderRepository.findOrderByOwnerId(authUser.getId());
         assertThat(orderOptional).isPresent();
         assertThat(orderOptional.get().getStatus()).isEqualTo(OrderStatus.IN_PROGRESS);
-        assertThat(orderOptional.get().getProductIds()).isNotNull();
-        assertThat(orderOptional.get().getProductIds().size()).isEqualTo(1);
-        assertThat(orderOptional.get().getProductIds().stream().anyMatch(productId -> productId.equals(product.getId()))).isTrue();
+        assertThat(orderOptional.get().getProducts()).isNotNull();
+        assertThat(orderOptional.get().getProducts().size()).isEqualTo(1);
+        assertThat(orderOptional.get().getProducts().stream().anyMatch(productOrder -> productOrder.getId().equals(product.getId()))).isTrue();
     }
 
     @Test
     public void addProductToOrder_ShouldAddProductToOrder_WhenRoleUserAndOrderExists() throws Exception {
         User authUser = UserDataBuilder.buildUserWithAllFields().build();
-        Product product = ProductDataBuilder.buildProductWithAllFields().build();
         Product product1 = ProductDataBuilder.buildProductWithAllFields().build();
+        Product product2 = ProductDataBuilder.buildProductWithAllFields().build();
 
         AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signIn(authUser, mockMvc);
-        productRepository.saveAll(List.of(product, product1));
+        productRepository.saveAll(List.of(product1, product2));
         Order order = OrderDataBuilder.buildOrderWithAllFields()
                 .ownerId(authUser.getId())
                 .status(OrderStatus.IN_PROGRESS)
-                .productIds(Set.of(product.getId()))
+                .products(Set.of(product1))
                 .build();
         orderRepository.save(order);
 
-        String redirectedUrl = mockMvc.perform(put("/orders/add-product/{id}", product1.getId())
+        String redirectedUrl = mockMvc.perform(put("/orders/add-product/{id}", product2.getId())
                         .cookie(jwtCookiePayload.getAccessCookie()))
                 .andExpect(status().is3xxRedirection())
                 .andReturn().getResponse().getRedirectedUrl();
@@ -459,9 +459,9 @@ class UserOrderControllerIntegrationTest {
 
         Optional<Order> orderOptional = orderRepository.findById(order.getId());
         assertThat(orderOptional).isPresent();
-        assertThat(orderOptional.get().getProductIds()).isNotNull();
-        assertThat(orderOptional.get().getProductIds().size()).isEqualTo(2);
-        assertThat(orderOptional.get().getProductIds().stream().anyMatch(productId -> productId.equals(product1.getId()))).isTrue();
+        assertThat(orderOptional.get().getProducts()).isNotNull();
+        assertThat(orderOptional.get().getProducts().size()).isEqualTo(2);
+        assertThat(orderOptional.get().getProducts().stream().anyMatch(productOrder -> productOrder.getId().equals(product2.getId()))).isTrue();
     }
 
     @Test
@@ -475,7 +475,7 @@ class UserOrderControllerIntegrationTest {
         Order order = OrderDataBuilder.buildOrderWithAllFields()
                 .ownerId(authUser.getId())
                 .status(OrderStatus.IN_PROGRESS)
-                .productIds(Set.of(product.getId()))
+                .products(Set.of(product))
                 .build();
         orderRepository.save(order);
 
@@ -596,20 +596,20 @@ class UserOrderControllerIntegrationTest {
     @Test
     public void removeProductFromOrder_ShouldRemoveProductFromOrder_WhenRoleUserAndOrderOwner() throws Exception {
         User authUser = UserDataBuilder.buildUserWithAllFields().build();
-        Product product = ProductDataBuilder.buildProductWithAllFields().build();
         Product product1 = ProductDataBuilder.buildProductWithAllFields().build();
+        Product product2 = ProductDataBuilder.buildProductWithAllFields().build();
 
-        productRepository.save(product);
+        productRepository.save(product1);
         AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signIn(authUser, mockMvc);
 
         Order order = OrderDataBuilder.buildOrderWithAllFields()
                 .status(OrderStatus.IN_PROGRESS)
                 .ownerId(authUser.getId())
-                .productIds(Set.of(product.getId(), product1.getId()))
+                .products(Set.of(product1, product2))
                 .build();
         orderRepository.save(order);
 
-        String redirectedUrl = mockMvc.perform(delete("/orders/remove-product/{id}", product.getId())
+        String redirectedUrl = mockMvc.perform(delete("/orders/remove-product/{id}", product1.getId())
                         .cookie(jwtCookiePayload.getAccessCookie()))
                 .andExpect(status().is3xxRedirection())
                 .andReturn().getResponse().getRedirectedUrl();
@@ -619,9 +619,9 @@ class UserOrderControllerIntegrationTest {
         Optional<Order> orderOptional = orderRepository.findById(order.getId());
         assertThat(orderOptional).isPresent();
         assertThat(orderOptional.get().getId()).isEqualTo(order.getId());
-        assertThat(orderOptional.get().getProductIds()).isNotNull();
-        assertThat(orderOptional.get().getProductIds().size()).isEqualTo(1);
-        assertThat(orderOptional.get().getProductIds().stream().anyMatch(productId -> productId.equals(product1.getId()))).isTrue();
+        assertThat(orderOptional.get().getProducts()).isNotNull();
+        assertThat(orderOptional.get().getProducts().size()).isEqualTo(1);
+        assertThat(orderOptional.get().getProducts().stream().anyMatch(productOrder -> productOrder.getId().equals(product2.getId()))).isTrue();
     }
 
     @Test
@@ -635,7 +635,7 @@ class UserOrderControllerIntegrationTest {
         Order order = OrderDataBuilder.buildOrderWithAllFields()
                 .status(OrderStatus.IN_PROGRESS)
                 .ownerId(authUser.getId())
-                .productIds(Set.of(product.getId()))
+                .products(Set.of(product))
                 .build();
         orderRepository.save(order);
 
@@ -683,7 +683,7 @@ class UserOrderControllerIntegrationTest {
         Order order = OrderDataBuilder.buildOrderWithAllFields()
                 .status(OrderStatus.COMPLETED)
                 .ownerId(authUser.getId())
-                .productIds(Set.of(product.getId()))
+                .products(Set.of(product))
                 .build();
         orderRepository.save(order);
 
@@ -712,7 +712,7 @@ class UserOrderControllerIntegrationTest {
         Order order = OrderDataBuilder.buildOrderWithAllFields()
                 .status(OrderStatus.IN_PROGRESS)
                 .ownerId(authUser.getId())
-                .productIds(Set.of(product.getId()))
+                .products(Set.of(product))
                 .build();
         orderRepository.save(order);
 
@@ -740,7 +740,7 @@ class UserOrderControllerIntegrationTest {
         Order order = OrderDataBuilder.buildOrderWithAllFields()
                 .status(OrderStatus.COMPLETED)
                 .ownerId(authUser.getId())
-                .productIds(Set.of(product.getId()))
+                .products(Set.of(product))
                 .build();
         orderRepository.save(order);
 
@@ -793,7 +793,7 @@ class UserOrderControllerIntegrationTest {
         Order order = OrderDataBuilder.buildOrderWithAllFields()
                 .status(OrderStatus.IN_PROGRESS)
                 .ownerId(authUser.getId())
-                .productIds(Set.of(product.getId()))
+                .products(Set.of(product))
                 .build();
         orderRepository.save(order);
 
@@ -814,18 +814,18 @@ class UserOrderControllerIntegrationTest {
     @Test
     public void payForOrder_ShouldPayForOrder_WhenOrderHasUnactiveProductButUnactiveProductWasRemoved() throws Exception {
         User authUser = UserDataBuilder.buildUserWithAllFields().build();
-        Product product = ProductDataBuilder.buildProductWithAllFields()
+        Product product1 = ProductDataBuilder.buildProductWithAllFields()
                 .active(false)
                 .build();
-        Product product1 = ProductDataBuilder.buildProductWithAllFields().build();
+        Product product2 = ProductDataBuilder.buildProductWithAllFields().build();
 
-        productRepository.saveAll(List.of(product, product1));
+        productRepository.saveAll(List.of(product1, product2));
         AuthHelper.JwtCookiePayload jwtCookiePayload = authHelper.signIn(authUser, mockMvc);
 
         Order order = OrderDataBuilder.buildOrderWithAllFields()
                 .status(OrderStatus.IN_PROGRESS)
                 .ownerId(authUser.getId())
-                .productIds(Set.of(product.getId(), product1.getId()))
+                .products(Set.of(product1, product2))
                 .build();
         orderRepository.save(order);
 
@@ -842,7 +842,7 @@ class UserOrderControllerIntegrationTest {
         assertThat(errorMessage).isNotNull();
         assertThat(errorMessage).isEqualTo("This product is not available");
 
-        String redirectedUrl = mockMvc.perform(delete("/orders/remove-product/{id}", product.getId())
+        String redirectedUrl = mockMvc.perform(delete("/orders/remove-product/{id}", product1.getId())
                         .cookie(jwtCookiePayload.getAccessCookie()))
                 .andExpect(status().is3xxRedirection())
                 .andReturn().getResponse().getRedirectedUrl();
@@ -852,8 +852,8 @@ class UserOrderControllerIntegrationTest {
         Optional<Order> orderOptional = orderRepository.findById(order.getId());
         assertThat(orderOptional).isPresent();
         assertThat(orderOptional.get().getId()).isEqualTo(order.getId());
-        assertThat(orderOptional.get().getProductIds()).isNotNull();
-        assertThat(orderOptional.get().getProductIds().size()).isEqualTo(1);
-        assertThat(orderOptional.get().getProductIds().stream().anyMatch(productId -> productId.equals(product1.getId()))).isTrue();
+        assertThat(orderOptional.get().getProducts()).isNotNull();
+        assertThat(orderOptional.get().getProducts().size()).isEqualTo(1);
+        assertThat(orderOptional.get().getProducts().stream().anyMatch(productOrder -> productOrder.getId().equals(product2.getId()))).isTrue();
     }
 }

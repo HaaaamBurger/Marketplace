@@ -60,19 +60,16 @@ public class OrderBusinessService implements OrderManagerService {
     public void removeProductFromOrder(String productId) {
         Order order = findOrderByOwnerIdAndStatusOrThrow(OrderStatus.IN_PROGRESS);
 
-        // TODO move to validation
-        Set<Product> products = order.getProducts();
-        boolean noneMatchProductById = products.stream().noneMatch(product -> product.getId().equals(productId));
-
+        boolean noneMatchProductById = order.getProducts().stream().noneMatch(product -> product.getId().equals(productId));
         if (noneMatchProductById) {
             return;
         }
 
-        order.setProducts(products.stream()
+        order.setProducts(order.getProducts().stream()
                 .filter(product -> !product.getId().equals(productId))
                 .collect(Collectors.toSet()));
 
-        if (products.isEmpty()) {
+        if (order.getProducts().isEmpty()) {
             orderRepository.deleteById(order.getId());
             return;
         }
