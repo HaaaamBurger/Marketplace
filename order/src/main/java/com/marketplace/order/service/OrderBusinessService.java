@@ -79,10 +79,9 @@ public class OrderBusinessService implements OrderManagerService {
 
     @Transactional
     @Override
-    public void removeProductFromAllOrders(String productId) {
-        Product product = productCrudService.getById(productId);
+    public void removeProductFromAllOrders(Product product) {
         List<Order> orders = orderRepository.findByProductsContainingAndStatusIn(Set.of(product), List.of(OrderStatus.CREATED, OrderStatus.IN_PROGRESS));
-        removeProductAndDeleteEmptyOrders(orders, productId);
+        removeProductAndDeleteEmptyOrders(orders, product.getId());
         orderRepository.saveAll(orders);
     }
 

@@ -279,7 +279,7 @@ public class MongoProductCrudServiceTest {
 
         verify(authenticationUserService).getAuthenticatedUser();
         verify(productRepository).findById(product.getId());
-        verify(productEventProducer).sendDeleteProductFromOrdersEvent(product.getId());
+        verify(productEventProducer).sendDeleteProductInstancesEvent(product.getId());
     }
 
     @Test
@@ -335,6 +335,6 @@ public class MongoProductCrudServiceTest {
 
         mongoProductCrudService.delete(product.getId());
 
-        verify(productEventProducer).sendDeleteProductFromOrdersEvent(product.getId());
+        verify(productEventProducer).sendDeleteProductInstancesEvent(product.getId());
     }
 }

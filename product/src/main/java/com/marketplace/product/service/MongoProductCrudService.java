@@ -1,5 +1,6 @@
 package com.marketplace.product.service;
 
+import com.marketplace.aws.service.S3FileManagerService;
 import com.marketplace.aws.service.S3FileUploadService;
 import com.marketplace.common.exception.EntityNotFoundException;
 import com.marketplace.product.kafka.producer.ProductEventProducer;
@@ -15,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.net.URL;
 import java.util.List;
@@ -33,6 +35,8 @@ public class MongoProductCrudService implements ProductCrudService {
     private final AuthenticationUserService authenticationUserService;
 
     private final S3FileUploadService s3FileUploadService;
+
+    private final S3FileManagerService s3FileManagerService;
 
     private final DefaultUserValidationService defaultUserValidationService;
 
@@ -71,7 +75,7 @@ public class MongoProductCrudService implements ProductCrudService {
     public Product update(String productId, ProductRequest productRequest) {
         Product product = validateProductAccessOrThrow(productId);
 
-        applyUpdatesByRequest(product, productRequest);
+        updateProductByRequest(product, productRequest);
 
         return productRepository.save(product);
     }
@@ -79,7 +83,7 @@ public class MongoProductCrudService implements ProductCrudService {
     @Override
     public void delete(String productId) {
         validateProductAccessOrThrow(productId);
-        productEventProducer.sendDeleteProductFromOrdersEvent(productId);
+        productEventProducer.sendDeleteProductInstancesEvent(productId);
     }
 
     private Product validateProductAccessOrThrow(String productId) {
@@ -93,24 +97,31 @@ public class MongoProductCrudService implements ProductCrudService {
         throw new AccessDeniedException("Access denied!");
     }
 
-    private void applyUpdatesByRequest( Product product, ProductRequest productRequest) {
+    private void updateProductByRequest(Product product, ProductRequest productRequest) {
         Optional.ofNullable(productRequest.getName()).ifPresent(product::setName);
         Optional.ofNullable(productRequest.getPrice()).ifPresent(product::setPrice);
         Optional.ofNullable(productRequest.getDescription()).ifPresent(product::setDescription);
         Optional.ofNullable(productRequest.getActive()).ifPresent(product::setActive);
 
-        Optional.ofNullable(productRequest.getAmount()).ifPresent(amount -> {
+        updateAmount(product, productRequest.getAmount());
+        removePreviousAndAddNewPhoto(product, productRequest.getPhoto());
+    }
+
+    private void updateAmount(Product product, Integer amount) {
+        Optional.ofNullable(amount).ifPresent(productAmount -> {
             if (amount == 0) {
                 product.setActive(false);
             }
             product.setAmount(amount);
         });
+    }
 
-        // TODO delete old photo
-        Optional.ofNullable(productRequest.getPhoto()).ifPresent(multipartFile -> {
-            URL url = s3FileUploadService.uploadFile(productRequest.getPhoto(), String.valueOf(UUID.randomUUID()));
+    // TODO change tests
+    private void removePreviousAndAddNewPhoto(Product product, MultipartFile requestPhoto) {
+        Optional.ofNullable(requestPhoto).ifPresent(multipartFile -> {
+            s3FileUploadService.deleteFile(s3FileManagerService.getFilenameFromUrl(product.getPhotoUrl()));
+            URL url = s3FileUploadService.uploadFile(requestPhoto, String.valueOf(UUID.randomUUID()));
             product.setPhotoUrl(String.valueOf(url));
         });
     }
-
 }

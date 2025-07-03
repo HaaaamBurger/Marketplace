@@ -21,7 +21,7 @@ public interface OrderManagerService {
 
     void removeProductFromOrder(String productId);
 
-    void removeProductFromAllOrders(String productId);
+    void removeProductFromAllOrders(Product product);
 
     void payForOrder();
 

@@ -1,7 +1,7 @@
 package com.marketplace.product.web.validator;
 
 import com.marketplace.aws.exception.AwsPhotoUploadException;
-import com.marketplace.aws.service.S3FileUploadService;
+import com.marketplace.aws.service.S3FileManagerService;
 import com.marketplace.product.web.dto.ProductRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -12,7 +12,7 @@ import org.springframework.validation.Validator;
 @RequiredArgsConstructor
 public class ProductValidator implements Validator {
 
-    private final S3FileUploadService s3FileUploadService;
+    private final S3FileManagerService s3FileManagerService;
 
     @Override
     public boolean supports(Class<?> clazz) {
@@ -29,7 +29,7 @@ public class ProductValidator implements Validator {
         ProductRequest productRequest = (ProductRequest) target;
         if (productRequest.getPhoto() != null && !productRequest.getPhoto().isEmpty()) {
             try {
-                s3FileUploadService.getExtension(productRequest.getPhoto().getOriginalFilename());
+                s3FileManagerService.getExtension(productRequest.getPhoto().getOriginalFilename());
             } catch (AwsPhotoUploadException exception) {
                 rejectPhotoValue(errors, exception.getMessage());
             }
