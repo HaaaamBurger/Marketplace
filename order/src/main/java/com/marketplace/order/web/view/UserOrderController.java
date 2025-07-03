@@ -6,7 +6,6 @@ import com.marketplace.order.service.OrderManagerService;
 import com.marketplace.order.web.model.Order;
 import com.marketplace.order.web.model.OrderStatus;
 import com.marketplace.product.mapper.ProductEntityMapper;
-import com.marketplace.product.service.ProductManagerService;
 import com.marketplace.product.service.ProductValidationService;
 import com.marketplace.product.web.model.Product;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Controller
 @RequiredArgsConstructor
@@ -25,8 +25,6 @@ public class UserOrderController {
     private final OrderCrudService orderCrudService;
 
     private final OrderManagerService orderManagerService;
-
-    private final ProductManagerService productManagerService;
 
     private final ProductValidationService productValidationService;
 
@@ -41,7 +39,7 @@ public class UserOrderController {
     ) {
         Order order = orderCrudService.findById(orderId);
 
-        List<Product> products = productManagerService.findAllByIdIn(order.getProductIds());
+        Set<Product> products = order.getProducts();
         model.addAttribute("isPayable", !productValidationService.validateProducts(products));
         model.addAttribute("products", productEntityMapper.mapProductsToProductResponseDtos(products));
         model.addAttribute("order", orderEntityMapper.mapOrderToOrderResponseDto(order));
@@ -56,7 +54,7 @@ public class UserOrderController {
         Optional<Order> orderByOwnerIdAndStatus = orderManagerService.findOrderByOwnerIdAndStatus(OrderStatus.IN_PROGRESS);
 
         orderByOwnerIdAndStatus.ifPresent(order -> {
-            List<Product> products = productManagerService.findAllByIdIn(order.getProductIds());
+            Set<Product> products = order.getProducts();
             model.addAttribute("isPayable", !productValidationService.validateProducts(products));
             model.addAttribute("orderProducts", productEntityMapper.mapProductsToProductResponseDtos(products));
             model.addAttribute("totalSum", orderManagerService.calculateTotalSum(products));

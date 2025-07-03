@@ -5,15 +5,16 @@ import com.marketplace.order.web.dto.OrderRequest;
 import com.marketplace.order.web.dto.OrderUpdateRequest;
 import com.marketplace.order.web.model.Order;
 import com.marketplace.product.service.ProductCrudService;
+import com.marketplace.product.web.model.Product;
 import com.marketplace.usercore.model.User;
 import com.marketplace.usercore.security.AuthenticationUserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 @Slf4j
 @Service
@@ -34,12 +35,11 @@ public class MongoOrderCrudService implements OrderCrudService {
     public Order create(OrderRequest request) {
         User authenticatedUser = authenticationUserService.getAuthenticatedUser();
 
-        Set<String> productIds = request.getProductIds();
-        productIds.forEach(productCrudService::getById);
+        List<Product> products = request.getProductIds().stream().map(productCrudService::getById).toList();
 
         return orderRepository.save(Order.builder()
                 .ownerId(authenticatedUser.getId())
-                .productIds(request.getProductIds())
+                .products(new HashSet<>(products))
                 .address(request.getAddress())
                 .status(request.getStatus())
                 .build());

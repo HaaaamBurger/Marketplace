@@ -5,7 +5,7 @@ import com.marketplace.product.web.model.Product;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -24,7 +24,7 @@ public class DefaultProductValidationService implements ProductValidationService
     }
 
     @Override
-    public boolean validateProducts(List<Product> products) {
+    public boolean validateProducts(Set<Product> products) {
         return products.stream().anyMatch(this::isNotValidProduct);
     }
 

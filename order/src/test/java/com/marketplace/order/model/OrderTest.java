@@ -51,14 +51,14 @@ public class OrderTest {
     @Test
     public void testOrderWithEmptyProductIds() {
         Order order = OrderDataBuilder.buildOrderWithAllFields()
-                .productIds(Set.of())
+                .products(Set.of())
                 .build();
 
         Set<ConstraintViolation<Order>> violations = validator.validate(order);
-        ConstraintViolation<Order> matchedViolation = getMatchedViolationByField(violations, "productIds");
+        ConstraintViolation<Order> matchedViolation = getMatchedViolationByField(violations, "products");
 
         assertThat(matchedViolation).isNotNull();
-        assertThat(matchedViolation.getPropertyPath().toString()).isEqualTo("productIds");
+        assertThat(matchedViolation.getPropertyPath().toString()).isEqualTo("products");
         assertThat(matchedViolation.getMessage()).isEqualTo("Order must contain at least 1 product and maximum 50");
     }
 

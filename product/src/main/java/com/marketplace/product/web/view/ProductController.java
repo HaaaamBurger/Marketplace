@@ -14,6 +14,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.util.HashSet;
 import java.util.List;
 
 @Controller
@@ -30,7 +31,7 @@ public class ProductController {
     @GetMapping("/all")
     public String getAllProducts(Model model) {
         List<Product> products = productCrudService.findAll();
-        model.addAttribute("products", productEntityMapper.mapProductsToProductResponseDtos(products));
+        model.addAttribute("products", productEntityMapper.mapProductsToProductResponseDtos(new HashSet<>(products)));
         return "products";
     }
 

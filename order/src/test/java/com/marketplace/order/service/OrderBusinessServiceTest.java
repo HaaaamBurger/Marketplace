@@ -14,6 +14,7 @@ import com.marketplace.product.service.MongoProductCrudService;
 import com.marketplace.product.service.ProductBusinessService;
 import com.marketplace.product.web.model.Product;
 import com.marketplace.usercore.model.User;
+import com.marketplace.usercore.security.AuthenticationUserService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,6 +46,9 @@ public class OrderBusinessServiceTest {
     @MockitoBean
     private OrderRepository orderRepository;
 
+    @MockitoBean
+    private AuthenticationUserService authenticationUserService;
+
     @Autowired
     private OrderBusinessService orderBusinessService;
 
@@ -65,6 +69,7 @@ public class OrderBusinessServiceTest {
                 .build();
         Product product = ProductDataBuilder.buildProductWithAllFields().build();
 
+        when(authenticationUserService.getAuthenticatedUser()).thenReturn(user);
         when(mongoProductCrudService.getById(product.getId())).thenReturn(product);
         when(orderRepository.findOrderByOwnerId(order.getId())).thenReturn(Optional.of(order));
         when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> invocation.getArgument(0));
@@ -73,11 +78,12 @@ public class OrderBusinessServiceTest {
 
         assertThat(responseOrder).isNotNull();
         assertThat(responseOrder.getOwnerId()).isEqualTo(user.getId());
-        assertThat(responseOrder.getProductIds()).isNotNull();
-        assertThat(responseOrder.getProductIds().size()).isEqualTo(1);
-        assertThat(responseOrder.getProductIds().stream().anyMatch(productId -> productId.equals(product.getId()))).isTrue();
+        assertThat(responseOrder.getProducts()).isNotNull();
+        assertThat(responseOrder.getProducts().size()).isEqualTo(1);
+        assertThat(responseOrder.getProducts().stream().anyMatch(orderProduct -> orderProduct.getId().equals(product.getId()))).isTrue();
         assertThat(responseOrder.getStatus()).isEqualTo(OrderStatus.IN_PROGRESS);
 
+        verify(authenticationUserService).getAuthenticatedUser();
         verify(mongoProductCrudService, times(1)).getById(product.getId());
         verify(orderRepository, times(1)).findOrderByOwnerIdAndStatus(user.getId(), OrderStatus.IN_PROGRESS);
         verify(orderRepository, times(1)).save(any(Order.class));
@@ -88,6 +94,7 @@ public class OrderBusinessServiceTest {
         User user = mockHelper.mockAuthenticationAndSetContext();
         Product product = ProductDataBuilder.buildProductWithAllFields().build();
 
+        when(authenticationUserService.getAuthenticatedUser()).thenReturn(user);
         when(mongoProductCrudService.getById(product.getId())).thenReturn(product);
         when(orderRepository.findOrderByOwnerId(user.getId())).thenReturn(Optional.empty());
         when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> invocation.getArgument(0));
@@ -96,11 +103,12 @@ public class OrderBusinessServiceTest {
 
         assertThat(responseOrder).isNotNull();
         assertThat(responseOrder.getOwnerId()).isEqualTo(user.getId());
-        assertThat(responseOrder.getProductIds()).isNotNull();
-        assertThat(responseOrder.getProductIds().size()).isEqualTo(1);
-        assertThat(responseOrder.getProductIds().stream().anyMatch(productId -> productId.equals(product.getId()))).isTrue();
+        assertThat(responseOrder.getProducts()).isNotNull();
+        assertThat(responseOrder.getProducts().size()).isEqualTo(1);
+        assertThat(responseOrder.getProducts().stream().anyMatch(orderProduct -> orderProduct.getId().equals(product.getId()))).isTrue();
         assertThat(responseOrder.getStatus()).isEqualTo(OrderStatus.IN_PROGRESS);
 
+        verify(authenticationUserService).getAuthenticatedUser();
         verify(mongoProductCrudService, times(1)).getById(product.getId());
         verify(orderRepository, times(1)).findOrderByOwnerIdAndStatus(user.getId(), OrderStatus.IN_PROGRESS);
         verify(orderRepository, times(1)).save(any(Order.class));
@@ -127,6 +135,7 @@ public class OrderBusinessServiceTest {
                 .ownerId(user.getId())
                 .build();
 
+        when(authenticationUserService.getAuthenticatedUser()).thenReturn(user);
         when(orderRepository.findOrderByOwnerIdAndStatus(user.getId(), OrderStatus.CREATED)).thenReturn(Optional.of(order));
 
         Optional<Order> orderByOwnerIdAndStatus = orderBusinessService.findOrderByOwnerIdAndStatus(OrderStatus.CREATED);
@@ -134,6 +143,7 @@ public class OrderBusinessServiceTest {
         assertThat(orderByOwnerIdAndStatus).isPresent();
         assertThat(orderByOwnerIdAndStatus.get().getOwnerId()).isEqualTo(user.getId());
 
+        verify(authenticationUserService).getAuthenticatedUser();
         verify(orderRepository, times(1)).findOrderByOwnerIdAndStatus(user.getId(), OrderStatus.CREATED);
     }
 
@@ -142,10 +152,13 @@ public class OrderBusinessServiceTest {
         User user = mockHelper.mockAuthenticationAndSetContext();
         Order order = OrderDataBuilder.buildOrderWithAllFields().build();
 
+        when(authenticationUserService.getAuthenticatedUser()).thenReturn(user);
         when(orderRepository.findOrderByOwnerIdAndStatus(user.getId(), OrderStatus.CREATED)).thenReturn(Optional.of(order));
+
         Optional<Order> orderByOwnerIdAndStatus = orderBusinessService.findOrderByOwnerIdAndStatus(OrderStatus.IN_PROGRESS);
         assertThat(orderByOwnerIdAndStatus).isNotPresent();
 
+        verify(authenticationUserService).getAuthenticatedUser();
         verify(orderRepository, times(1)).findOrderByOwnerIdAndStatus(user.getId(), OrderStatus.IN_PROGRESS);
     }
 
@@ -157,7 +170,9 @@ public class OrderBusinessServiceTest {
                 .status(OrderStatus.IN_PROGRESS)
                 .build();
 
+        when(authenticationUserService.getAuthenticatedUser()).thenReturn(user);
         when(orderRepository.findOrdersByOwnerIdAndStatusIn(user.getId(), List.of(OrderStatus.CREATED, OrderStatus.IN_PROGRESS))).thenReturn(List.of(order, order1));
+
         List<Order> ordersByOwnerIdAndStatusIn = orderBusinessService.findOrdersByOwnerIdAndStatusIn(List.of(OrderStatus.CREATED, OrderStatus.IN_PROGRESS));
 
         assertThat(ordersByOwnerIdAndStatusIn).isNotNull();
@@ -165,6 +180,7 @@ public class OrderBusinessServiceTest {
         assertThat(ordersByOwnerIdAndStatusIn.get(0).getStatus()).isEqualTo(order.getStatus());
         assertThat(ordersByOwnerIdAndStatusIn.get(1).getStatus()).isEqualTo(order1.getStatus());
 
+        verify(authenticationUserService).getAuthenticatedUser();
         verify(orderRepository, times(1)).findOrdersByOwnerIdAndStatusIn(user.getId(), List.of(OrderStatus.CREATED, OrderStatus.IN_PROGRESS));
     }
 
@@ -172,54 +188,61 @@ public class OrderBusinessServiceTest {
     public void findOrdersByOwnerIdAndStatusIn_ShouldReturnEmptyOrders() {
         User user = mockHelper.mockAuthenticationAndSetContext();
 
+        when(authenticationUserService.getAuthenticatedUser()).thenReturn(user);
         when(orderRepository.findOrdersByOwnerIdAndStatusIn(user.getId(), List.of(OrderStatus.CANCELLED, OrderStatus.COMPLETED))).thenReturn(List.of());
         List<Order> ordersByOwnerIdAndStatusIn = orderBusinessService.findOrdersByOwnerIdAndStatusIn(List.of(OrderStatus.CANCELLED, OrderStatus.COMPLETED));
 
         assertThat(ordersByOwnerIdAndStatusIn).isNotNull();
         assertThat(ordersByOwnerIdAndStatusIn.size()).isEqualTo(0);
 
+        verify(authenticationUserService).getAuthenticatedUser();
         verify(orderRepository, times(1)).findOrdersByOwnerIdAndStatusIn(user.getId(), List.of(OrderStatus.CANCELLED, OrderStatus.COMPLETED));
     }
 
     @Test
     public void removeProductFromOrder_ShouldRemoveProductFromOrder() {
         User user = mockHelper.mockAuthenticationAndSetContext();
-        Product product = ProductDataBuilder.buildProductWithAllFields().build();
         Product product1 = ProductDataBuilder.buildProductWithAllFields().build();
+        Product product2 = ProductDataBuilder.buildProductWithAllFields().build();
         Order order = OrderDataBuilder.buildOrderWithAllFields()
                 .ownerId(user.getId())
                 .status(OrderStatus.IN_PROGRESS)
-                .productIds(new HashSet<>(Set.of(product.getId(), product1.getId())))
+                .products(new HashSet<>(Set.of(product1, product2)))
                 .build();
 
+        when(authenticationUserService.getAuthenticatedUser()).thenReturn(user);
         when(orderRepository.findOrderByOwnerIdAndStatus(user.getId(), OrderStatus.IN_PROGRESS)).thenReturn(Optional.of(order));
-        orderBusinessService.removeProductFromOrder(product.getId());
 
-        assertThat(order.getProductIds()).isNotNull();
-        assertThat(order.getProductIds().size()).isEqualTo(1);
-        assertThat(order.getProductIds().contains(product1.getId())).isTrue();
+        orderBusinessService.removeProductFromOrder(product2.getId());
 
-        verify(orderRepository, times(1)).findOrderByOwnerIdAndStatus(user.getId(), OrderStatus.IN_PROGRESS);
-        verify(orderRepository, times(1)).save(order);
+        assertThat(order.getProducts()).isNotNull();
+        assertThat(order.getProducts().size()).isEqualTo(1);
+        assertThat(order.getProducts().stream().anyMatch(product -> product.getId().equals(product1.getId()))).isTrue();
+
+        verify(authenticationUserService).getAuthenticatedUser();
+        verify(orderRepository).findOrderByOwnerIdAndStatus(user.getId(), OrderStatus.IN_PROGRESS);
+        verify(orderRepository).save(order);
     }
 
     @Test
-    public void removeProductFromOrder_ShouldRemoveProductFromOrderAndOrder() {
+    public void removeProductFromOrder_ShouldRemoveProductFromOrderAndRemoveOrder() {
         User user = mockHelper.mockAuthenticationAndSetContext();
         Product product = ProductDataBuilder.buildProductWithAllFields().build();
         Order order = OrderDataBuilder.buildOrderWithAllFields()
                 .ownerId(user.getId())
                 .status(OrderStatus.IN_PROGRESS)
-                .productIds(new HashSet<>(Set.of(product.getId())))
+                .products(new HashSet<>(Set.of(product)))
                 .build();
 
+        when(authenticationUserService.getAuthenticatedUser()).thenReturn(user);
         when(orderRepository.findOrderByOwnerIdAndStatus(user.getId(), OrderStatus.IN_PROGRESS))
                 .thenReturn(Optional.of(order));
 
         orderBusinessService.removeProductFromOrder(product.getId());
 
-        verify(orderRepository, times(1)).findOrderByOwnerIdAndStatus(user.getId(), OrderStatus.IN_PROGRESS);
-        verify(orderRepository, times(1)).deleteById(order.getId());
+        verify(authenticationUserService).getAuthenticatedUser();
+        verify(orderRepository).findOrderByOwnerIdAndStatus(user.getId(), OrderStatus.IN_PROGRESS);
+        verify(orderRepository).deleteById(order.getId());
         verify(orderRepository, never()).save(order);
     }
     @Test
@@ -230,17 +253,20 @@ public class OrderBusinessServiceTest {
         Order order = OrderDataBuilder.buildOrderWithAllFields()
                 .ownerId(user.getId())
                 .status(OrderStatus.IN_PROGRESS)
-                .productIds(Set.of(product.getId()))
+                .products(new HashSet<>(Set.of(product)))
                 .build();
 
+        when(authenticationUserService.getAuthenticatedUser()).thenReturn(user);
         when(orderRepository.findOrderByOwnerIdAndStatus(user.getId(), OrderStatus.IN_PROGRESS)).thenReturn(Optional.of(order));
+
         orderBusinessService.removeProductFromOrder(product1);
 
-        assertThat(order.getProductIds()).isNotNull();
-        assertThat(order.getProductIds().size()).isEqualTo(1);
-        assertThat(order.getProductIds().contains(product.getId())).isTrue();
+        assertThat(order.getProducts()).isNotNull();
+        assertThat(order.getProducts().size()).isEqualTo(1);
+        assertThat(order.getProducts().contains(product)).isTrue();
 
-        verify(orderRepository, times(1)).findOrderByOwnerIdAndStatus(user.getId(), OrderStatus.IN_PROGRESS);
+        verify(authenticationUserService).getAuthenticatedUser();
+        verify(orderRepository).findOrderByOwnerIdAndStatus(user.getId(), OrderStatus.IN_PROGRESS);
         verify(orderRepository, never()).deleteById(order.getId());
         verify(orderRepository, never()).save(order);
     }
@@ -250,11 +276,14 @@ public class OrderBusinessServiceTest {
         User user = mockHelper.mockAuthenticationAndSetContext();
         Product product = ProductDataBuilder.buildProductWithAllFields().build();
 
+        when(authenticationUserService.getAuthenticatedUser()).thenReturn(user);
         when(orderRepository.findOrderByOwnerIdAndStatus(user.getId(), OrderStatus.IN_PROGRESS)).thenReturn(Optional.empty());
+
         assertThatThrownBy(() -> orderBusinessService.removeProductFromOrder(product.getId()))
                 .isInstanceOf(EntityNotFoundException.class)
                 .hasMessage("Order not found!");
 
+        verify(authenticationUserService).getAuthenticatedUser();
         verify(orderRepository, times(1)).findOrderByOwnerIdAndStatus(user.getId(), OrderStatus.IN_PROGRESS);
     }
 
@@ -265,11 +294,11 @@ public class OrderBusinessServiceTest {
         Order order = OrderDataBuilder.buildOrderWithAllFields()
                 .ownerId(user.getId())
                 .status(OrderStatus.IN_PROGRESS)
-                .productIds(Set.of(product.getId()))
+                .products(Set.of(product))
                 .build();
 
+        when(authenticationUserService.getAuthenticatedUser()).thenReturn(user);
         when(orderRepository.findOrderByOwnerIdAndStatus(user.getId(), OrderStatus.IN_PROGRESS)).thenReturn(Optional.of(order));
-        when(productBusinessService.findAllByIdIn(order.getProductIds())).thenReturn(List.of(product));
         when(defaultProductValidationService.isNotValidProduct(product)).thenReturn(false);
 
         orderBusinessService.payForOrder();
@@ -277,9 +306,9 @@ public class OrderBusinessServiceTest {
         assertThat(order).isNotNull();
         assertThat(order.getStatus()).isEqualTo(OrderStatus.COMPLETED);
 
+        verify(authenticationUserService).getAuthenticatedUser();
         verify(orderRepository, times(1)).findOrderByOwnerIdAndStatus(user.getId(), OrderStatus.IN_PROGRESS);
-        verify(productBusinessService, times(1)).findAllByIdIn(order.getProductIds());
-        verify(productBusinessService, times(1)).decreaseProductsAmountAndSave(List.of(product));
+        verify(productBusinessService, times(1)).decreaseProductsAmountAndSave(Set.of(product));
         verify(orderRepository, times(1)).save(order);
     }
 
@@ -287,13 +316,15 @@ public class OrderBusinessServiceTest {
     public void payForOrder_ShouldThrowException_WhenOrderNotFound() {
         User user = mockHelper.mockAuthenticationAndSetContext();
 
+        when(authenticationUserService.getAuthenticatedUser()).thenReturn(user);
         when(orderRepository.findOrderByOwnerIdAndStatus(user.getId(), OrderStatus.IN_PROGRESS)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> orderBusinessService.payForOrder())
                 .isInstanceOf(EntityNotFoundException.class)
                 .hasMessage("Order not found!");
 
-        verify(orderRepository, times(1)).findOrderByOwnerIdAndStatus(user.getId(), OrderStatus.IN_PROGRESS);
+        verify(authenticationUserService).getAuthenticatedUser();
+        verify(orderRepository).findOrderByOwnerIdAndStatus(user.getId(), OrderStatus.IN_PROGRESS);
         verify(orderRepository, never()).save(any());
     }
 
@@ -306,18 +337,18 @@ public class OrderBusinessServiceTest {
         Order order = OrderDataBuilder.buildOrderWithAllFields()
                 .ownerId(user.getId())
                 .status(OrderStatus.IN_PROGRESS)
-                .productIds(Set.of(product.getId()))
+                .products(Set.of(product))
                 .build();
 
+        when(authenticationUserService.getAuthenticatedUser()).thenReturn(user);
         when(orderRepository.findOrderByOwnerIdAndStatus(user.getId(), OrderStatus.IN_PROGRESS)).thenReturn(Optional.of(order));
-        when(productBusinessService.findAllByIdIn(order.getProductIds())).thenReturn(List.of(product));
         doThrow(ProductNotAvailableException.class).when(defaultProductValidationService).validateProductOrThrow(product);
 
         assertThatThrownBy(() -> orderBusinessService.payForOrder())
                 .isInstanceOf(ProductNotAvailableException.class);
 
+        verify(authenticationUserService).getAuthenticatedUser();
         verify(orderRepository, times(1)).findOrderByOwnerIdAndStatus(user.getId(), OrderStatus.IN_PROGRESS);
-        verify(productBusinessService, times(1)).findAllByIdIn(order.getProductIds());
         verify(orderRepository, never()).save(any());
     }
 
@@ -330,18 +361,18 @@ public class OrderBusinessServiceTest {
         Order order = OrderDataBuilder.buildOrderWithAllFields()
                 .ownerId(user.getId())
                 .status(OrderStatus.IN_PROGRESS)
-                .productIds(Set.of(product.getId()))
+                .products(Set.of(product))
                 .build();
 
+        when(authenticationUserService.getAuthenticatedUser()).thenReturn(user);
         when(orderRepository.findOrderByOwnerIdAndStatus(user.getId(), OrderStatus.IN_PROGRESS)).thenReturn(Optional.of(order));
-        when(productBusinessService.findAllByIdIn(order.getProductIds())).thenReturn(List.of(product));
         doThrow(ProductNotAvailableException.class).when(defaultProductValidationService).validateProductOrThrow(product);
 
         assertThatThrownBy(() -> orderBusinessService.payForOrder())
                 .isInstanceOf(ProductNotAvailableException.class);
 
-        verify(orderRepository, times(1)).findOrderByOwnerIdAndStatus(user.getId(), OrderStatus.IN_PROGRESS);
-        verify(productBusinessService, times(1)).findAllByIdIn(order.getProductIds());
+        verify(authenticationUserService).getAuthenticatedUser();
+        verify(orderRepository).findOrderByOwnerIdAndStatus(user.getId(), OrderStatus.IN_PROGRESS);
         verify(orderRepository, never()).save(any());
     }
 }

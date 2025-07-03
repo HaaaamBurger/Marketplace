@@ -12,7 +12,7 @@ public class OrderDataBuilder {
         return Order.builder()
                 .id(String.valueOf(UUID.randomUUID()))
                 .ownerId(String.valueOf(UUID.randomUUID()))
-                .productIds(Set.of(String.valueOf(UUID.randomUUID())))
+                .products(Set.of(ProductDataBuilder.buildProductWithAllFields().build()))
                 .address(String.valueOf(UUID.randomUUID()))
                 .status(OrderStatus.CREATED);
     }

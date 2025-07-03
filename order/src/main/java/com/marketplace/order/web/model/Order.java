@@ -1,6 +1,7 @@
 package com.marketplace.order.web.model;
 
 import com.marketplace.common.model.AuditableEntity;
+import com.marketplace.product.web.model.Product;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
@@ -16,7 +17,7 @@ import java.util.Set;
 @AllArgsConstructor
 @SuperBuilder(toBuilder = true)
 @Document(collection = "orders")
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = false)
 public class Order extends AuditableEntity {
 
     @Id
@@ -26,7 +27,7 @@ public class Order extends AuditableEntity {
     private String ownerId;
 
     @Size(min = 1, max = 50, message = "Order must contain at least 1 product and maximum 50")
-    private Set<String> productIds;
+    private Set<Product> products;
 
     private String address;
 
