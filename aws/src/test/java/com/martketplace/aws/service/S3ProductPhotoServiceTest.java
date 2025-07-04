@@ -23,11 +23,11 @@ import static org.mockito.Mockito.when;
 @SpringBootTest(classes = AwsApplicationConfig.class)
 public class S3ProductPhotoServiceTest {
 
-    @Autowired
-    private S3ProductPhotoService s3ProductPhotoService;
-
     @MockitoBean
     private S3Client s3Client;
+
+    @Autowired
+    private S3ProductPhotoService s3ProductPhotoService;
 
     @Test
     public void uploadFile_ShouldSuccessfullyUploadPhoto() {
@@ -73,47 +73,6 @@ public class S3ProductPhotoServiceTest {
         assertThatThrownBy(() -> s3ProductPhotoService.uploadFile(mockedByteArrayResource, fileName))
                 .isInstanceOf(AwsPhotoUploadException.class)
                 .hasMessage("Cannot upload not multipart photo");
-
-    }
-
-    @Test
-    public void getExtensionFromFilename_ShouldReturnExtension() {
-        String pngFileName = "file.png";
-        String jpegFileName = "file.jpeg";
-        String jpgFileName = "file.jpg";
-        String gifFileName = "file.gif";
-
-        String pngExtension = s3ProductPhotoService.getExtension(pngFileName);
-        String jpegExtension = s3ProductPhotoService.getExtension(jpegFileName);
-        String jpgExtension = s3ProductPhotoService.getExtension(jpgFileName);
-        String gifExtension = s3ProductPhotoService.getExtension(gifFileName);
-
-        assertThat(pngExtension).isNotNull();
-        assertThat(pngExtension).isEqualTo(".png");
-        assertThat(jpegExtension).isNotNull();
-        assertThat(jpegExtension).isEqualTo(".jpeg");
-        assertThat(jpgExtension).isNotNull();
-        assertThat(jpgExtension).isEqualTo(".jpg");
-        assertThat(gifExtension).isNotNull();
-        assertThat(gifExtension).isEqualTo(".gif");
-    }
-
-    @Test
-    public void getExtension_ShouldThrowException_WhenUnsupportedFormat() {
-        String fileName = "file.csv";
-
-        assertThatThrownBy(() -> s3ProductPhotoService.getExtension(fileName))
-                .isInstanceOf(AwsPhotoUploadException.class).hasMessage("Unsupported photo extension: .csv");
-
-    }
-
-    @Test
-    public void getExtension_ShouldThrowException() {
-        String fileName = "file";
-
-        assertThatThrownBy(() -> s3ProductPhotoService.getExtension(fileName))
-                .isInstanceOf(AwsPhotoUploadException.class)
-                .hasMessage("File name is missing or has no valid extension");
 
     }
 

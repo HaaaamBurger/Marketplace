@@ -2,8 +2,8 @@ package com.marketplace.order.repository;
 
 import com.marketplace.order.web.model.Order;
 import com.marketplace.order.web.model.OrderStatus;
-import com.marketplace.product.web.model.Product;
 import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.mongodb.repository.Query;
 
 import java.util.Collection;
 import java.util.List;
@@ -14,7 +14,8 @@ public interface OrderRepository extends MongoRepository<Order,String> {
 
     Optional<Order> findOrderByOwnerId(String ownerId);
 
-    List<Order> findByProductsContainingAndStatusIn(Set<Product> products, Collection<OrderStatus> statuses);
+    @Query(" { 'products._id': { $in: ?0 }, 'status': { $in: ?1 } } ")
+    List<Order> findByProductsIdsAndStatuses(Set<String> productsIds, Collection<OrderStatus> statuses);
 
     Optional<Order> findOrderByOwnerIdAndStatus(String ownerId, OrderStatus status);
 

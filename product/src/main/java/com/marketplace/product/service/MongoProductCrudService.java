@@ -116,7 +116,6 @@ public class MongoProductCrudService implements ProductCrudService {
         });
     }
 
-    // TODO change tests
     private void removePreviousAndAddNewPhoto(Product product, MultipartFile requestPhoto) {
         Optional.ofNullable(requestPhoto).ifPresent(multipartFile -> {
             s3FileUploadService.deleteFile(s3FileManagerService.getFilenameFromUrl(product.getPhotoUrl()));

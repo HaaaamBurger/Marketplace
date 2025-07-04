@@ -1,6 +1,8 @@
 package com.marketplace.product.service;
 
 import com.marketplace.aws.exception.AwsPhotoUploadException;
+import com.marketplace.aws.service.S3FileBusinessService;
+import com.marketplace.aws.service.S3ProductPhotoService;
 import com.marketplace.common.exception.EntityNotFoundException;
 import com.marketplace.product.config.ProductApplicationConfig;
 import com.marketplace.product.kafka.producer.ProductEventProducer;
@@ -26,6 +28,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.math.BigDecimal;
+import java.net.URL;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -48,6 +51,12 @@ public class MongoProductCrudServiceTest {
     private AuthenticationUserService authenticationUserService;
 
     @MockitoBean
+    private S3ProductPhotoService s3ProductPhotoService;
+
+    @MockitoBean
+    private S3FileBusinessService s3FileBusinessService;
+
+    @MockitoBean
     private DefaultUserValidationService defaultUserValidationService;
 
     @MockitoBean
@@ -66,6 +75,7 @@ public class MongoProductCrudServiceTest {
 
     @Test
     public void create_shouldCreateProduct() {
+        URL mockedUrl = mock(URL.class);
         Product product = ProductDataBuilder.buildProductWithAllFields().build();
         MockMultipartFile mockMultipartFile = new MockMultipartFile("data", "photo.png", "image/*", "photo_content".getBytes());
         ProductRequest productRequest = ProductRequest.builder()
@@ -78,6 +88,7 @@ public class MongoProductCrudServiceTest {
         User user = mockHelper.mockAuthenticationAndSetContext();
 
         when(authenticationUserService.getAuthenticatedUser()).thenReturn(user);
+        when(s3ProductPhotoService.uploadFile(eq(productRequest.getPhoto()), anyString())).thenReturn(mockedUrl);
         when(productRepository.save(any(Product.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         Product responseProduct = mongoProductCrudService.create(productRequest);
@@ -87,11 +98,12 @@ public class MongoProductCrudServiceTest {
         assertThat(product.getPrice()).isEqualTo(responseProduct.getPrice());
 
         verify(authenticationUserService).getAuthenticatedUser();
+        verify(s3ProductPhotoService).uploadFile(eq(productRequest.getPhoto()), anyString());
         verify(productRepository).save(any(Product.class));
     }
 
     @Test
-    public void create_shouldThrowException_WhenPhotoExistsWithWrongFormat() {
+    public void create_shouldThrowException_WhenPhotoWithWrongFormat() {
         Product product = ProductDataBuilder.buildProductWithAllFields().build();
         MockMultipartFile mockMultipartFile = new MockMultipartFile("data", "photo.svg", "image/svg", "photo_content".getBytes());
         ProductRequest productRequest = ProductRequest.builder()
@@ -104,10 +116,12 @@ public class MongoProductCrudServiceTest {
         User user = mockHelper.mockAuthenticationAndSetContext();
 
         when(authenticationUserService.getAuthenticatedUser()).thenReturn(user);
+        when(s3ProductPhotoService.uploadFile(eq(productRequest.getPhoto()), anyString())).thenThrow(AwsPhotoUploadException.class);
 
         assertThatThrownBy(() -> mongoProductCrudService.create(productRequest)).isInstanceOf(AwsPhotoUploadException.class);
 
         verify(authenticationUserService).getAuthenticatedUser();
+        verify(s3ProductPhotoService).uploadFile(eq(productRequest.getPhoto()), anyString());
     }
 
     @Test
@@ -158,11 +172,14 @@ public class MongoProductCrudServiceTest {
 
     @Test
     public void update_shouldUpdateProduct() {
+        String filename = "filename";
         User user = mockHelper.mockAuthenticationAndSetContext();
+        MockMultipartFile mockMultipartFile = new MockMultipartFile("photo", "photo.png", "image/png", "photo".getBytes());
         Product product = ProductDataBuilder.buildProductWithAllFields()
                 .ownerId(user.getId())
                 .build();
         ProductRequest productRequest = ProductRequest.builder()
+                .photo(mockMultipartFile)
                 .name("Updated Name")
                 .description("Updated Description")
                 .amount(1)
@@ -172,6 +189,8 @@ public class MongoProductCrudServiceTest {
         when(authenticationUserService.getAuthenticatedUser()).thenReturn(user);
         when(productRepository.findById(product.getId())).thenReturn(Optional.of(product));
         when(defaultUserValidationService.validateEntityOwnerOrAdmin(user, product.getOwnerId())).thenReturn(true);
+        when(s3FileBusinessService.getFilenameFromUrl(product.getPhotoUrl())).thenReturn(filename);
+        doNothing().when(s3ProductPhotoService).deleteFile(filename);
         when(productRepository.save(any(Product.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         Product resultProduct = mongoProductCrudService.update(product.getId(), productRequest);
@@ -183,6 +202,8 @@ public class MongoProductCrudServiceTest {
         verify(authenticationUserService).getAuthenticatedUser();
         verify(productRepository).findById(product.getId());
         verify(defaultUserValidationService).validateEntityOwnerOrAdmin(user, product.getOwnerId());
+        verify(s3FileBusinessService).getFilenameFromUrl(anyString());
+        verify(s3ProductPhotoService).deleteFile(filename);
         verify(productRepository).save(any(Product.class));
     }
 

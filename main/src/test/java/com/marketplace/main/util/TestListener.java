@@ -14,7 +14,7 @@ public class TestListener {
     private static final LinkedBlockingQueue<String> dataPriorityBlockingList = new LinkedBlockingQueue<>();
 
     @KafkaListener(
-            topics = InputTopics.PRODUCT_DELETE_INSTANCES_TOPIC,
+            topics = InputTopics.DELETE_PRODUCT_INSTANCES_TOPIC,
             groupId = "test_product_delete_instances_group",
             properties = {"auto.offset.reset=latest"}
     )

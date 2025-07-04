@@ -80,8 +80,13 @@ public class OrderBusinessService implements OrderManagerService {
     @Transactional
     @Override
     public void removeProductFromAllOrders(Product product) {
-        List<Order> orders = orderRepository.findByProductsContainingAndStatusIn(Set.of(product), List.of(OrderStatus.CREATED, OrderStatus.IN_PROGRESS));
-        removeProductAndDeleteEmptyOrders(orders, product.getId());
+        List<Order> orders = orderRepository.findByProductsIdsAndStatuses(Set.of(product.getId()), List.of(OrderStatus.CREATED, OrderStatus.IN_PROGRESS));
+
+        if (orders.isEmpty()) {
+            return;
+        }
+
+        removeProductAndDeleteEmptyOrders(orders, product);
         orderRepository.saveAll(orders);
     }
 
@@ -113,9 +118,7 @@ public class OrderBusinessService implements OrderManagerService {
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
-    private void removeProductAndDeleteEmptyOrders(List<Order> orders, String productId) {
-        Product product = productCrudService.getById(productId);
-
+    private void removeProductAndDeleteEmptyOrders(List<Order> orders, Product product) {
         Iterator<Order> iterator = orders.iterator();
         while (iterator.hasNext()) {
             Order order = iterator.next();
