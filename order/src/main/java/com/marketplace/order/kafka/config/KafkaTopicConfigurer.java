@@ -9,7 +9,7 @@ public class KafkaTopicConfigurer {
 
     @Bean
     public NewTopic newTopic() {
-        return new NewTopic(InputTopics.PRODUCT_DELETE_INSTANCES_TOPIC, 3, (short) 2);
+        return new NewTopic(InputTopics.DELETE_PRODUCT_INSTANCES_TOPIC, 3, (short) 2);
     }
 
 }

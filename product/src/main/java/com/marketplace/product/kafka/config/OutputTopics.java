@@ -1,5 +1,5 @@
 package com.marketplace.product.kafka.config;
 
 public interface OutputTopics {
-    String PRODUCT_DELETE_INSTANCES_TOPIC = "PRODUCT_DELETE_INSTANCES_TOPIC";
+    String DELETE_PRODUCT_INSTANCES_TOPIC = "DELETE_PRODUCT_INSTANCES_TOPIC";
 }

@@ -15,13 +15,13 @@ public class ProductEventConsumer {
     private final ProductEventService productEventService;
 
     @KafkaListener(
-            topics = InputTopics.PRODUCT_DELETE_INSTANCES_TOPIC,
-            groupId = "product_delete_instances_group",
+            topics = InputTopics.DELETE_PRODUCT_INSTANCES_TOPIC,
+            groupId = "delete_product_instances_group",
             properties = {"auto.offset.reset=latest"}
     )
-    public void listenDeleteProductFromOrdersEvent(String productId) {
-        log.info("[PRODUCT_EVENT_CONSUMER]: Received event {} from {}", productId, InputTopics.PRODUCT_DELETE_INSTANCES_TOPIC);
-        productEventService.deleteProductFromOrdersAndProduct(productId);
+    public void listenDeleteProductInstancesEvent(String productId) {
+        log.info("[PRODUCT_EVENT_CONSUMER]: Received event {} from {}", productId, InputTopics.DELETE_PRODUCT_INSTANCES_TOPIC);
+        productEventService.deleteProductInstances(productId);
     }
 
 }

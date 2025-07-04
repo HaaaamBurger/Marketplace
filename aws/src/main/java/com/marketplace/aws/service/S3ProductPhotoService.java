@@ -9,12 +9,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Arrays;
 
 @Slf4j
 @Service
@@ -23,7 +23,7 @@ public class S3ProductPhotoService implements S3FileUploadService {
 
     private final S3Client s3Client;
 
-    private static final String[] PHOTO_EXTENSIONS = new String[]{".png", ".jpeg", ".jpg", ".gif"};
+    private final S3FileManagerService s3FileManagerService;
 
     @Value("${aws.s3.products-photo-location}")
     public String AWS_S3_PRODUCTS_PHOTO_LOCATION;
@@ -37,12 +37,38 @@ public class S3ProductPhotoService implements S3FileUploadService {
     @Override
     public URL uploadFile(InputStreamSource file, String fileName) {
 
+        MultipartFile multipartFile = validateInputStreamSourceOrThrow(file);
+        String extension = s3FileManagerService.getExtension(multipartFile.getOriginalFilename());
+
+        return uploadFileOrThrow(multipartFile, fileName, extension);
+    }
+
+    @Override
+    public void deleteFile(String fileName) {
+        DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder()
+                .bucket(AWS_S3_BUCKET_NAME)
+                .key(buildProductPhotoPath(fileName))
+                .build();
+
+        try {
+            s3Client.deleteObject(deleteObjectRequest);
+        } catch (RuntimeException exception) {
+            log.error("[S3_PRODUCT_PHOTO_SERVICE]: File deletion failed {}", exception.getMessage());
+            return;
+        }
+
+        log.info("[S3_PRODUCT_PHOTO_SERVICE]: File {} successfully deleted", fileName);
+    }
+
+    private MultipartFile validateInputStreamSourceOrThrow(InputStreamSource file) {
         if (!(file instanceof MultipartFile multipartFile) || multipartFile.isEmpty()) {
             throw new AwsPhotoUploadException("Cannot upload not multipart photo");
         }
 
-        String extension = getExtension(multipartFile.getOriginalFilename());
+        return multipartFile;
+    }
 
+    private URL uploadFileOrThrow(MultipartFile multipartFile, String fileName, String extension) {
         PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                 .bucket(AWS_S3_BUCKET_NAME)
                 .key(buildProductPhotoPath(fileName, extension))
@@ -54,26 +80,8 @@ public class S3ProductPhotoService implements S3FileUploadService {
 
             return buildProductPhotoUrl(fileName, extension);
         } catch (IOException e) {
-            log.error("[S3_PRODUCT_PHOTO_SERVICE]: {}", e.getMessage());
             throw new AwsPhotoUploadException("Photo upload failed");
         }
-    }
-
-    @Override
-    public String getExtension(String fileName) {
-
-        if (fileName == null || fileName.lastIndexOf('.') == -1) {
-            throw new AwsPhotoUploadException("File name is missing or has no valid extension");
-        }
-
-        String originalPhotoExtension = fileName.substring(fileName.lastIndexOf('.'));
-
-        boolean isValidPhotoExtension = Arrays.asList(PHOTO_EXTENSIONS).contains(originalPhotoExtension);
-        if (isValidPhotoExtension) {
-            return originalPhotoExtension;
-        }
-
-        throw new AwsPhotoUploadException("Unsupported photo extension: " + originalPhotoExtension);
     }
 
     private URL buildProductPhotoUrl(String fileName, String extension) throws MalformedURLException {
@@ -81,6 +89,10 @@ public class S3ProductPhotoService implements S3FileUploadService {
     }
 
     private String buildProductPhotoPath(String fileName, String extension) {
-        return AWS_S3_PRODUCTS_PHOTO_LOCATION + '/' + fileName + extension;
+        return buildProductPhotoPath(fileName) + extension;
+    }
+
+    private String buildProductPhotoPath(String fileName) {
+        return AWS_S3_PRODUCTS_PHOTO_LOCATION + '/' + fileName;
     }
 }

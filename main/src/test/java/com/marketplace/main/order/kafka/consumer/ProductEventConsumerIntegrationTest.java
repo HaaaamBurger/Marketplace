@@ -50,7 +50,7 @@ class ProductEventConsumerIntegrationTest {
     }
 
     @Test
-    public void sendDeleteProductFromOrdersEvent_ShouldDeleteProductAndProductFromOrders() {
+    public void sendDeleteProductInstancesEvent_ShouldDeleteProductAndProductFromOrders() {
         Product product1 = ProductDataBuilder.buildProductWithAllFields().build();
         Product product2 = ProductDataBuilder.buildProductWithAllFields().build();
         Order order1 = OrderDataBuilder.buildOrderWithAllFields()
@@ -83,7 +83,7 @@ class ProductEventConsumerIntegrationTest {
     }
 
     @Test
-    public void sendDeleteProductFromOrdersEvent_ShouldDeleteProductAndOrder_WhenOrderHasNoProducts() {
+    public void sendDeleteProductInstancesEvent_ShouldDeleteProductAndOrder_WhenOrderHasNoProducts() {
         Product product1 = ProductDataBuilder.buildProductWithAllFields().build();
         Order order = OrderDataBuilder.buildOrderWithAllFields()
                 .products(Set.of(product1))
@@ -103,7 +103,7 @@ class ProductEventConsumerIntegrationTest {
     }
 
     @Test
-    public void sendDeleteProductFromOrdersEvent_ShouldDoNothing_WhenProductNotExists() {
+    public void sendDeleteProductInstancesEvent_ShouldDoNothing_WhenProductNotExists() {
         Product product1 = ProductDataBuilder.buildProductWithAllFields().build();
         Order order1 = OrderDataBuilder.buildOrderWithAllFields()
                 .products(Set.of(product1))
@@ -119,7 +119,7 @@ class ProductEventConsumerIntegrationTest {
     }
 
     @Test
-    public void sendDeleteProductFromOrdersEvent_ShouldNotDeleteProduct_WhereStatusIsCompletedOrCancelled() {
+    public void sendDeleteProductInstancesEvent_ShouldNotDeleteProduct_WhereStatusIsCompletedOrCancelled() {
         Product product1 = ProductDataBuilder.buildProductWithAllFields().build();
         Product product2 = ProductDataBuilder.buildProductWithAllFields().build();
         Order order1 = OrderDataBuilder.buildOrderWithAllFields()

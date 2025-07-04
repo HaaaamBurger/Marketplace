@@ -13,6 +13,7 @@ public class ProductDataBuilder {
                 .ownerId(String.valueOf(UUID.randomUUID()))
                 .name("Test Product")
                 .price(BigDecimal.valueOf(99.99))
+                .photoUrl(String.valueOf(UUID.randomUUID()))
                 .amount(1)
                 .active(true)
                 .description("Test Description");
